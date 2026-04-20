@@ -1,0 +1,26 @@
+{
+  "name": "cine-list",
+  "version": "1.0.0",
+  "description": "CineList es una aplicación full-stack de seguimiento de cine inspirada en Letterboxd. Califica, reseña y gestiona tu lista de películas. Desarrollada con Vanilla JS, Bootstrap y Node.js. 🎬🍿",
+  "keywords": [
+    "movies",
+    "series",
+    "rank",
+    "forum"
+  ],
+  "homepage": "https://github.com/BrandonPerez915/CineList#readme",
+  "bugs": {
+    "url": "https://github.com/BrandonPerez915/CineList/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrandonPerez915/CineList.git"
+  },
+  "license": "ISC",
+  "author": "Brandon Perez",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  }
+}
