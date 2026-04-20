@@ -15,13 +15,13 @@ cine-project/
 ├── frontend/               # Lógica del cliente y diseño
 │   ├── assets/             # Recursos estáticos
 │   │   ├── css/            # Estilos personalizados (además de Bootstrap)
-│   │   ├── img/            # Imágenes, logos y placeholders
-│   │   └── js/             # Scripts de JavaScript Vanilla
-│   │       ├── services/   # Funciones para peticiones Fetch (api.js)
-│   │       ├── utils/      # Funciones de ayuda (formateo de fechas, validaciones)
-│   │       ├── auth.js     # Lógica de inicio de sesión y registro
-│   │       └── main.js     # Manipulación del DOM y lógica de la página principal
-│   ├── pages/              # Archivos HTML adicionales (profile.html, movie-details.html)
+│   │   └── img/            # Imágenes, logos y placeholders
+│   ├── pages/              # Archivos HTML adicionales
+│   ├──scripts/             # Scripts de js utilizados en el frontend
+│   │  ├── services/        # Funciones para peticiones
+│   │  ├── utils/           # Utilidades (formateo de fechas, etc.)
+│   │  ├── auth.js          # Logica de autenticación
+│   │  └── main.js          # Manipulación del DOM y lógica principal
 │   └── index.html          # Punto de entrada principal (Home)
 ├── .gitignore              # Archivos y carpetas omitidos por Git (node_modules, .env)
 ├── package.json            # Gestión de dependencias y scripts del proyecto
