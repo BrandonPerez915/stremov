@@ -16,10 +16,13 @@ body {
 #moviesProfile {
     width: 80%;
     margin: 1px auto;
+    display: flex; 
+    flex-wrap: wrap; 
+    justify-content:space-around;
 }
 
 .profileSection {
-  padding-bottom: 20px;
+  padding-bottom: 16px;
   margin-inline-end: 20px;
   cursor: pointer;
   background: none;

@@ -1,7 +1,8 @@
 <head>
   <style>
     movie-card {
-    width: 195px;
+    width: 220px;
+    margin-inline: 10px;
   }
   </style>
   <link rel="stylesheet" href="styles.css">
@@ -12,20 +13,22 @@
 </head>
 
 <body>
-  <cine-navbar user-name="Juan" user-avatar="https://i.pinimg.com/736x/29/c7/74/29c774e75daecdf5d3360bf9707272bb.jpg"></cine-navbar>
+  <cine-navbar user-name="Alex" user-avatar="https://ui-avatars.com/api/?name=Alex&background=00d2ff&color=fff"></cine-navbar>
 
   <user-profile-card style="width: 80%; margin: 20px auto;"
-    id="profile-card" name="Juan Pérez" handle="@juanperez"
+    id="profile-card" name="Alex" handle="@alex123"
     bio="Amante del cine y las series."
     ratings="142" favorites="38"
-    avatar="https://i.pinimg.com/736x/29/c7/74/29c774e75daecdf5d3360bf9707272bb.jpg">
+    following="12" followers="15"
+    is-owner
+    avatar="https://ui-avatars.com/api/?name=Alex&background=00d2ff&color=fff">
   </user-profile-card>
 
   <edit-profile-modal
     id="edit-modal"
-    name="Juan Pérez" username="@juanperez"
+    name="Alex" username="@alex123"
     bio="Amante del cine y las series."
-    avatar="https://i.pinimg.com/736x/29/c7/74/29c774e75daecdf5d3360bf9707272bb.jpg">
+    avatar="https://ui-avatars.com/api/?name=Alex&background=00d2ff&color=fff">
   </edit-profile-modal>
 
 
@@ -34,7 +37,7 @@
     <button class="profileSection">Favorites</button>
   </div>
 
-  <div id="moviesProfile" style="display:flex; flex-wrap:wrap; justify-content:center;">
+  <div id="moviesProfile">
     
     <movie-card 
       title="The Dark Knight" 

@@ -88,13 +88,6 @@ modalSheet.replaceSync(`
     background-color: #222;
   }
 
-  .change-link {
-    color: #00d2ff;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-  }
-
   .form { display: flex; flex-direction: column; gap: 15px; }
 
   .field { display: flex; flex-direction: column; gap: 6px; }
@@ -190,7 +183,6 @@ class EditProfileModal extends HTMLElement {
 
         <div class="photo-section">
           <img class="avatar-preview" alt="User">
-          <span class="change-link">Change Photo</span>
         </div>
 
         <div class="form">
