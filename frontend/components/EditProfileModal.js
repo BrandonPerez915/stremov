@@ -2,7 +2,7 @@ const modalSheet = new CSSStyleSheet();
 
 modalSheet.replaceSync(`
   :host {
-    /* La modal empieza oculta por defecto */
+    
     display: none;
     position: fixed;
     top: 0;
@@ -13,7 +13,7 @@ modalSheet.replaceSync(`
     font-family: 'Inter', -apple-system, sans-serif;
   }
 
-  /* Si el atributo "open" está presente, mostramos la modal */
+  
   :host([open]) {
     display: flex;
     align-items: center;

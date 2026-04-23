@@ -2,7 +2,6 @@ const playlistModalSheet = new CSSStyleSheet();
 
 playlistModalSheet.replaceSync(`
   :host {
-    /* La modal empieza oculta por defecto */
     display: none;
     position: fixed;
     top: 0;
@@ -13,7 +12,6 @@ playlistModalSheet.replaceSync(`
     font-family: 'Inter', -apple-system, sans-serif;
   }
 
-  /* Si el atributo "open" está presente, mostramos la modal */
   :host([open]) {
     display: flex;
     align-items: center;
@@ -76,7 +74,6 @@ playlistModalSheet.replaceSync(`
 
   .close-btn:hover { color: white; }
 
-  /* Estilos del Formulario */
   .form { 
     display: flex; 
     flex-direction: column; 
@@ -120,6 +117,13 @@ playlistModalSheet.replaceSync(`
     max-height: 200px;
   }
 
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
   .save-btn {
     background-color: #00d2ff;
     color: #000;
@@ -129,16 +133,32 @@ playlistModalSheet.replaceSync(`
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
-    margin-top: 10px;
     transition: transform 0.1s ease, background-color 0.2s ease;
   }
 
-  .save-btn:active {
-    transform: scale(0.98);
+  .save-btn:active { transform: scale(0.98); }
+  .save-btn:hover { background-color: #33dbff; }
+
+  .delete-btn {
+    background-color: transparent;
+    color: #ff4444;
+    border: 1px solid rgba(255, 68, 68, 0.3);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
   }
 
-  .save-btn:hover {
-    background-color: #33dbff;
+  .delete-btn:active { transform: scale(0.98); }
+  .delete-btn:hover {
+    background-color: rgba(255, 68, 68, 0.1);
+    border-color: rgba(255, 68, 68, 0.5);
   }
 `);
 
@@ -167,7 +187,6 @@ class EditPlaylistModal extends HTMLElement {
     const titleInput = this.shadowRoot.getElementById('input-title');
     const descInput = this.shadowRoot.getElementById('input-description');
 
-   
     if (titleInput && !this.hasAttribute('user-typing')) {
         titleInput.value = this.getAttribute('list-title') || '';
     }
@@ -198,7 +217,19 @@ class EditPlaylistModal extends HTMLElement {
             <label>Descripción</label>
             <textarea id="input-description" placeholder="Añade una descripción a tu lista..."></textarea>
           </div>
-          <button class="save-btn" id="btn-save">Guardar Cambios</button>
+          
+          <div class="actions">
+            <button class="save-btn" id="btn-save">Guardar Cambios</button>
+            <button class="delete-btn" id="btn-delete">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              Eliminar Lista
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -207,27 +238,30 @@ class EditPlaylistModal extends HTMLElement {
     this.shadowRoot.getElementById('btn-close').onclick = () => this.close();
     this.shadowRoot.querySelector('.backdrop').onclick = () => this.close();
 
-    
     const inputs = this.shadowRoot.querySelectorAll('input, textarea');
     inputs.forEach(input => {
         input.addEventListener('focus', () => this.setAttribute('user-typing', ''));
         input.addEventListener('blur', () => this.removeAttribute('user-typing'));
     });
 
-    
+
     this.shadowRoot.getElementById('btn-save').onclick = () => {
       const payload = {
         title: this.shadowRoot.getElementById('input-title')?.value || '',
         description: this.shadowRoot.getElementById('input-description')?.value || '',
       };
 
-      
       this.dispatchEvent(new CustomEvent('playlist-save', {
         detail: payload,
         bubbles: true,
         composed: true,
       }));
 
+      this.close();
+    };
+
+
+    this.shadowRoot.getElementById('btn-delete').onclick = () => {
       this.close();
     };
 

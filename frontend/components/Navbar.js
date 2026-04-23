@@ -143,7 +143,7 @@ class Navbar extends HTMLElement {
           <div class="nav-links">
             <a href="/frontend/views/home.html" class="nav-link link-home">Inicio</a>
             <a href="/frontend/views/search.html" class="nav-link link-browse">Explorar</a>
-            <a href="/frontend/views/playlists.html" class="nav-link link-browse">Mis Listas</a>
+            <a href="/frontend/views/my-lists.html" class="nav-link link-browse">Mis Listas</a>
           </div>
         </div>
 

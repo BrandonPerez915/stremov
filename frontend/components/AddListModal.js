@@ -2,7 +2,7 @@ const modalListSheet = new CSSStyleSheet();
 
 modalListSheet.replaceSync(`
     :host {
-        /* Oculto por defecto */
+        
         display: none;
         position: fixed;
         top: 0; 
@@ -13,7 +13,7 @@ modalListSheet.replaceSync(`
         font-family: 'Inter', sans-serif;
     }
     
-    /* Mostrar cuando tiene el atributo 'open' */
+    
     :host([open]) {
         display: flex;
         align-items: center;
@@ -86,7 +86,7 @@ modalListSheet.replaceSync(`
         margin-bottom: 10px;
     }
 
-    /* Scrollbar estilizado para la lista */
+
     .lists::-webkit-scrollbar { width: 6px; }
     .lists::-webkit-scrollbar-track { background: transparent; }
     .lists::-webkit-scrollbar-thumb { background-color: #333; border-radius: 10px; }
