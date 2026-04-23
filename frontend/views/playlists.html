@@ -23,7 +23,7 @@
                 --bs-gutter-x: 1.5rem;
             }
         </style>
-
+        
         <script src="../components/Navbar.js" defer></script>
         <script src="../components/MovieCard.js" defer></script>
         <script src="../components/PlaylistHeader.js" defer></script>
@@ -32,9 +32,8 @@
 
     <body>
         <header>
-            <cine-navbar 
-                user-name="Alex" 
-                user-avatar="https://ui-avatars.com/api/?name=Alex&background=00d2ff&color=fff">
+            <cine-navbar user-name="Juan" `
+                user-avatar="https://i.pinimg.com/736x/29/c7/74/29c774e75daecdf5d3360bf9707272bb.jpg">
             </cine-navbar>
         </header>
 
@@ -42,104 +41,131 @@
             
             
             <div class="container mt-4" style="margin: 40px;">
-                <!--<div class="container" >
-                    <h2 class="mb-4 " style="font-weight: 800; letter-spacing: -1px;">Romance !!</h2>
-                    <p class="mb-3 ms-4" style="color: rgb(237, 237, 237);"> 
-                        Pelis de Romance que arruinan mis estándares
-                    </p>
-                </div> -->
+                
                 <playlist-header 
                     list-title="Superheroes !!" 
                     list-description="Recap de pelis de marvel">
                 </playlist-header>
                 <edit-playlist-modal id="my-modal"></edit-playlist-modal>
 
-                <!-- Script para conectarlos -->
+                
                 <script>
                 const header = document.getElementById('my-header');
                 const modal = document.getElementById('my-modal');
 
-                // 1. Cuando se hace clic en "Editar Info" en el header, abrimos el modal
+                
                 document.addEventListener('edit-playlist', (e) => {
-                    // Le pasamos los datos actuales al modal
+                    
                     modal.setAttribute('list-title', e.detail.currentTitle);
                     modal.setAttribute('list-description', e.detail.currentDescription);
-                    // Abrimos el modal llamando a su método
+                    
                     modal.open(); 
                 });
 
-                // 2. Cuando el usuario da clic en "Guardar Cambios" en el modal
+                
                 document.addEventListener('playlist-save', (e) => {
                     const nuevoTitulo = e.detail.title;
                     const nuevaDesc = e.detail.description;
 
-                    // Actualizamos el header visualmente
                     header.setAttribute('list-title', nuevoTitulo);
                     header.setAttribute('list-description', nuevaDesc);
 
-                    // Aquí también podrías hacer tu llamada fetch() a tu base de datos (Backend)
-                    // console.log("Guardando en BD:", nuevoTitulo, nuevaDesc);
+                    
                 });
                 </script>
                 
-                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3">
-                    <div class="col">
-                        <movie-card 
-                            title="Love Rosie" 
-                            rating="7.1" 
-                            year="2014" 
-                            poster="https://m.media-amazon.com/images/S/pv-target-images/f77d27385643d5db4f83441c921a190df10bdd0e532b72fbd73b9b600d53d48c.jpg"
-                            data-imdb-id="tt1375666">
-                        </movie-card>
-                    </div>
-                    <div class="col">
-                        <movie-card 
-                            title="The notebook" 
-                            rating="7.8" 
-                            year="2004" 
-                            poster="https://play-lh.googleusercontent.com/diwQFEg8SEzGsVmuekKGL12LG2vAL2e2_dLPykY7VJwU5BGFys14C3oTpJCaaCPmAy7z=w240-h480-rw"
-                            data-imdb-id="tt0816692">
-                        </movie-card>
-                    </div>
-                    <div class="col">
-                        <movie-card 
-                            title="Love Rosie" 
-                            rating="7.1" 
-                            year="2014" 
-                            poster="https://m.media-amazon.com/images/S/pv-target-images/f77d27385643d5db4f83441c921a190df10bdd0e532b72fbd73b9b600d53d48c.jpg"
-                            data-imdb-id="tt1375666">
-                        </movie-card>
-                    </div>
-                    <div class="col">
-                        <movie-card 
-                            title="The notebook" 
-                            rating="7.8" 
-                            year="2004" 
-                            poster="https://play-lh.googleusercontent.com/diwQFEg8SEzGsVmuekKGL12LG2vAL2e2_dLPykY7VJwU5BGFys14C3oTpJCaaCPmAy7z=w240-h480-rw"
-                            data-imdb-id="tt0816692">
-                        </movie-card>
-                    </div>
-                    <div class="col">
-                        <movie-card 
-                            title="Love Rosie" 
-                            rating="7.1" 
-                            year="2014" 
-                            poster="https://m.media-amazon.com/images/S/pv-target-images/f77d27385643d5db4f83441c921a190df10bdd0e532b72fbd73b9b600d53d48c.jpg"
-                            data-imdb-id="tt1375666">
-                        </movie-card>
-                    </div>
-                    <div class="col">
-                        <movie-card 
-                            title="The notebook" 
-                            rating="7.8" 
-                            year="2004" 
-                            poster="https://play-lh.googleusercontent.com/diwQFEg8SEzGsVmuekKGL12LG2vAL2e2_dLPykY7VJwU5BGFys14C3oTpJCaaCPmAy7z=w240-h480-rw"
-                            data-imdb-id="tt0816692">
-                        </movie-card>
-                    </div>
+
+                
+
+            <div >
+                    
+                <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-4" id="playlist-movies">
+                    
                 </div>
             </div>
+
         </main>
+
+        <script>
+            async function loadPlaylistMovies() {
+                try {
+                    const data = {
+                      "Search": [
+                        {
+                          "Title": "The Avengers",
+                          "Year": "2012",
+                          "imdbID": "tt0848228",
+                          "Poster": "https://m.media-amazon.com/images/M/MV5BNGE0YTVjNzUtNzJjOS00NGNlLTgxMzctZTY4YTE1Y2Y1ZTU4XkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg"
+                        },
+                        {
+                          "Title": "Avengers: Endgame",
+                          "Year": "2019",
+                          "imdbID": "tt4154796",
+                          "Poster": "https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_QL75_UX380_CR0,0,380,562_.jpg"
+                        },
+                        {
+                          "Title": "Avengers: Infinity War",
+                          "Year": "2018",
+                          "imdbID": "tt4154756",
+                          "Poster": "https://m.media-amazon.com/images/M/MV5BMjMxNjY2MDU1OV5BMl5BanBnXkFtZTgwNzY1MTUwNTM@._V1_QL75_UX380_CR0,0,380,562_.jpg"
+                        },
+                        {
+                          "Title": "Avengers: Age of Ultron",
+                          "Year": "2015",
+                          "imdbID": "tt2395427",
+                          "Poster": "https://m.media-amazon.com/images/M/MV5BODBhYTg1NGQtNGVmNS00ZTdiLThjYTYtZDFkNzRiNTZmNDZjXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg"
+                        },
+                        {
+                          "Title": "The Avengers",
+                          "Year": "1998",
+                          "imdbID": "tt0118661",
+                          "Poster": "https://m.media-amazon.com/images/M/MV5BZTA4ZmZlZWQtZDRlYS00ZWZhLTk0MzEtYjExMGIzMTBlZDNlXkEyXkFqcGc@._V1_SX300.jpg"
+                        },
+                        {
+                          "Title": "The Avengers: Earth's Mightiest Heroes",
+                          "Year": "2010–2024",
+                          "imdbID": "tt1626038",
+                          "Poster": "https://m.media-amazon.com/images/M/MV5BY2NkYTNlMTQtZWVjNC00MTk4LTkzNGEtYjAyOTYxYWFjYTVkXkEyXkFqcGc@._V1_SX300.jpg"
+                        },
+                        {
+                          "Title": "Ultimate Avengers",
+                          "Year": "2006",
+                          "imdbID": "tt0491703",
+                          "Poster": "https://m.media-amazon.com/images/M/MV5BMTYyMjk0NTMwMl5BMl5BanBnXkFtZTgwNzY0NjAwNzE@._V1_SX300.jpg"
+                        }
+                      ]
+                    };
+                    
+                    const container = document.getElementById('playlist-movies');
+
+                    data.Search.forEach(movie => {
+                        const col = document.createElement('div');
+                        col.className = 'col d-flex justify-content-center'; 
+
+                        // Instanciamos el Web Component
+                        const movieCard = document.createElement('movie-card');
+                        movieCard.setAttribute('title', movie.Title);
+                        movieCard.setAttribute('year', movie.Year);
+                        movieCard.setAttribute('poster', movie.Poster);
+                        movieCard.setAttribute('data-imdb-id', movie.imdbID);
+                        
+                        
+                        const randomRating = (Math.random() * (9.5 - 6.0) + 6.0).toFixed(1);
+                        movieCard.setAttribute('rating', randomRating);
+
+                        
+                        col.appendChild(movieCard);
+                        container.appendChild(col);
+                    });
+
+                } catch (error) {
+                    console.error("Error cargando las películas del JSON:", error);
+                }
+            }
+
+            
+            document.addEventListener('DOMContentLoaded', loadPlaylistMovies);
+        </script>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>

@@ -141,7 +141,7 @@ class Navbar extends HTMLElement {
             <h1 class="app-name">CineList</h1>
           </a>
           <div class="nav-links">
-            <a href="/frontend/index.html" class="nav-link link-home">Inicio</a>
+            <a href="/frontend/views/home.html" class="nav-link link-home">Inicio</a>
             <a href="/frontend/views/search.html" class="nav-link link-browse">Explorar</a>
             <a href="/frontend/views/playlists.html" class="nav-link link-browse">Mis Listas</a>
           </div>

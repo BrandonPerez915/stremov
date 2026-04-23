@@ -167,7 +167,7 @@ class EditPlaylistModal extends HTMLElement {
     const titleInput = this.shadowRoot.getElementById('input-title');
     const descInput = this.shadowRoot.getElementById('input-description');
 
-    // Solo actualiza los valores si el modal se está abriendo/actualizando
+   
     if (titleInput && !this.hasAttribute('user-typing')) {
         titleInput.value = this.getAttribute('list-title') || '';
     }
@@ -203,25 +203,25 @@ class EditPlaylistModal extends HTMLElement {
       </div>
     `;
 
-    // Lógica para cerrar el modal
+    
     this.shadowRoot.getElementById('btn-close').onclick = () => this.close();
     this.shadowRoot.querySelector('.backdrop').onclick = () => this.close();
 
-    // Evitar que al escribir se sobreescriba por el observer si cambia un atributo
+    
     const inputs = this.shadowRoot.querySelectorAll('input, textarea');
     inputs.forEach(input => {
         input.addEventListener('focus', () => this.setAttribute('user-typing', ''));
         input.addEventListener('blur', () => this.removeAttribute('user-typing'));
     });
 
-    // Lógica para guardar
+    
     this.shadowRoot.getElementById('btn-save').onclick = () => {
       const payload = {
         title: this.shadowRoot.getElementById('input-title')?.value || '',
         description: this.shadowRoot.getElementById('input-description')?.value || '',
       };
 
-      // Despachamos un evento personalizado para que tu JS principal lo intercepte
+      
       this.dispatchEvent(new CustomEvent('playlist-save', {
         detail: payload,
         bubbles: true,

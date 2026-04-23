@@ -11,8 +11,8 @@ movieCardSheet.replaceSync(`
   color: #ffffff;
 
   width: 100%;
-  min-width: 150px;
-  max-width: 250px;
+  min-width: 100px;
+  max-width: 200px;
   aspect-ratio: 2/3;
 
   padding: 20px;

@@ -137,7 +137,6 @@ class PlaylistHeader extends HTMLElement {
       </div>
     `;
 
-    // Emitir evento cuando se haga clic en editar para que la vista principal (o modal) lo maneje
     this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', () => {
       this.dispatchEvent(new CustomEvent('edit-playlist', {
         bubbles: true,
