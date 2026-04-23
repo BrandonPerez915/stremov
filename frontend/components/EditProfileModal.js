@@ -108,6 +108,12 @@ modalSheet.replaceSync(`
 
   textarea { height: 80px; resize: none; }
 
+  .form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
   .save-btn {
     background-color: #00d2ff;
     color: #000;
@@ -117,24 +123,93 @@ modalSheet.replaceSync(`
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
-    margin-top: 10px;
+    flex: 1;
   }
 
-  .help-bubble {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    width: 28px;
-    height: 28px;
-    background-color: #00d2ff;
-    color: #000;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 14px;
-  }
+  .delete-btn {
+  background-color: transparent;
+  color: #ff4d4d;
+  border: 1px solid #ff4d4d;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  flex: 1;
+  transition: background-color 0.2s;
+}
+
+.delete-btn:hover {
+  background-color: rgba(255, 77, 77, 0.1);
+}
+
+.confirm-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 20px;
+  z-index: 20;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-overlay.visible {
+  display: flex;
+}
+
+.confirm-box {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 28px 24px;
+  text-align: center;
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.confirm-box p {
+  margin: 0;
+  font-size: 15px;
+  color: #ccc;
+  line-height: 1.5;
+}
+
+.confirm-box strong {
+  color: white;
+  font-size: 18px;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.confirm-cancel {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #444;
+  background: transparent;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.confirm-delete {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background-color: #ff4d4d;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 `);
 
 class EditProfileModal extends HTMLElement {
@@ -198,10 +273,23 @@ class EditProfileModal extends HTMLElement {
             <label>Bio</label>
             <textarea id="input-bio"></textarea>
           </div>
-          <button class="save-btn" id="btn-save">Save Changes</button>
+          <div class="form-actions">
+            <button class="delete-btn" id="btn-delete">Delete User</button>
+            <button class="save-btn" id="btn-save">Save Changes</button>
+          </div>
+
+          <div class="confirm-overlay" id="confirm-overlay">
+            <div class="confirm-box">
+              <strong>¿Eliminar cuenta?</strong>
+              <p>Esta acción es permanente y no se puede deshacer.</p>
+              <div class="confirm-actions">
+                <button class="confirm-cancel" id="btn-cancel-delete">Cancelar</button>
+                <button class="confirm-delete">Eliminar</button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="help-bubble">?</div>
       </div>
     `;
 
@@ -222,6 +310,14 @@ class EditProfileModal extends HTMLElement {
       }));
 
       this.close();
+    };
+
+    this.shadowRoot.getElementById('btn-delete').onclick = () => {
+      this.shadowRoot.getElementById('confirm-overlay').classList.add('visible');
+    };
+
+    this.shadowRoot.getElementById('btn-cancel-delete').onclick = () => {
+      this.shadowRoot.getElementById('confirm-overlay').classList.remove('visible');
     };
 
     this._update();
