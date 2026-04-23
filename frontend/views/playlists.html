@@ -27,6 +27,7 @@
         <script src="../components/Navbar.js" defer></script>
         <script src="../components/MovieCard.js" defer></script>
         <script src="../components/PlaylistHeader.js" defer></script>
+        <script src="../components/EditPlaylistModal.js" defer></script>
     </head>
 
     <body>
@@ -48,9 +49,38 @@
                     </p>
                 </div> -->
                 <playlist-header 
-                    list-title="Romance !!" 
-                    list-description="Pelis de Romance que arruinan mis estándares">
+                    list-title="Superheroes !!" 
+                    list-description="Recap de pelis de marvel">
                 </playlist-header>
+                <edit-playlist-modal id="my-modal"></edit-playlist-modal>
+
+                <!-- Script para conectarlos -->
+                <script>
+                const header = document.getElementById('my-header');
+                const modal = document.getElementById('my-modal');
+
+                // 1. Cuando se hace clic en "Editar Info" en el header, abrimos el modal
+                document.addEventListener('edit-playlist', (e) => {
+                    // Le pasamos los datos actuales al modal
+                    modal.setAttribute('list-title', e.detail.currentTitle);
+                    modal.setAttribute('list-description', e.detail.currentDescription);
+                    // Abrimos el modal llamando a su método
+                    modal.open(); 
+                });
+
+                // 2. Cuando el usuario da clic en "Guardar Cambios" en el modal
+                document.addEventListener('playlist-save', (e) => {
+                    const nuevoTitulo = e.detail.title;
+                    const nuevaDesc = e.detail.description;
+
+                    // Actualizamos el header visualmente
+                    header.setAttribute('list-title', nuevoTitulo);
+                    header.setAttribute('list-description', nuevaDesc);
+
+                    // Aquí también podrías hacer tu llamada fetch() a tu base de datos (Backend)
+                    // console.log("Guardando en BD:", nuevoTitulo, nuevaDesc);
+                });
+                </script>
                 
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3">
                     <div class="col">
