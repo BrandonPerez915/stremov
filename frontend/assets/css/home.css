@@ -1,0 +1,46 @@
+body {
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #0b0b0b;
+  color: white;
+  overflow-x: hidden;
+}
+
+#popular-movies-section,
+#most-rated-movies-section {
+  padding: 40px 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#popular-movies-section h2,
+#most-rated-movies-section h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.movie-list {
+  display: flex;
+  gap: 20px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 15px;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+}
+
+.movie-list::-webkit-scrollbar {
+  height: 6px;
+}
+
+.movie-list::-webkit-scrollbar-thumb {
+  background: rgba(67, 232, 255, 0.2);
+  border-radius: 10px;
+}
+
+movie-card {
+  flex: 0 0 auto;
+}
