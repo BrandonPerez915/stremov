@@ -232,11 +232,11 @@ class UserProfileCard extends HTMLElement {
                 <span id="favorites" class="stat-value"></span>
                 <span class="stat-label">Favorites</span>
               </div>
-              <div class="stat-item">
+              <div class="stat-item" data-stat="following" style="cursor: pointer;">
                 <span id="following" class="stat-value"></span>
                 <span class="stat-label">Following</span>
               </div>
-              <div class="stat-item">
+              <div class="stat-item" data-stat="followers" style="cursor: pointer;">
                 <span id="followers" class="stat-value"></span>
                 <span class="stat-label">Followers</span>
               </div>
@@ -258,6 +258,22 @@ class UserProfileCard extends HTMLElement {
     }
 
     this._update();
+    const followingEl = this.shadowRoot.querySelector('[data-stat="following"]');
+    const followersEl = this.shadowRoot.querySelector('[data-stat="followers"]');
+
+    followingEl?.addEventListener('click', () => {
+      this.dispatchEvent(new CustomEvent('stat-click', {
+        bubbles: true, composed: true,
+        detail: { type: 'following' }
+      }));
+    });
+
+    followersEl?.addEventListener('click', () => {
+      this.dispatchEvent(new CustomEvent('stat-click', {
+        bubbles: true, composed: true,
+        detail: { type: 'followers' }
+      }));
+    });
   }
 }
 

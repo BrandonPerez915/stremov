@@ -10,27 +10,29 @@
   <script src="../components/UserProfileCard.js"></script>
   <script src="../components/EditProfileModal.js"></script>
   <script src="../components/MovieCard.js"></script>
+  <script src="../components/FollowListModal.js"></script>
 </head>
 
 <body style="padding: 0; margin: 0">
-  <cine-navbar user-name="Alex" user-avatar="https://ui-avatars.com/api/?name=Alex&background=00d2ff&color=fff"></cine-navbar>
+  <cine-navbar user-name="Juan" user-avatar="https://i.pinimg.com/736x/29/c7/74/29c774e75daecdf5d3360bf9707272bb.jpg"></cine-navbar>
 
   <user-profile-card style="width: 80%; margin: 20px auto;"
-    id="profile-card" name="Alex" handle="@alex123"
+    id="profile-card" name="Juan" handle="@juan123"
     bio="Amante del cine y las series."
     ratings="142" favorites="38"
     following="12" followers="15"
     is-owner
-    avatar="https://ui-avatars.com/api/?name=Alex&background=00d2ff&color=fff">
+    avatar="https://i.pinimg.com/736x/29/c7/74/29c774e75daecdf5d3360bf9707272bb.jpg">
   </user-profile-card>
 
   <edit-profile-modal
     id="edit-modal"
-    name="Alex" username="@alex123"
+    name="Juan" username="@juan123"
     bio="Amante del cine y las series."
-    avatar="https://ui-avatars.com/api/?name=Alex&background=00d2ff&color=fff">
+    avatar="https://i.pinimg.com/736x/29/c7/74/29c774e75daecdf5d3360bf9707272bb.jpg">
   </edit-profile-modal>
 
+  <follow-list-modal id="follow-modal"></follow-list-modal>
 
   <div id="sectionsProfile">
     <button class="profileSection active">Ratings</button>
@@ -124,12 +126,15 @@
   <script>
     const card = document.getElementById('profile-card');
     const modal = document.getElementById('edit-modal');
+    const followModal = document.getElementById('follow-modal');
 
+    card.addEventListener('stat-click', (e) => {
+      followModal.open(e.detail.type);
+    });
     
     card.addEventListener('profile-edit', () => {
       modal.open();
     });
-
     
   </script>
 </body>
