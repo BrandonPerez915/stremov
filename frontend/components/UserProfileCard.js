@@ -48,7 +48,7 @@ profileSheet.replaceSync(`
   }
 
   #name {
-    font-size: 30px;
+    font-size: 32px;
     font-weight: 800;
     margin: 0;
     letter-spacing: -1px;
