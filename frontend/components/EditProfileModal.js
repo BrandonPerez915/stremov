@@ -80,6 +80,17 @@ modalSheet.replaceSync(`
     margin-bottom: 20px;
   }
 
+  .change-link {
+    color: #00d2ff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  .change-link:hover {
+    color: white;
+  }
+
   .avatar-preview {
     width: 90px;
     height: 90px;
@@ -258,6 +269,8 @@ class EditProfileModal extends HTMLElement {
 
         <div class="photo-section">
           <img class="avatar-preview" alt="User">
+          <span class="change-link">Cambiar foto</span>
+          <input type="file" id="input-photo" accept="image/*" style="display: none;">
         </div>
 
         <div class="form">
@@ -293,6 +306,25 @@ class EditProfileModal extends HTMLElement {
       </div>
     `;
 
+    const changeLink = this.shadowRoot.querySelector('.change-link');
+    const inputPhoto = this.shadowRoot.getElementById('input-photo');
+    const avatarPreview = this.shadowRoot.querySelector('.avatar-preview');
+
+    changeLink.addEventListener('click', () => {
+      inputPhoto.click();
+    });
+
+    inputPhoto.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          avatarPreview.src = event.target.result; //muestra la foto en el circulito
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
     this.shadowRoot.getElementById('btn-close').onclick = () => this.close();
     this.shadowRoot.querySelector('.backdrop').onclick = () => this.close();
 
@@ -301,6 +333,7 @@ class EditProfileModal extends HTMLElement {
         name: this.shadowRoot.getElementById('input-name')?.value || '',
         username: this.shadowRoot.getElementById('input-user')?.value || '',
         bio: this.shadowRoot.getElementById('input-bio')?.value || '',
+        avatar: this.shadowRoot.querySelector('.avatar-preview')?.src || ''
       };
 
       this.dispatchEvent(new CustomEvent('profile-save', {
