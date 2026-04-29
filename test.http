@@ -1,23 +1,96 @@
+### ========================================
+### CREATE USER (POST /api/users)
+### ========================================
+
+### 1. Caso de Éxito: Crear usuario válido
 POST http://localhost:3000/api/users
 Content-Type: application/json
 
 {
   "username": "lucia",
   "email": "lucia@example.com",
-  "password": "lucia123",
-  "confirmPassword": "lucia123"
+  "password": "password123",
+  "confirmPassword": "password123"
 }
 
-###
+### 2. Caso de Fallo: Usuario duplicado (mismo username o email)
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "username": "lucia",
+  "email": "nuevo@example.com",
+  "password": "password123",
+  "confirmPassword": "password123"
+}
+
+### 3. Caso de Fallo: Contraseñas no coinciden (Error del middleware)
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "username": "juan",
+  "email": "juan@example.com",
+  "password": "password123",
+  "confirmPassword": "password321"
+}
+
+### 4. Caso de Fallo: Error de validación de Mongoose (username muy corto)
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "username": "a",
+  "email": "corto@example.com",
+  "password": "password123",
+  "confirmPassword": "password123"
+}
+
+### ========================================
+### GET USER (GET /api/users/:name)
+### ========================================
+
+### 5. Caso de Éxito: Obtener usuario existente
 GET http://localhost:3000/api/users/lucia
 
-###
-DELETE http://localhost:3000/api/users/lucia
+### 6. Caso de Fallo: Obtener usuario que no existe (404)
+GET http://localhost:3000/api/users/usuario_fantasma
 
-###
+### ========================================
+### UPDATE USER (PATCH /api/users/:name)
+### ========================================
+
+### 7. Caso de Éxito: Actualizar usuario
+PATCH http://localhost:3000/api/users/lucia
+Content-Type: application/json
+
+{
+  "avatarUrl": "https://example.com/mi_nuevo_avatar.png",
+  "email": "lucia_nuevo_correo@example.com"
+}
+
+### 8. Caso de Fallo: Actualizar sin campos válidos (400 Bad Request)
 PATCH http://localhost:3000/api/users/lucia
 Content-Type: application/json
 
 {
   "hola": "mundo"
 }
+
+### 9. Caso de Fallo: Actualizar usuario que no existe (404)
+PATCH http://localhost:3000/api/users/usuario_fantasma
+Content-Type: application/json
+
+{
+  "email": "fantasma@example.com"
+}
+
+### ========================================
+### DELETE USER (DELETE /api/users/:name)
+### ========================================
+
+### 10. Caso de Éxito: Eliminar usuario existente
+DELETE http://localhost:3000/api/users/lucia
+
+### 11. Caso de Fallo: Eliminar usuario que no existe (404)
+DELETE http://localhost:3000/api/users/lucia
