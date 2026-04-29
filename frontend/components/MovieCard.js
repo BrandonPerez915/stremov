@@ -15,7 +15,7 @@ movieCardSheet.replaceSync(`
   max-width: 200px;
   aspect-ratio: 2/3;
 
-  padding: 20px;
+  padding: 10px;
   border-radius: 20px;
 
   box-sizing: border-box;

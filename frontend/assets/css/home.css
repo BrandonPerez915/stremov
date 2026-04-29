@@ -9,10 +9,9 @@ body {
 
 #popular-movies-section,
 #most-rated-movies-section {
-  padding: 40px 50px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 #popular-movies-section h2,
@@ -24,12 +23,21 @@ body {
 
 .movie-list {
   display: flex;
-  gap: 20px;
   flex-wrap: nowrap;
   overflow-x: auto;
-  padding-bottom: 15px;
   scroll-behavior: smooth;
   overscroll-behavior-x: contain;
+  
+  /* Ocultar barra en Chrome, Safari y nuevas versiones de Edge */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Ocultar barra en Firefox */
+  scrollbar-width: none;
+
+  /* Ocultar barra en Internet Explorer y Edge antiguo */
+  -ms-overflow-style: none;
 }
 
 .movie-list::-webkit-scrollbar {
