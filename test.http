@@ -1,0 +1,23 @@
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "username": "lucia",
+  "email": "lucia@example.com",
+  "password": "lucia123",
+  "confirmPassword": "lucia123"
+}
+
+###
+GET http://localhost:3000/api/users/lucia
+
+###
+DELETE http://localhost:3000/api/users/lucia
+
+###
+PATCH http://localhost:3000/api/users/lucia
+Content-Type: application/json
+
+{
+  "hola": "mundo"
+}
