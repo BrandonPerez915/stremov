@@ -5,17 +5,20 @@ import List from "../models/List.js"
 
 import { StatusCodes } from "../config/constants.js"
 import { AppError } from "./errorController.js"
+import { getRandomColor } from "../utils/random.js"
 
 async function postUser(req, res, next) {
-  const { username, email, password } = req.body;
+  const { username, email, password, confirmPassword } = req.body;
 
   try {
     const listId = new mongoose.Types.ObjectId();
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=${getRandomColor()}&color=fff&size=128`;
     const user = await User.create({
-      username,
-      email,
-      password,
-      lists: [listId]
+      username: username,
+      email: email,
+      password: password,
+      lists: [listId],
+      avatarUrl: avatarUrl
     });
 
     const favoriteList = await List.create({
