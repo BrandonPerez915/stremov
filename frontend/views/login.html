@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CineList — Iniciar sesión</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     .app-name {
       font-weight: 800;
@@ -38,7 +45,8 @@
       --muted: #666;
     }
 
-    html, body {
+    html,
+    body {
       min-height: 100%;
       background: var(--bg);
       color: var(--text);
@@ -97,9 +105,17 @@
       margin-bottom: 32px;
     }
 
-    .form { display: flex; flex-direction: column; gap: 16px; }
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
 
-    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
 
     label {
       font-size: 11px;
@@ -121,8 +137,13 @@
       transition: border-color 0.2s;
     }
 
-    input::placeholder { color: #444; }
-    input:focus { border-color: var(--accent); }
+    input::placeholder {
+      color: #444;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+    }
 
     .field-row {
       display: flex;
@@ -151,8 +172,14 @@
       transition: filter 0.2s, transform 0.15s;
     }
 
-    .btn-submit:hover { filter: brightness(1.1); transform: translateY(-1px); }
-    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:active {
+      transform: scale(0.98);
+    }
 
     .divider {
       display: flex;
@@ -163,7 +190,8 @@
       margin: 4px 0;
     }
 
-    .divider::before, .divider::after {
+    .divider::before,
+    .divider::after {
       content: '';
       flex: 1;
       height: 1px;
@@ -184,17 +212,26 @@
     }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
+
 <body>
 
   <nav class="top-nav">
     <a href="landing.html" class="brand">
       <svg class="logo-icon" viewBox="0 -960 960 960">
-       <path d="M160-80q-33 0-56.5-23.5T80-160v-480q0-25 13.5-45t36.5-29l506-206 26 66-330 134h468q33 0 56.5 23.5T880-640v480q0 33-23.5 56.5T800-80H160Zm0-80h640v-280H160v280Zm231-69q29-29 29-71t-29-71q-29-29-71-29t-71 29q-29 29-29 71t29 71q29 29 71 29t71-29ZM160-520h480v-80h80v80h80v-120H160v120Zm0 360v-280 280Z"/>
+        <path
+          d="M160-80q-33 0-56.5-23.5T80-160v-480q0-25 13.5-45t36.5-29l506-206 26 66-330 134h468q33 0 56.5 23.5T880-640v480q0 33-23.5 56.5T800-80H160Zm0-80h640v-280H160v280Zm231-69q29-29 29-71t-29-71q-29-29-71-29t-71 29q-29 29-29 71t29 71q29 29 71 29t71-29ZM160-520h480v-80h80v80h80v-120H160v120Zm0 360v-280 280Z" />
       </svg>
       <h1 class="app-name">CineList</h1>
     </a>
@@ -209,17 +246,17 @@
       <div class="form">
         <div class="field">
           <label>Correo electrónico</label>
-          <input type="email" placeholder="correo@ejemplo.com" required = true>
+          <input type="email" placeholder="correo@ejemplo.com" required=true>
         </div>
         <div class="field">
           <div class="field-row">
             <label>Contraseña</label>
             <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
           </div>
-          <input type="password" placeholder="Tu contraseña" required = true>
+          <input type="password" placeholder="Tu contraseña" required=true>
         </div>
 
-        <button class="btn-submit" onclick="window.location.href='../views/home.html'">Iniciar sesión</button>
+        <button class="btn-submit" onclick="window.location.href='/'">Iniciar sesión</button>
 
         <div class="divider">o</div>
 
@@ -229,4 +266,5 @@
   </div>
 
 </body>
+
 </html>
