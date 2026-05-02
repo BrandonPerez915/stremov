@@ -1,31 +1,38 @@
 ### ========================================
-### CREATE USER (POST /api/users)
+### VARIABLES GLOBALES PARA PRUEBAS (Descomentar y asignar IDs de ser necesario)
+### ========================================
+@baseUrl = http://localhost:3000/api
+@movieId = 69f3dbd41fe9029b7d70ccec
+@userIdForList = 69f3d770ebfea9f16a06ee96
+
+### ========================================
+### 👤 USER CRUD (POST /api/users)
 ### ========================================
 
 ### 1. Caso de Éxito: Crear usuario válido
-POST http://localhost:3000/api/users
+POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-  "username": "lucia",
-  "email": "lucia@example.com",
+  "username": "lucia Perez",
+  "email": "luciaperez@example.com",
   "password": "password123",
   "confirmPassword": "password123"
 }
 
 ### 2. Caso de Fallo: Usuario duplicado (mismo username o email)
-POST http://localhost:3000/api/users
+POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-  "username": "lucia",
+  "username": "lucia Perez",
   "email": "nuevo@example.com",
   "password": "password123",
   "confirmPassword": "password123"
 }
 
 ### 3. Caso de Fallo: Contraseñas no coinciden (Error del middleware)
-POST http://localhost:3000/api/users
+POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
@@ -35,15 +42,15 @@ Content-Type: application/json
   "confirmPassword": "password321"
 }
 
-### 4. Caso de Fallo: Error de validación de Mongoose (username muy corto)
-POST http://localhost:3000/api/users
+### 4. Caso de Fallo: Error de validación de Mongoose (username muy corto o campos ausentes)
+POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
   "username": "a",
   "email": "corto@example.com",
-  "password": "password123",
-  "confirmPassword": "password123"
+  "password": "p",
+  "confirmPassword": "p"
 }
 
 ### ========================================
@@ -51,17 +58,17 @@ Content-Type: application/json
 ### ========================================
 
 ### 5. Caso de Éxito: Obtener usuario existente
-GET http://localhost:3000/api/users/lucia
+GET {{baseUrl}}/users/lucia
 
 ### 6. Caso de Fallo: Obtener usuario que no existe (404)
-GET http://localhost:3000/api/users/usuario_fantasma
+GET {{baseUrl}}/users/usuario_fantasma
 
 ### ========================================
 ### UPDATE USER (PATCH /api/users/:name)
 ### ========================================
 
 ### 7. Caso de Éxito: Actualizar usuario
-PATCH http://localhost:3000/api/users/lucia
+PATCH {{baseUrl}}/users/lucia%20Perez
 Content-Type: application/json
 
 {
@@ -70,7 +77,7 @@ Content-Type: application/json
 }
 
 ### 8. Caso de Fallo: Actualizar sin campos válidos (400 Bad Request)
-PATCH http://localhost:3000/api/users/lucia
+PATCH {{baseUrl}}/users/lucia%20Perez
 Content-Type: application/json
 
 {
@@ -78,7 +85,7 @@ Content-Type: application/json
 }
 
 ### 9. Caso de Fallo: Actualizar usuario que no existe (404)
-PATCH http://localhost:3000/api/users/usuario_fantasma
+PATCH {{baseUrl}}/users/usuario_fantasma
 Content-Type: application/json
 
 {
@@ -90,7 +97,145 @@ Content-Type: application/json
 ### ========================================
 
 ### 10. Caso de Éxito: Eliminar usuario existente
-DELETE http://localhost:3000/api/users/lucia
+DELETE {{baseUrl}}/users/lucia%20Perez
 
 ### 11. Caso de Fallo: Eliminar usuario que no existe (404)
-DELETE http://localhost:3000/api/users/lucia
+DELETE {{baseUrl}}/users/lucia%20Perez
+
+
+### ========================================
+### 🎬 MOVIE CRUD (/api/movies)
+### ========================================
+
+### 12. Caso de Éxito: Obtener todas las películas
+GET {{baseUrl}}/movies
+
+### 13. Caso de Éxito: Crear película válida
+POST {{baseUrl}}/movies
+Content-Type: application/json
+
+{
+  "title": "Inception",
+  "releaseYear": 2010,
+  "genre": "Ciencia Ficción",
+  "director": "Christopher Nolan"
+}
+
+### 14. Caso de Fallo: Crear película con año inválido (Año menor a 1888)
+POST {{baseUrl}}/movies
+Content-Type: application/json
+
+{
+  "title": "Película Antigua",
+  "releaseYear": 1000,
+  "genre": "Historia",
+  "director": "Alguien"
+}
+
+### 15. Caso de Fallo: Crear película faltan campos requeridos
+POST {{baseUrl}}/movies
+Content-Type: application/json
+
+{
+  "title": "Falta género y director",
+  "releaseYear": 2026
+}
+
+### 16. Caso de Éxito: Obtener película existente por ID (Cambiar por un ID real)
+GET {{baseUrl}}/movies/{{movieId}}
+
+### 17. Caso de Fallo: Obtener película con formato de ID inválido (Cast Error)
+GET {{baseUrl}}/movies/id_invalido
+
+### 18. Caso de Fallo: Obtener película con ID que no existe (404)
+GET {{baseUrl}}/movies/64d9f1e1a5f6e80b2a95cbb9
+
+### 19. Caso de Éxito: Actualizar película (Cambiar por un ID real)
+PATCH {{baseUrl}}/movies/{{movieId}}
+Content-Type: application/json
+
+{
+  "releaseYear": 2011,
+  "posterUrl": "https://example.com/poster.jpg"
+}
+
+### 20. Caso de Fallo: Actualizar película sin campos validos
+PATCH {{baseUrl}}/movies/{{movieId}}
+Content-Type: application/json
+
+{
+  "campoInvalido": "No hace nada"
+}
+
+### 21. Caso de Éxito: Eliminar película existente (Cambiar por un ID real)
+DELETE {{baseUrl}}/movies/{{movieId}}
+
+### 22. Caso de Fallo: Eliminar película que no existe (404)
+DELETE {{baseUrl}}/movies/{{movieId}}
+
+
+### ========================================
+### 📋 LIST CRUD (/api/lists)
+### (Asume User-Id real suministrado en los Headers de peticiones)
+### ========================================
+
+### 23. Caso de Éxito: Crear lista válida para un usuario existente
+POST {{baseUrl}}/lists
+Content-Type: application/json
+user-id: {{userIdForList}}
+
+{
+  "name": "Películas para el fin de semana"
+}
+
+### 24. Caso de Fallo: Crear lista fallida (usuario no existe en DB o ID inválido)
+POST {{baseUrl}}/lists
+Content-Type: application/json
+user-id: 64d9f1e1a5f6e80b2a95cbb0
+
+{
+  "name": "Lista Fantasma"
+}
+
+### 25. Caso de Fallo: Crear lista sin proporcionar nombre
+POST {{baseUrl}}/lists
+Content-Type: application/json
+user-id: {{userIdForList}}
+
+{
+}
+
+### 26. Caso de Éxito: Obtener lista existente
+GET {{baseUrl}}/lists/Películas%20para%20el%20fin%20de%20semana
+user-id: {{userIdForList}}
+
+### 27. Caso de Fallo: Obtener lista que no existe (404)
+GET {{baseUrl}}/lists/Lista%20Inexistente
+user-id: {{userIdForList}}
+
+### 28. Caso de Éxito: Actualizar lista (Agregar/modificar nombre o películas)
+PATCH {{baseUrl}}/lists/Películas%20para%20el%20fin%20de%20semana
+Content-Type: application/json
+user-id: {{userIdForList}}
+
+{
+  "name": "Maratón de CineDomingo",
+  "movies": ["{{movieId}}"]
+}
+
+### 29. Caso de Fallo: Actualizar lista sin ningún campo válido (400)
+PATCH {{baseUrl}}/lists/Películas%20para%20el%20fin%20de%20semana
+Content-Type: application/json
+user-id: {{userIdForList}}
+
+{
+  "invalidField": "esto no existe en List Model"
+}
+
+### 30. Caso de Éxito: Eliminar lista
+DELETE {{baseUrl}}/lists/Maratón%20de%20CineDomingo
+user-id: {{userIdForList}}
+
+### 31. Caso de Fallo: Eliminar lista que no existe (404)
+DELETE {{baseUrl}}/lists/Maratón%20de%20CineDomingo
+user-id: {{userIdForList}}
