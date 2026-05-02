@@ -9,4 +9,6 @@ const StatusCodes = {
   INTERNAL_SERVER_ERROR: 500,
 }
 
-export { StatusCodes }
+const colors = ["f44336", "9c27b0", "00bcd4", "4caf50", "ff9800"];
+
+export { StatusCodes, colors }
