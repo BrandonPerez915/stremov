@@ -1,5 +1,5 @@
-# CineList
-CineList es una aplicación full-stack de seguimiento de cine inspirada en Letterboxd. Califica, reseña y gestiona tu lista de películas. Desarrollada con Vanilla JS, Bootstrap y Node.js. 🎬🍿
+# stremov
+stremov es una aplicación full-stack de seguimiento de cine inspirada en Letterboxd. Califica, reseña y gestiona tu lista de películas. Desarrollada con Vanilla JS, Bootstrap y Node.js. 🎬🍿
 
 ## 📂 Estructura del Proyecto
 
