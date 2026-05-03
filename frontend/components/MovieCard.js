@@ -1,117 +1,236 @@
 const movieCardSheet = new CSSStyleSheet();
 
 movieCardSheet.replaceSync(`
-:host {
-  display: inline-block;
-  font-family: 'Inter', sans-serif;
-  margin: 10px;
-}
+  :host {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    flex: 1;
+    min-width: 170px;
+    max-width: 350px;
+  }
 
-.movie-card {
-  color: #ffffff;
+  .icon {
+    color: var(--text-primary);
+    font-family: 'Material Symbols Outlined';
+    font-variation-settings:
+      'FILL' 0,
+      'wght' 200,
+      'GRAD' 0,
+      'opsz' 24
+  }
 
-  width: 100%;
-  min-width: 100px;
-  max-width: 200px;
-  aspect-ratio: 2/3;
+  .movie-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+  }
 
-  padding: 10px;
-  border-radius: 20px;
+  .card-bg {
+    aspect-ratio: 260 / 320;
+    width: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
 
-  box-sizing: border-box;
-  cursor: pointer;
+  .favorite-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: none;
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
 
-  transition: transform 0.2s ease;
-}
+  .favorite-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 
-.poster-container {
-  width: 100%;
-  aspect-ratio: 2 / 3;
+  #favorite-icon {
+    color: white;
+    font-size: 25px;
+    transition: color 0.3s ease;
+  }
 
-  position: relative;
-  overflow: hidden;
+  .favorite-btn:hover #favorite-icon {
+    color: var(--red-100);
+  }
 
-  border-radius: 15px;
-  margin-bottom: 15px;
-  border: 2px solid transparent;
+  .add-to-list-btn {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: none;
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
 
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
+  .add-to-list-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 
-.poster-container::after {
-  content: '';
-  position: absolute;
-  pointer-events: none;
+  #add-to-list-icon {
+    color: white;
+    font-size: 25px;
+    transition: color 0.3s ease;
+  }
 
-  inset: 0;
-  opacity: 0;
-  z-index: 2;
+  .add-to-list-btn:hover #add-to-list-icon {
+    color: var(--primary-color);
+  }
 
-  box-shadow: inset 0 -80px 50px -20px rgba(0, 0, 0, 0.9);
-  transition: opacity 0.3s ease;
-}
+  .card-content {
+    position: absolute;
+    display: flex;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 2;
 
-#poster {
-  width: 100%;
-  height: 100%;
+    padding: 12px;
+    box-sizing: border-box;
 
-  z-index: 1;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
+    border-left: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 
-  object-fit: cover;
-  display: block;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 
-  transition: transform 0.4s ease;
-}
+  .card-content-header {
+    width: 65%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 
-.movie-details {
-  padding: 0 4px;
-}
+  .card-title {
+    width: 100%;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 
-#movie-title {
-  font-weight: 700;
-  font-size: 24px;
-  letter-spacing: -0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-  margin: 0 0 6px 0;
+  .card-subtitle {
+    width: 100%;
+    height: 14px;
+    margin: 0;
+    font-size: 0.6rem;
+    font-weight: 300;
+    letter-spacing: 0.3px;
 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.metadata {
-  display: flex;
-  align-items: center;
-  font-size: 16px;
-  font-weight: 500;
-  color: #a0a0a0;
-}
+  .card-rating {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
 
-.star-icon {
-  width: 18px;
-  height: 18px;
-  fill: #00d2ff;
-  margin-right: 8px;
-}
+  .star-icon {
+    font-size: 25px;
+    color: var(--yellow-100);
+  }
 
-.separator {
-  margin: 0 8px;
-  font-size: 18px;
-  color: #444;
-}
+  .card-tags {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
 
-.movie-card:hover .poster-container {
-  border-color: #00d2ff;
-  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.3);
-}
+  .tag {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
 
-.movie-card:hover .poster-container::after {
-  opacity: 1;
-}
+  @media (max-width: 750px) {
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
 
-.movie-card:hover #poster {
-  transform: scale(1.1);
-}
+    .card-rating {
+      font-size: 0.8rem;
+      font-weight: 400;
+    }
+
+    .card-content {
+      padding: 12px;
+    }
+
+    .tag {
+      font-size: 0.6rem;
+      padding: 4px 12px;
+    }
+  }
+
+  @media (max-width: 1000px) {
+    .star-icon {
+      font-size: 20px;
+    }
+
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .card-rating {
+      font-size: 0.8rem;
+      font-weight: 400;
+    }
+  }
 `);
 
 class MovieCard extends HTMLElement {
@@ -119,61 +238,156 @@ class MovieCard extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.adoptedStyleSheets = [movieCardSheet];
-    this._render();
+
+    this._mainTitle = 'Untitled';
+    this._remainingTitle = '';
+    this._matchedGenres = [];
+
+    this._isRendered = false;
   }
 
   static get observedAttributes() {
-    return ['title', 'rating', 'year', 'poster'];
+    return ['poster', 'title', 'rating', 'genres'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (oldValue !== newValue) {
-      this._updateContent();
+    if (oldValue === newValue) return;
+
+    if (name === 'title') {
+      const { mainTitle, remainingTitle } = this._getTitleParts(newValue || '');
+      this._mainTitle = mainTitle;
+      this._remainingTitle = remainingTitle;
+    }
+
+    if (name === 'genres') {
+      this._matchedGenres = this._matchGenres(newValue || '');
+    }
+
+    if (this._isRendered) {
+      this._updateDOM(name, newValue);
     }
   }
 
-  _updateContent() {
-    const poster = this.getAttribute('poster') || '';
-    const title = this.getAttribute('title') || 'Untitled';
-    const rating = this.getAttribute('rating') || '0.0';
-    const year = this.getAttribute('year') || '----';
+  connectedCallback() {
+    if (!this._isRendered) {
+      this._render();
+      this._isRendered = true;
+    }
+  }
 
-    const posterElement = this.shadowRoot.getElementById('poster');
-    const titleElement = this.shadowRoot.getElementById('movie-title');
-    const ratingElement = this.shadowRoot.getElementById('movie-rating');
-    const yearElement = this.shadowRoot.getElementById('movie-year');
+_getTitleParts(rawTitle) {
+    if (!rawTitle) return { mainTitle: 'Untitled', remainingTitle: '' };
 
-    if (posterElement) posterElement.src = poster;
-    if (titleElement) titleElement.textContent = title;
-    if (ratingElement) ratingElement.textContent = rating;
-    if (yearElement) yearElement.textContent = year;
+    let cleanTitle = rawTitle.trim();
+
+    // Eliminar patrones iniciales ("The", "A", "An")
+    cleanTitle = cleanTitle.replace(/^(The|A|An)\s+/i, '');
+
+    // Buscar delimitadores explícitos (dos puntos o guiones)
+    const regex = /[:\-]/;
+
+    if (regex.test(cleanTitle)) {
+      const partes = cleanTitle.split(regex);
+      return {
+        mainTitle: partes[0].trim(),
+        remainingTitle: partes.slice(1).join(':').trim()
+      };
+    }
+
+    // Si el texto viene plano como "avengers endgame", separamos la última palabra.
+    const palabras = cleanTitle.split(' ');
+
+    if (palabras.length > 1) {
+      const remainingTitle = palabras.pop();
+      const mainTitle = palabras.join(' ');
+
+      return {
+        mainTitle,
+        remainingTitle
+      };
+    }
+
+    // Si es solo una palabra (Ej: "Inception")
+    return {
+      mainTitle: cleanTitle,
+      remainingTitle: ''
+    };
+  }
+
+  _matchGenres(genresStr) {
+    if (!genresStr || genresStr.trim() === '') return [];
+    return genresStr.split(',').map(genre => {
+      switch (parseInt(genre.trim())) {
+        case 28: return 'Action';
+        case 12: return 'Adventure';
+        case 16: return 'Animation';
+        case 35: return 'Comedy';
+        case 80: return 'Crime';
+        case 99: return 'Documentary';
+        case 18: return 'Drama';
+        case 10751: return 'Family';
+        case 14: return 'Fantasy';
+        case 36: return 'History';
+        case 27: return 'Horror';
+        case 10402: return 'Music';
+        case 9648: return 'Mystery';
+        case 10749: return 'Romance';
+        case 878: return 'Science Fiction';
+        case 10770: return 'TV Movie';
+        case 53: return 'Thriller';
+        case 10752: return 'War';
+        case 37: return 'Western';
+        default: return '';
+      }
+    }).filter(Boolean);
+  }
+
+  _updateDOM(name, newValue) {
+    if (name === 'title') {
+      this.shadowRoot.querySelector('.card-title').textContent = this._mainTitle;
+      this.shadowRoot.querySelector('.card-subtitle').textContent = this._remainingTitle;
+    } else if (name === 'poster') {
+      this.shadowRoot.querySelector('.card-bg').src = newValue || '';
+    } else if (name === 'rating') {
+      this.shadowRoot.querySelector('.card-rating span:first-child').textContent = newValue || '0.0';
+    } else if (name === 'genres') {
+      this.shadowRoot.querySelector('.card-tags').innerHTML =
+        this._matchedGenres.map((genre) => `<span class="tag">${genre}</span>`).join('');
+    }
   }
 
   _render() {
+    const poster = this.getAttribute('poster') || '';
+    const rating = this.getAttribute('rating') || '0.0';
+
     this.shadowRoot.innerHTML = `
       <div class="movie-card">
-        <div class="poster-container">
-          <img id="poster" alt="Movie Poster" />
-        </div>
-        <div class="movie-details">
-          <h3 id="movie-title"></h3>
-          <div class="metadata">
-            <svg class="star-icon" viewBox="0 0 24 24">
-              <path d="M12 1.74l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.27L12 1.74z"/>
-            </svg>
-            <span id="movie-rating"></span>
-            <span class="separator">&bull;</span>
-            <span id="movie-year"></span>
-          </div>
-        </div>
+        <img class="card-bg" src="${poster}" alt="Poster of ${this._mainTitle}">
+        <button class="favorite-btn">
+          <span class="icon" id="favorite-icon">favorite</span>
+        </button>
+        <button class="add-to-list-btn">
+          <span class="icon" id="add-to-list-icon">bookmark</span>
+        </button>
+        <section class="card-content">
+          <header class="card-content-header">
+            <h2 class="card-title">${this._mainTitle}</h2>
+            <h4 class="card-subtitle">${this._remainingTitle}</h4>
+            <div class="card-rating">
+              <span>${rating}</span>
+              <span class="icon star-icon">star</span>
+            </div>
+          </header>
+          <footer class="card-tags">
+            ${this._matchedGenres.map((genre) => `<span class="tag">${genre}</span>`).join('')}
+          </footer>
+        </section>
       </div>
     `;
 
     this.shadowRoot.querySelector('.movie-card')?.addEventListener('click', () => {
-      window.location.href = `/frontend/views/movie.html?id=${this.dataset.imdbId}`;
+      window.location.href = `/frontend/views/movie.html?id=${this.dataset.imdbId || ''}`;
     });
-
-    this._updateContent();
   }
 }
 
