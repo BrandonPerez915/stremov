@@ -1,54 +1,192 @@
+@import './global.css';
+
 body {
-  font-family: 'Inter', sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #0b0b0b;
-  color: white;
+  background-color: var(--bg-color);
+  height: 100dvh;
+  width: 100dvw;
   overflow-x: hidden;
+  padding-left: 260px;
+  padding-top: 90px;
 }
 
-#popular-movies-section,
-#most-rated-movies-section {
-  padding: 20px;
+custom-header {
+  width: calc(100% - 260px);
+  background-color: var(--bg-color);
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 900;
+}
+
+custom-sidebar {
+  width: 260px;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  animation: slide-in 0.3s ease-out both;
+  z-index: 1000;
+}
+
+h1 {
+  color: var(--text-primary);
+  font-size: 24px;
+  padding-left: 30px;
+}
+
+.backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.backdrop.hidden {
+  display: none !important;
+}
+
+custom-sidebar.open { animation: slide-in 0.3s ease-out both; }
+custom-sidebar.closed { animation: slide-out 0.3s ease-out both; }
+
+.carousel-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--borders-color);
+}
+
+.movie-row {
+  width: 100%;
+  padding: 30px 70px 50px 70px;
   display: flex;
-  flex-direction: column;
-}
-
-#popular-movies-section h2,
-#most-rated-movies-section h2 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.movie-list {
-  display: flex;
-  flex-wrap: nowrap;
+  gap: 50px;
   overflow-x: auto;
   scroll-behavior: smooth;
-  overscroll-behavior-x: contain;
-  
-  /* Ocultar barra en Chrome, Safari y nuevas versiones de Edge */
-  &::-webkit-scrollbar {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  scroll-padding: 0 70px;
+}
+
+.movie-row::-webkit-scrollbar {
+  display: none;
+}
+
+.movie-row movie-card {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+
+  /* Por defecto en móviles muy pequeños (1 película por vista) */
+  width: 100%;
+}
+
+/* Teléfonos grandes / Tablets pequeñas (2 películas exactas) */
+@media (min-width: 530px) {
+  .movie-row movie-card {
+    /* 100% menos 1 gap (50px) dividido entre 2 */
+    width: calc((100% - 50px) / 2);
+  }
+}
+
+/* Tablets (3 películas exactas) */
+@media (min-width: 1010px) {
+  .movie-row movie-card {
+    /* 100% menos 2 gaps (100px) dividido entre 3 */
+    width: calc((100% - 100px) / 3);
+  }
+}
+
+/* Laptops / Desktop (4 películas exactas) */
+@media (min-width: 1230px) {
+  .movie-row movie-card {
+    /* 100% menos 3 gaps (150px) dividido entre 4 */
+    width: calc((100% - 150px) / 4);
+  }
+}
+
+/* Monitores grandes (5 películas exactas) */
+@media (min-width: 1450px) {
+  .movie-row movie-card {
+    /* 100% menos 4 gaps (200px) dividido entre 5 */
+    width: calc((100% - 200px) / 5);
+  }
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: rgba(205, 205, 205, 0.1);
+  color: white;
+  border: 1px solid var(--bg-color);
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease-in-out;
+}
+
+.carousel-btn:hover {
+  background: var(--primary-color);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-btn:hover > .icon {
+  color: white;
+}
+
+.carousel-btn.left {
+  left: 15px;
+}
+
+.carousel-btn.right {
+  right: 15px;
+}
+
+.left-arrow-icon, .right-arrow-icon {
+  font-size: 38px;
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .carousel-btn {
     display: none;
   }
-
-  /* Ocultar barra en Firefox */
-  scrollbar-width: none;
-
-  /* Ocultar barra en Internet Explorer y Edge antiguo */
-  -ms-overflow-style: none;
 }
 
-.movie-list::-webkit-scrollbar {
-  height: 6px;
+@media (max-width: 900px) {
+  body {
+    padding: 80px 0;
+  }
+
+  custom-header {
+    width: 100%;
+  }
+
+  custom-sidebar {
+    animation: slide-out 0.3s ease-out both;
+  }
+
+  .backdrop {
+    display: block;
+  }
 }
 
-.movie-list::-webkit-scrollbar-thumb {
-  background: rgba(67, 232, 255, 0.2);
-  border-radius: 10px;
+@keyframes slide-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }
 
-movie-card {
-  flex: 0 0 auto;
+@keyframes slide-out {
+  to { transform: translateX(-100%); }
 }
