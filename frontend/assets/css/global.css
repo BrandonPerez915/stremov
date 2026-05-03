@@ -1,0 +1,63 @@
+:root {
+  --blue-100: rgb(62, 94, 255);
+  --blue-75: rgba(62, 94, 255, 0.75);
+  --blue-50: rgba(62, 94, 255, 0.5);
+
+  --yellow-100: rgb(233, 178, 0);
+  --yellow-75: rgba(233, 178, 0, 0.75);
+  --yellow-50: rgba(233, 178, 0, 0.5);
+
+  --red-100: rgb(201, 42, 42);
+  --red-75: rgba(201, 42, 42, 0.75);
+  --red-50: rgba(201, 42, 42, 0.5);
+
+  --green-100: rgb(34, 197, 94);
+  --green-75: rgba(34, 197, 94, 0.75);
+  --green-50: rgba(34, 197, 94, 0.5);
+
+  --borders-color: #333;
+  --text-secondary: #888;
+}
+
+[data-theme='light'] {
+  --bg-color: #f0f0f0;
+  --text-primary: #333;
+}
+
+[data-theme='dark'] {
+  --bg-color: #212121;
+  --text-primary: #eee;
+}
+
+[primary-color='blue'] {
+  --primary-color: var(--blue-100);
+}
+
+[primary-color='yellow'] {
+  --primary-color: var(--yellow-100);
+}
+
+[primary-color='red'] {
+  --primary-color: var(--red-100);
+}
+
+[primary-color='green'] {
+  --primary-color: var(--green-100);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.icon {
+  color: var(--text-primary);
+  font-family: 'Material Symbols Outlined';
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 200,
+    'GRAD' 0,
+    'opsz' 24
+}
