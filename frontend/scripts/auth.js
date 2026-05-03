@@ -1,5 +1,78 @@
+class AppError extends Error {
+  constructor(message, statusCode, name, cause = null) {
+    super(message);
+    this.statusCode = statusCode;
+    this.name = name || this.constructor.name;
+    this.cause = cause;
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor);
+    }
+  }
+}
+
+async function registerUser(username, email, password) {
+  const payload = {
+    username,
+    email,
+    password
+  };
+  const response = await fetch('/api/users', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new AppError(errorData.message || 'Failed to register user', response.status, 'RegisterUserError', errorData.cause);
+  }
+
+  const data = await response.json();
+  return data;
+}
+
+async function loginUser(username, password) {
+  const payload = {
+    username,
+    password
+  };
+
+  const response = await fetch('/api/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new AppError(errorData.message || 'Failed to login user', response.status, 'LoginUserError', errorData.cause);
+  }
+
+  const data = await response.json();
+
+  localStorage.setItem('jwtToken', data.token);
+
+  window.toast({
+    type: 'success',
+    title: `Welcome ${username}!`,
+    message: 'Redirecting to home page...',
+    duration: 1000
+  });
+
+  setTimeout(() => {
+    window.location.href = '/home';
+  }, 1000);
+}
+
 const registerForm = document.getElementById('register-form');
+const registerSection = document.getElementById('register-section');
 const loginForm = document.getElementById('login-form');
+const loginSection = document.getElementById('login-section');
 
 function validateForm(form, hasToConfirmPassword=false) {
   let formIsValid = true;
@@ -34,7 +107,7 @@ function validateForm(form, hasToConfirmPassword=false) {
   return formIsValid;
 }
 
-loginForm.addEventListener('submit', (e) => {
+loginForm.addEventListener('submit',  async (e) => {
   e.preventDefault();
   const formIsValid = validateForm(loginForm);
 
@@ -48,16 +121,26 @@ loginForm.addEventListener('submit', (e) => {
     return
   }
 
-  // TODO: implementar lógica de login (API, localStorage, etc)
-  window.toast({
-    type: 'success',
-    title: 'Login Successful',
-    message: 'Welcome back!',
-    duration: 3000
-  });
+  const usernameInput = e.target.querySelector('custom-input[name="username"]');
+  const passwordInput = e.target.querySelector('custom-input[name="password"]');
+  const payload = {
+    username: usernameInput.value || '',
+    password: passwordInput.value || ''
+  };
+
+  try {
+    await loginUser(payload.username, payload.password);
+  } catch (error) {
+    window.toast({
+      type: 'error',
+      title: 'Login Error',
+      message: error.message,
+      duration: 3000
+    });
+  }
 });
 
-registerForm.addEventListener('submit', (e) => {
+registerForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const formIsValid = validateForm(registerForm, true);
 
@@ -71,11 +154,51 @@ registerForm.addEventListener('submit', (e) => {
     return
   }
 
-  // TODO: implementar lógica de registro (API, localStorage, etc)
-  window.toast({
-    type: 'success',
-    title: 'Registration Successful',
-    message: 'Your account has been created!',
-    duration: 3000
-  });
+  const usernameInput = e.target.querySelector('custom-input[name="username"]');
+  const emailInput = e.target.querySelector('custom-input[name="email"]');
+  const passwordInput = e.target.querySelector('custom-input[name="password"]');
+  const confirmPasswordInput = e.target.querySelector('custom-input[name="confirm-password"]');
+  const payload = {
+    username: usernameInput.value || '',
+    email: emailInput.value || '',
+    password: passwordInput.value || ''
+  };
+
+  try {
+    await registerUser(payload.username, payload.email, payload.password);
+
+    usernameInput.value = '';
+    emailInput.value = '';
+    passwordInput.value = '';
+    confirmPasswordInput.value = '';
+    registerSection.classList.toggle('hidden');
+    loginSection.classList.toggle('hidden');
+
+    window.toast({
+      type: 'success',
+      title: 'Registration Successful',
+      message: 'Your account has been created! You can now log in.',
+      duration: 3000
+    });
+
+  } catch (error) {
+    if (error.statusCode === 409) {
+      const cause = error.cause || {};
+      if (cause.field === 'username') {
+        const nameInput = registerForm.querySelector('custom-input[name="username"]');
+        nameInput.showError('This username already exists');
+      } else if (cause.field === 'email') {
+        const emailInput = registerForm.querySelector('custom-input[name="email"]');
+        emailInput.showError('This email already exists');
+      }
+      return;
+    }
+
+    window.toast({
+      type: 'error',
+      title: 'Registration Error',
+      message: error.message,
+      duration: 3000
+    });
+  }
 })
