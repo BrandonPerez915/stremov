@@ -1,10 +1,11 @@
 import { StatusCodes } from "../config/constants.js";
 
 class AppError extends Error {
-  constructor(message, statusCode, name) {
+  constructor(message, statusCode, name, cause = null) {
     super(message);
     this.statusCode = statusCode;
     this.name = name || this.constructor.name;
+    this.cause = cause;
     Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -13,7 +14,7 @@ const handleDuplicateKeyError = (error) => {
   const field = Object.keys(error.keyValue)[0];
   const value = error.keyValue[field];
   const message = `El valor '${value}' para el campo '${field}' ya existe. Por favor, elige otro ${field} o inicia sesión.`;
-  return new AppError(message, StatusCodes.CONFLICT, 'DuplicateKeyError');
+  return new AppError(message, StatusCodes.CONFLICT, 'DuplicateKeyError', { field, value });
 }
 
 const handleValidationError = (error) => {
