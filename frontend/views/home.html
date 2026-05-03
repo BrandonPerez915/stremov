@@ -1,60 +1,155 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark" primary-color="blue">
+
 <head>
   <link rel="stylesheet" href="../assets/css/home.css">
-  <script src="/components/Navbar.js"></script>
-  <script src="/components/MovieHero.js"></script>
-  <script src="/components/MovieCard.js"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - stremov</title>
+  <!-- Fuente Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,250,0,0" />
+  <!-- Componentes -->
+  <script src="../components/CustomInput.js" defer></script>
+  <script src="../components/SidebarUser.js" defer></script>
+  <script src="../components/SidebarItem.js" defer></script>
+  <script src="../components/CustomHeader.js" defer></script>
+  <script src="../components/CustomSidebar.js" defer></script>
+  <script src="../components/MovieCard.js"></script>
+  <script src="../components/HeroBanner.js" defer></script>
 </head>
 
-<body style="padding: 0; margin: 0">
-  <cine-navbar user-name="Juan" `
-    user-avatar="https://i.pinimg.com/736x/29/c7/74/29c774e75daecdf5d3360bf9707272bb.jpg"></cine-navbar>
+<body>
+  <div class="backdrop hidden"></div>
+  <custom-header
+  placeholder="Search something..."
+  img-src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&auto=format&fit=crop"
+  on-search="console.log('Buscando:', searchTerm)"
+  has-notifications></custom-header>
+  <custom-sidebar
+  following-users-info='[
+    {"name": "Brandon Perez", "imgSrc": "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D", "verified": true},
+    {"name": "Alex Juarez", "imgSrc": "https://images.unsplash.com/photo-1654110455429-cf322b40a906?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D", "verified": false},
+      {"name": "Carla Torres", "imgSrc": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&auto=format&fit=crop", "verified": true}
+    ]'></custom-sidebar>
 
-  <movie-hero title="Proyecto Hail Mary" year="2024" rating="4.7"
-    background="https://imgs.search.brave.com/P_5sqBZ8iASldcADDWAu8OOLMwgEaQU1hgCT9xKSD3s/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9tZWRp/YS50aGVtb3ZpZWRi/Lm9yZy90L3AvdzUz/M19hbmRfaDMwMF9m/YWNlLzhUZnlzM21E/WlZwNHROb0gya3Rt/MDZhMFRhdS5qcGc"
-    badge="Pelicula del dia">
-  </movie-hero>
+    <!-- Hero Banner (Project Hail Mary) -->
+    <hero-banner
+      title="Project Hail Mary"
+      rating="8.6"
+      badge-text="TRENDING"
+      images="https://wallpapercave.com/wp/wp16284846.webp, https://wallpapercave.com/wp/wp16284849.webp, https://wallpapercave.com/wp/wp16284854.webp, https://wallpapercave.com/wp/wp16284872.webp">
+    </hero-banner>
 
-  <section id="popular-movies-section">
-    <h2>Populares</h2>
-    <div class="movie-list"></div>
-  </section>
+    <!-- Carrouseles de películas y series -->
+    <div class="carousel-wrapper">
+      <h1>Most Popular Series</h1>
+      <button class="carousel-btn left" id="most-popular-series-btn-left">
+        <span class="icon left-arrow-icon">chevron_left</span>
+      </button>
 
-  <section id="most-rated-movies-section">
-    <h2>Mejor Calificadas</h2>
-    <div class="movie-list"></div>
-  </section>
+      <div class="movie-row" id="most-popular-series-list"></div>
 
-  <script>
-    const movieList = document.querySelector('#popular-movies-section .movie-list');
-    const mostRatedList = document.querySelector('#most-rated-movies-section .movie-list');
+      <button class="carousel-btn right" id="most-popular-series-btn-right">
+        <span class="icon right-arrow-icon">chevron_right</span>
+      </button>
+    </div>
 
-    async function loadMovies() {
-      try {
-        const response = await fetch('../mocks/response.json');
-        const data = await response.json();
+    <div class="carousel-wrapper">
+      <h1>Most Popular Movies</h1>
+      <button class="carousel-btn left" id="most-popular-movies-btn-left">
+        <span class="icon left-arrow-icon">chevron_left</span>
+      </button>
 
-        data.Search.forEach(movie => {
-          const movieCard = document.createElement('movie-card');
-          movieCard.setAttribute('title', movie.Title);
-          movieCard.setAttribute('year', movie.Year);
-          movieCard.setAttribute('poster', movie.Poster);
-          mostRatedList.appendChild(movieCard);
-          movieList.appendChild(movieCard);
-        });
+      <div class="movie-row" id="most-popular-movies-list"></div>
 
-        data.Search.forEach(movie => {
-          const movieCard = document.createElement('movie-card');
-          movieCard.setAttribute('title', movie.Title);
-          movieCard.setAttribute('year', movie.Year);
-          movieCard.setAttribute('poster', movie.Poster);
-          mostRatedList.appendChild(movieCard);
-        });
+      <button class="carousel-btn right" id="most-popular-movies-btn-right">
+        <span class="icon right-arrow-icon">chevron_right</span>
+      </button>
+    </div>
 
-      } catch (error) {
-        console.error("Error cargando el JSON:", error);
+    <script>
+      const mostPopularList = document.getElementById('most-popular-movies-list');
+      const mostPopularSeriesList = document.getElementById('most-popular-series-list');
+      const mostPopularMoviesBtnLeft = document.getElementById('most-popular-movies-btn-left');
+      const mostPopularMoviesBtnRight = document.getElementById('most-popular-movies-btn-right');
+      const mostPopularSeriesBtnLeft = document.getElementById('most-popular-series-btn-left');
+      const mostPopularSeriesBtnRight = document.getElementById('most-popular-series-btn-right');
+
+      // Lógica para los botones de scroll
+      mostPopularMoviesBtnLeft.addEventListener('click', () => {
+        // Desplaza hacia la izquierda el equivalente a un par de tarjetas
+        mostPopularList.scrollBy({ left: -100, behavior: 'smooth' });
+      });
+
+      mostPopularMoviesBtnRight.addEventListener('click', () => {
+        // Desplaza hacia la derecha
+        mostPopularList.scrollBy({ left: 100, behavior: 'smooth' });
+      });
+
+      mostPopularSeriesBtnLeft.addEventListener('click', () => {
+        mostPopularSeriesList.scrollBy({ left: -100, behavior: 'smooth' });
+      });
+
+      mostPopularSeriesBtnRight.addEventListener('click', () => {
+        mostPopularSeriesList.scrollBy({ left: 100, behavior: 'smooth' });
+      });
+
+      async function loadMovies(url, element) {
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+
+          data.results.forEach(movie => {
+            const movieCard = document.createElement('movie-card');
+            movieCard.setAttribute('title', movie.title);
+            movieCard.setAttribute('poster', `https://image.tmdb.org/t/p/w500${movie.poster_path}`);
+            movieCard.setAttribute('rating', Math.round(movie.vote_average * 10) / 10);
+            if (movie.genre_ids.length > 1) {
+              movieCard.setAttribute('genres', `${movie.genre_ids[0]}, ${movie.genre_ids[1]}`);
+            } else if (movie.genre_ids.length === 1) {
+              movieCard.setAttribute('genres', `${movie.genre_ids[0]}`);
+            } else {
+              movieCard.setAttribute('genres', 'Unknown');
+            }
+            element.appendChild(movieCard);
+          });
+
+        } catch (error) {
+          console.error("Error cargando el JSON:", error);
+        }
       }
-    }
 
-    loadMovies();
-  </script>
-</body>
+      async function loadSeries(url, element) {
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+
+          data.results.forEach(series => {
+            const seriesCard = document.createElement('movie-card');
+            seriesCard.setAttribute('title', series.name);
+            seriesCard.setAttribute('poster', `https://image.tmdb.org/t/p/w500${series.poster_path}`);
+            seriesCard.setAttribute('rating', Math.round(series.vote_average * 10) / 10);
+            if (series.genre_ids.length > 1) {
+              seriesCard.setAttribute('genres', `${series.genre_ids[0]}, ${series.genre_ids[1]}`);
+            } else if (series.genre_ids.length === 1) {
+              seriesCard.setAttribute('genres', `${series.genre_ids[0]}`);
+            } else {
+              seriesCard.setAttribute('genres', 'Unknown');
+            }
+            element.appendChild(seriesCard);
+          });
+
+        } catch (error) {
+          console.error("Error cargando el JSON:", error);
+        }
+
+      }
+
+      loadMovies('../mocks/mostRatedMovies.json', mostPopularList);
+      loadSeries('../mocks/mostRatedSeries.json', mostPopularSeriesList);
+    </script>
+  </body>
+</html>
