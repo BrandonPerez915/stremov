@@ -8,7 +8,7 @@ import { AppError } from "./errorController.js"
 import { getRandomColor } from "../utils/random.js"
 
 async function postUser(req, res, next) {
-  const { username, email, password, confirmPassword } = req.body;
+  const { username, email, password } = req.body;
 
   try {
     const listId = new mongoose.Types.ObjectId();
