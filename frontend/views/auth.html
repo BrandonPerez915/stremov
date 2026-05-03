@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark" primary-color="blue">
+
+<head>
+  <link rel="stylesheet" href="../assets/css/auth.css">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="view-transition" content="same-origin">
+  <title>Auth - stremov</title>
+  <!-- Fuente Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Google icons -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=check,email,lock,person" />
+  <!-- Componentes -->
+  <script src="../components/CustomToast.js" defer></script>
+  <script src="../components/CustomInput.js" defer></script>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Parte Izquierda -->
+    <section id="login-section" class="form-container">
+      <div class="logo">■ stremov</div>
+
+      <form id="login-form" novalidate>
+        <h1>Sign In</h1>
+        <custom-input
+          class="username-input"
+          label="User Name"
+          name="username"
+          type="text"
+          placeholder="Enter User Name"
+          icon="person"
+          required>
+        </custom-input>
+
+        <custom-input
+          class="password-input"
+          label="Password"
+          name="password"
+          type="password"
+          placeholder="Enter Password"
+          icon="lock"
+          required>
+        </custom-input>
+
+        <a href="#" class="forgot-password">Forgot Password?</a>
+        <button type="submit" class="btn-signin">Sign In</button>
+      </form>
+
+      <p class="signin-text">Don't have an account? <a onclick="toggleForms()">Sign up</a></p>
+    </section>
+
+    <section id="register-section" class="form-container hidden">
+      <div class="logo">■ stremov</div>
+
+      <form id="register-form" novalidate>
+        <h1>Sign Up</h1>
+        <custom-input
+          class="username-input"
+          label="User Name"
+          name="username"
+          type="text"
+          placeholder="Enter User Name"
+          icon="person"
+          required>
+        </custom-input>
+
+        <custom-input
+          class="email-input"
+          label="Email"
+          name="email"
+          type="email"
+          placeholder="Enter Email"
+          icon="email"
+          required>
+        </custom-input>
+
+        <custom-input
+          class="password-input"
+          label="Password"
+          name="password"
+          type="password"
+          placeholder="Enter Password"
+          icon="lock"
+          required
+          minlength="6">
+        </custom-input>
+
+        <custom-input
+          class="confirm-password-input"
+          label="Confirm Password"
+          name="confirm_password"
+          type="password"
+          placeholder="Confirm Password"
+          icon="check"
+          required
+          minlength="6">
+        </custom-input>
+
+        <button type="submit" class="btn-signin">Sign Up</button>
+      </form>
+
+      <p class="signin-text">Do you have an account? <a onclick="toggleForms()">Sign in</a></p>
+    </section>
+
+    <section class="hero-section">
+      <!-- Parte Derecha -->
+      <div class="hero-content">
+        <p>Your front row seat to the infinite world of cinema.</p>
+        <a href="#" class="learn-more">Learn More</a>
+      </div>
+
+      <!-- <div class="next-arrow">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="white"
+          stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
+      </div> -->
+    </section>
+  </div>
+</body>
+
+<script src="../scripts/auth.js" type="module"></script>
+<script>
+  const registerForm = document.getElementById('register-section');
+  const loginForm = document.getElementById('login-section');
+  function toggleForms() {
+    registerForm.classList.toggle('hidden');
+    loginForm.classList.toggle('hidden');
+  }
+</script>
+</html>
