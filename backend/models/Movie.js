@@ -1,6 +1,11 @@
 import mongoose from "mongoose"
 
 const movieSchema = new mongoose.Schema({
+  tmdbId: {
+    type: Number,
+    unique: true,
+    sparse: true
+  },
   title: {
     type: String,
     required: [true, 'El título es obligatorio'],
@@ -17,10 +22,13 @@ const movieSchema = new mongoose.Schema({
     trim: true,
   },
   director: {
-    type: String,
-    required: [true, 'El director es obligatorio'],
-    trim: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Person'
   },
+  actors: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Person'
+  }],
   posterUrl: {
     type: String,
     default: 'https://via.placeholder.com/300x450?text=No+Image'

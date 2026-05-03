@@ -8,7 +8,13 @@ const moviesRouter = new Router();
 
 moviesRouter.route('/')
   .get(movieController.getAllMovies)
+  .post(movieController.findOrCreateMovie);
+
+moviesRouter.route('/manual')
   .post(movieController.postMovie);
+
+moviesRouter.route('/tmdb/:tmdbId')
+  .get(movieController.getMovieByTmdbId);
 
 moviesRouter.route('/:id')
   .get(movieController.getMovie)

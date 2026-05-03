@@ -14,6 +14,16 @@ usersRouter.route('/:name')
   .patch(userController.patchUser)
   .delete(userController.deleteUser)
 
+usersRouter.route('/:name/follow')
+  .post(userController.followUser)
+  .delete(userController.unfollowUser)
+
+usersRouter.route('/:name/followers')
+  .get(userController.getFollowers)
+
+usersRouter.route('/:name/following')
+  .get(userController.getFollowing)
+
 usersRouter.use(errorHandler)
 
 export default usersRouter

@@ -5,6 +5,29 @@ import Movie from "../models/Movie.js"
 import { StatusCodes } from "../config/constants.js"
 import { AppError } from "./errorController.js"
 
+
+//si la obtendremos de TMDB - frontend nos envía tmdbID, title y posterUrl
+async function findOrCreateMovie(req, res, next) {
+  const { tmdbId, title, posterUrl } = req.body;
+ 
+  try {
+    let movie = await Movie.findOne({ tmdbId });
+ 
+    if (!movie) {
+      movie = await Movie.create({ tmdbId, title, posterUrl });
+    }
+ 
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      movie
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+
+//post de forma manual (puede no estar en TMDB)
 async function postMovie(req, res, next) {
   const { title, releaseYear, genre, director, posterUrl } = req.body;
 
@@ -38,6 +61,25 @@ async function getMovie(req, res, next) {
       return next(error);
     }
 
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      movie
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function getMovieByTmdbId(req, res, next) {
+  const { tmdbId } = req.params;
+ 
+  try {
+    const movie = await Movie.findOne({ tmdbId });
+ 
+    if (!movie) {
+      throw new AppError('Película no encontrada', StatusCodes.NOT_FOUND, 'MovieNotFound');
+    }
+ 
     return res.status(StatusCodes.OK).json({
       status: 'success',
       movie
@@ -117,8 +159,10 @@ async function getAllMovies(req, res, next) {
 }
 
 export {
+  findOrCreateMovie,
   postMovie,
   getMovie,
+  getMovieByTmdbId,
   patchMovie,
   deleteMovie,
   getAllMovies

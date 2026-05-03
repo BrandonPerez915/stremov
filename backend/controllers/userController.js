@@ -50,6 +50,8 @@ async function getUser(req, res, next) {
     const user = await User.findOne({ username: name })
       .select(' -password -email -createdAt -updatedAt -__v')
       .populate('lists')
+      .populate('following', 'username avatarUrl')
+      .populate('followers', 'username avatarUrl');
 
     if (!user) {
       const error = new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
@@ -126,9 +128,125 @@ async function deleteUser(req, res, next) {
   }
 }
 
+async function followUser(req, res, next) {
+  const { name } = req.params;
+  const userId = req.userId || req.headers['user-id'];
+ 
+  try {
+    const targetUser = await User.findOne({ username: name });
+    if (!targetUser) {
+      throw new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
+    }
+ 
+    if (targetUser._id.toString() === userId.toString()) {
+      throw new AppError('No puedes seguirte a ti mismo', StatusCodes.BAD_REQUEST, 'ValidationError');
+    }
+ 
+    //verificar si ya lo sigue
+    const alreadyFollowing = targetUser.followers.some(id => id.toString() === userId.toString());
+    if (alreadyFollowing) {
+      throw new AppError('Ya sigues a este usuario', StatusCodes.CONFLICT, 'AlreadyFollowing');
+    }
+ 
+    //actualizar ambos usuarios en paralelo
+    await Promise.all([
+      User.findByIdAndUpdate(userId,          { $addToSet: { following: targetUser._id } }),
+      User.findByIdAndUpdate(targetUser._id,  { $addToSet: { followers: userId } })
+    ]);
+ 
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      message: `Ahora sigues a ${name}`
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+ 
+async function unfollowUser(req, res, next) {
+  const { name } = req.params;
+  const userId = req.userId || req.headers['user-id'];
+ 
+  try {
+    const targetUser = await User.findOne({ username: name });
+    if (!targetUser) {
+      throw new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
+    }
+ 
+    //verificar si sí lo sigue
+    const isFollowing = targetUser.followers.some(id => id.toString() === userId.toString());
+    if (!isFollowing) {
+      throw new AppError('No sigues a este usuario', StatusCodes.BAD_REQUEST, 'ValidationError');
+    }
+ 
+    //actualizar ambos usuarios en paralelo
+    await Promise.all([
+      User.findByIdAndUpdate(userId,          { $pull: { following: targetUser._id } }),
+      User.findByIdAndUpdate(targetUser._id,  { $pull: { followers: userId } })
+    ]);
+ 
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      message: `Dejaste de seguir a ${name}`
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+ 
+async function getFollowers(req, res, next) {
+  const { name } = req.params;
+ 
+  try {
+    const user = await User.findOne({ username: name })
+      .select('followers')
+      .populate('followers', 'username avatarUrl');
+ 
+    if (!user) {
+      throw new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
+    }
+ 
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      total: user.followers.length,
+      followers: user.followers
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+
+async function getFollowing(req, res, next) {
+  const { name } = req.params;
+ 
+  try {
+    const user = await User.findOne({ username: name })
+      .select('following')
+      .populate('following', 'username avatarUrl');
+ 
+    if (!user) {
+      throw new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
+    }
+ 
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      total: user.following.length,
+      following: user.following
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+
 export {
   postUser,
   getUser,
   patchUser,
-  deleteUser
+  deleteUser,
+  followUser,
+  unfollowUser,
+  getFollowers,
+  getFollowing
 }
