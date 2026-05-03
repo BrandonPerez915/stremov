@@ -1,0 +1,202 @@
+@import './global.css';
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+.hidden {
+  animation: fade-out 0.3s ease-out both;
+  display: none !important;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+}
+
+.form-container {
+  flex: 1;
+  padding: 20px 50px 50px 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  animation: fade-in 0.4s ease-out both;
+}
+
+form {
+  width: 100%;
+  max-width: 350px;
+  min-width: 250px;
+}
+
+.logo {
+  width: 100%;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  opacity: 0.8;
+}
+
+h1 {
+  font-size: 3rem;
+  margin-bottom: 40px;
+  font-weight: 600;
+}
+
+custom-input {
+  margin-bottom: 10px;
+}
+
+.forgot-password {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 5px;
+  margin-bottom: 30px;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+  color: var(--blue-50);
+}
+
+.btn-signin {
+  width: 100%;
+  padding: 18px;
+  margin-top: 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.btn-signin:hover {
+  filter: brightness(1.1);
+}
+
+.signin-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.signin-text a {
+  text-decoration: none;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.signin-text a:hover {
+  text-decoration: underline;
+  color: var(--secondary-yellow-100)
+}
+
+.hero-section {
+  flex: 1.2;
+  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+    url('https://plus.unsplash.com/premium_photo-1682124752476-40db22034a58?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW50ZXJlc3RlbGxhcnxlbnwwfHwwfHx8MA%3D%3D');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 8%;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, transparent 60%);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 400px;
+}
+
+.hero-content p {
+  font-size: 24px;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  color: #ddd;
+}
+
+.learn-more {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding-bottom: 5px;
+  text-decoration: none;
+  color: white;
+}
+
+.learn-more:hover {
+  text-decoration: underline;
+}
+
+.next-arrow {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 15px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .hero-section {
+    display: none;
+  }
+}
+
+/* Estilos para iconos de Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 200,
+    'GRAD' 0,
+    'opsz' 24
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
