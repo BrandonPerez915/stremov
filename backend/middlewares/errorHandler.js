@@ -6,7 +6,8 @@ function errorHandler(err, req, res, next) {
   return res.status(error.statusCode).json({
     status: 'error',
     error: error.name,
-    message: error.message
+    message: error.message,
+    cause: error.cause || 'unknown'
   })
 }
 
