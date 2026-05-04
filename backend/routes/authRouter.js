@@ -7,7 +7,7 @@ import User from "../models/User.js";
 const authRouter = Router()
 const JWT_SECRET = process.env.JWT_SECRET
 
-authRouter.post('/login', async (req, res, next) => {
+authRouter.post('/', async (req, res, next) => {
   try {
     const { username, password } = req.body;
 

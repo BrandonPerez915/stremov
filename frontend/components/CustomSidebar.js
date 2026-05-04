@@ -7,7 +7,7 @@ sidebarSheet.replaceSync(`
     height: 100dvh;
     background-color: var(--bg-color);
     color: var(--text-primary);
-    border-right: 1px solid var(--borders-color);
+    border-right: 1px solid var(--border-color);
     flex-shrink: 0;
     box-sizing: border-box;
   }

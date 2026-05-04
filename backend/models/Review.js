@@ -31,7 +31,7 @@ const reviewSchema = new mongoose.Schema({
   timestamps: true
 });
 
-//un usuario puede dejar SOLO una review o rating por película
+// Un usuario puede dejar SOLO una review o rating por película
 reviewSchema.index({ user: 1, movie: 1 }, { unique: true });
 
 const Review = mongoose.model('Review', reviewSchema);

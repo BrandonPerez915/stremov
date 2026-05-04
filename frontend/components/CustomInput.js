@@ -51,7 +51,7 @@ inputSheet.replaceSync(`
     width: 100%;
     padding: var(--input-padding, 16px 16px 16px 45px);
     background: transparent;
-    border: 1px solid var(--borders-color);
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     color: var(--text-primary);
     font-size: 16px;
@@ -71,7 +71,7 @@ inputSheet.replaceSync(`
   input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0 30px var(--bg-color, #121212) inset !important;
     -webkit-text-fill-color: var(--text-primary) !important;
-    border: 1px solid var(--borders-color) !important;
+    border: 1px solid var(--border-color) !important;
     transition: background-color 5000s ease-in-out 0s;
   }
 
@@ -169,12 +169,6 @@ class CustomInput extends HTMLElement {
   // Exponer las propiedades nativas
   get value() { return this.inputEl.value; }
   get validity() { return this.inputEl.validity; }
-
-  set value(newValue) {
-    console.log(this.shadowRoot.querySelector('input'), newValue);
-    this.shadowRoot.querySelector('input').value = newValue;
-  }
-
   checkValidity() { return this.inputEl.checkValidity(); }
 }
 
