@@ -2,12 +2,13 @@ import { Router } from 'express';
 
 import * as reviewController from '../controllers/reviewController.js';
 import errorHandler from '../middlewares/errorHandler.js';
+import authMiddleware from '../middlewares/authMiddleware.js';
 
 const reviewsRouter = new Router();
 
 //crear review
 reviewsRouter.route('/')
-  .post(reviewController.postReview);
+  .post(authMiddleware, reviewController.postReview);
 
 //todas las reviews de una película y promedio
 reviewsRouter.route('/movie/:movieId')
@@ -15,9 +16,9 @@ reviewsRouter.route('/movie/:movieId')
 
 //obtener, actualizar o eliminar mi review
 reviewsRouter.route('/movie/:movieId/me')
-  .get(reviewController.getReview)
-  .patch(reviewController.patchReview)
-  .delete(reviewController.deleteReview);
+  .get(authMiddleware, reviewController.getReview)
+  .patch(authMiddleware, reviewController.patchReview)
+  .delete(authMiddleware, reviewController.deleteReview);
 
 //las reviews de un usuario para su profile
 reviewsRouter.route('/user/:userId')

@@ -7,7 +7,7 @@ import { AppError } from './errorController.js';
 
 async function postReview(req, res, next) {
   const { movieId, score, title, body } = req.body;
-  const userId = req.userId || req.headers['user-id'];
+  const { userId } = req;
 
   try {
     const user = await User.findById(userId);
@@ -40,7 +40,7 @@ async function postReview(req, res, next) {
 
 async function getReview(req, res, next) {
   const { movieId } = req.params;
-  const userId = req.userId || req.headers['user-id'];
+  const { userId } = req;
 
   try {
     const review = await Review.findOne({ user: userId, movie: movieId })
@@ -113,7 +113,7 @@ async function getUserReviews(req, res, next) {
 
 async function patchReview(req, res, next) {
   const { movieId } = req.params;
-  const userId = req.userId || req.headers['user-id'];
+  const { userId } = req;
   const { score, title, body } = req.body;
 
   if (!score && !title && !body) {
@@ -146,7 +146,7 @@ async function patchReview(req, res, next) {
 
 async function deleteReview(req, res, next) {
   const { movieId } = req.params;
-  const userId = req.userId || req.headers['user-id'];
+  const { userId } = req;
 
   try {
     const review = await Review.findOneAndDelete({ user: userId, movie: movieId });

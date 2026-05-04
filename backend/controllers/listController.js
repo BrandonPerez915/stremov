@@ -9,8 +9,7 @@ import { getRandomColor } from '../utils/random.js';
 
 async function postList(req, res, next) {
   const { name } = req.body
-  // Temporalmente tomamos el userId del header o del body para poder hacer pruebas (CRUD sin Auth completo)
-  const userId = req.userId || req.headers['user-id'] || req.body.userId;
+  const { userId } = req;
 
   try {
     const user = await User.findById(userId);
@@ -39,7 +38,7 @@ async function postList(req, res, next) {
 
 async function getList(req, res, next) {
   const listName = req.params.name;
-  const userId = req.userId || req.headers['user-id'];
+  const { userId } = req;
 
   try {
     const user = await User.findById(userId);
@@ -64,7 +63,7 @@ async function getList(req, res, next) {
 
 async function patchList(req, res, next) {
   const listName = req.params.name;
-  const userId = req.userId || req.headers['user-id'];
+  const { userId } = req;
 
   const { name, movies } = req.body;
 
@@ -102,7 +101,7 @@ async function patchList(req, res, next) {
 
 async function deleteList(req, res, next) {
   const listName = req.params.name;
-  const userId = req.userId || req.headers['user-id'];
+  const { userId } = req;
 
   try {
     const list = await List.findOneAndDelete({ owner: userId, name: listName });
@@ -112,7 +111,6 @@ async function deleteList(req, res, next) {
       return next(error);
     }
 
-    // Also remove the list from the user's lists array
     await User.findByIdAndUpdate(userId, { $pull: { lists: list._id } });
 
     return res.status(StatusCodes.OK).json({

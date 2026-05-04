@@ -65,7 +65,6 @@ async function getUser(req, res, next) {
 
 async function patchUser(req, res, next) {
   const name = req.params.name;
-
   const { username, password, email, avatarUrl } = req.body;
 
   if (!username && !password && !email && !avatarUrl) {
@@ -79,6 +78,11 @@ async function patchUser(req, res, next) {
     if (!user) {
       const error = new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
       return next(error);
+    }
+
+    //solo el propietario puede editar su cuenta
+    if (user._id.toString() !== req.userId.toString()) {
+      throw new AppError('No tienes permiso para editar esta cuenta', StatusCodes.UNAUTHORIZED, 'UnauthorizedError');
     }
 
     if (username) user.username = username;
@@ -107,12 +111,19 @@ async function deleteUser(req, res, next) {
   const name = req.params.name;
 
   try {
-    const user = await User.findOneAndDelete({ username: name });
+    const user = await User.findOne({ username: name });
 
     if (!user) {
       const error = new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
       return next(error);
     }
+
+    if (user._id.toString() !== req.userId.toString()) {
+      throw new AppError('No tienes permiso para editar esta cuenta', StatusCodes.UNAUTHORIZED, 'UnauthorizedError');
+    }
+
+    await user.deleteOne();
+
     return res.status(StatusCodes.OK).json({
       status: 'success',
       message: 'Usuario eliminado con éxito',
@@ -130,7 +141,7 @@ async function deleteUser(req, res, next) {
 
 async function followUser(req, res, next) {
   const { name } = req.params;
-  const userId = req.userId || req.headers['user-id'];
+  const { userId } = req;
  
   try {
     const targetUser = await User.findOne({ username: name });
@@ -165,7 +176,7 @@ async function followUser(req, res, next) {
  
 async function unfollowUser(req, res, next) {
   const { name } = req.params;
-  const userId = req.userId || req.headers['user-id'];
+  const { userId } = req;
  
   try {
     const targetUser = await User.findOne({ username: name });
