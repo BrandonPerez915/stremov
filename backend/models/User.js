@@ -35,6 +35,11 @@ const userSchema = new mongoose.Schema({
   }],
   avatarUrl: {
     type: String,
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user' //solo modificable desde mongodb
   }
 }, {
   timestamps: true // crea los campos 'createdAt' y 'updatedAt'

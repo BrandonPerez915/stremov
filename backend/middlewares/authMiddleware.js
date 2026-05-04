@@ -15,6 +15,7 @@ function authMiddleware(req, res, next) {
     //mandamos userId y usernamr en request para controllers
     req.userId = decoded.userId;
     req.username = decoded.username;
+    req.role = decoded.role;
 
     return next();
   } catch (error) {

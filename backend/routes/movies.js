@@ -1,20 +1,20 @@
 import { Router } from 'express';
 
 import * as movieController from '../controllers/movieController.js';
-//import registerRequest from '../middlewares/registerRequest.js';
 import errorHandler from '../middlewares/errorHandler.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
+import adminMiddleware from '../middlewares/adminMiddleware.js';
 
 const moviesRouter = new Router();
 
 moviesRouter.route('/')
   .get(movieController.getAllMovies)
-  .post(authMiddleware, movieController.postMovie); //manual, solo admins eventualmente
+  .post(authMiddleware, adminMiddleware, movieController.postMovie); //manual, solo admins eventualmente
 
 moviesRouter.route('/:id')
   .get(movieController.getMovie)
-  .patch(authMiddleware, movieController.patchMovie)
-  .delete(authMiddleware, movieController.deleteMovie);
+  .patch(authMiddleware, adminMiddleware, movieController.patchMovie)
+  .delete(authMiddleware, adminMiddleware, movieController.deleteMovie);
 
 moviesRouter.use(errorHandler);
 
