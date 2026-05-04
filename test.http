@@ -239,3 +239,128 @@ user-id: {{userIdForList}}
 ### 31. Caso de Fallo: Eliminar lista que no existe (404)
 DELETE {{baseUrl}}/lists/Maratón%20de%20CineDomingo
 user-id: {{userIdForList}}
+
+
+###registro usuario
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@test.com",
+  "password": "123456"
+}
+
+###login
+POST http://localhost:3000/api/login/
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "123456"
+}
+
+
+### Obtener usuario
+GET http://localhost:3000/api/users/testuser
+
+### Seguir a un usuario (necesario el token del login)
+####debe fallar: no se puede seguir a él mismo
+POST http://localhost:3000/api/users/testuser/follow
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWY5MGQ5ZjBkYTgzZTU5YjkyMDcwODQiLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzc3OTMwMDc5LCJleHAiOjE3NzgwMTY0Nzl9.W1MKosMzNupiWh0ZA6rp-5Qi-VPpsvEh48_gkodZsiA
+
+### Seguir a un usuario (necesario el token del login)
+####debe tener éxito
+POST http://localhost:3000/api/users/BrandonPerez/follow
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWY5MGQ5ZjBkYTgzZTU5YjkyMDcwODQiLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzc3OTMwMDc5LCJleHAiOjE3NzgwMTY0Nzl9.W1MKosMzNupiWh0ZA6rp-5Qi-VPpsvEh48_gkodZsiA
+
+### Crear lista
+POST http://localhost:3000/api/lists
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWY5MGQ5ZjBkYTgzZTU5YjkyMDcwODQiLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzc3OTMwMDc5LCJleHAiOjE3NzgwMTY0Nzl9.W1MKosMzNupiWh0ZA6rp-5Qi-VPpsvEh48_gkodZsiA
+
+{
+  "name": "Mi lista de prueba"
+}
+
+### Buscar película en TMDB
+GET http://localhost:3000/api/tmdb/movies/search?q=inception
+
+### Obtener detalle de película (guarda en MongoDB)
+GET http://localhost:3000/api/tmdb/movies/27205
+
+### Borrar película 
+DELETE http://localhost:3000/api/movies/69f91738d40965136d770546
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWY5MGQ5ZjBkYTgzZTU5YjkyMDcwODQiLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzc3OTMwMDc5LCJleHAiOjE3NzgwMTY0Nzl9.W1MKosMzNupiWh0ZA6rp-5Qi-VPpsvEh48_gkodZsiA
+
+
+### Crear review (solo score)
+POST http://localhost:3000/api/reviews
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWY5MGQ5ZjBkYTgzZTU5YjkyMDcwODQiLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzc3OTMwMDc5LCJleHAiOjE3NzgwMTY0Nzl9.W1MKosMzNupiWh0ZA6rp-5Qi-VPpsvEh48_gkodZsiA
+
+{
+  "movieId": "69f918718f474849a6090b1e",
+  "score": 9
+}
+
+### Crear review completa
+POST http://localhost:3000/api/reviews
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWY5MGQ5ZjBkYTgzZTU5YjkyMDcwODQiLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzc3OTMwMDc5LCJleHAiOjE3NzgwMTY0Nzl9.W1MKosMzNupiWh0ZA6rp-5Qi-VPpsvEh48_gkodZsiA
+
+{
+  "movieId": "69f918718f474849a6090b1e",
+  "score": 10,
+  "title": "Una obra maestra",
+  "body": "Fua tremendo Nolan nunca decepciona"
+}
+
+###eliminar reseña
+DELETE http://localhost:3000/api/reviews/movie/69f918718f474849a6090b1e/me
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWY5MGQ5ZjBkYTgzZTU5YjkyMDcwODQiLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzc3OTMwMDc5LCJleHAiOjE3NzgwMTY0Nzl9.W1MKosMzNupiWh0ZA6rp-5Qi-VPpsvEh48_gkodZsiA
+
+### Actualizar review - agregar título y comentario
+PATCH http://localhost:3000/api/reviews/movie/69f918718f474849a6090b1e/me
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWY5MGQ5ZjBkYTgzZTU5YjkyMDcwODQiLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzc3OTMwMDc5LCJleHAiOjE3NzgwMTY0Nzl9.W1MKosMzNupiWh0ZA6rp-5Qi-VPpsvEh48_gkodZsiA
+
+{
+  "score":8,
+  "title": "Not sure anymore..",
+  "body": "EDIT: La volví a ver y hmmm sí está buena pero tampoco es como WOW"
+}
+
+### Ver reviews de una película con promedio
+GET http://localhost:3000/api/reviews/movie/69f918718f474849a6090b1e
+
+### Ver mi review de una película
+GET http://localhost:3000/api/reviews/movie/69f918718f474849a6090b1e/me
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWY5MGQ5ZjBkYTgzZTU5YjkyMDcwODQiLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzc3OTMwMDc5LCJleHAiOjE3NzgwMTY0Nzl9.W1MKosMzNupiWh0ZA6rp-5Qi-VPpsvEh48_gkodZsiA
+
+### Crear lista
+POST http://localhost:3000/api/lists
+Content-Type: application/json
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWY5MGQ5ZjBkYTgzZTU5YjkyMDcwODQiLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzc3OTMwMDc5LCJleHAiOjE3NzgwMTY0Nzl9.W1MKosMzNupiWh0ZA6rp-5Qi-VPpsvEh48_gkodZsiA
+
+{
+  "name": "Lo mejor"
+}
+
+### Ver mi lista
+GET http://localhost:3000/api/lists/Lo mejor
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWY5MGQ5ZjBkYTgzZTU5YjkyMDcwODQiLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzc3OTMwMDc5LCJleHAiOjE3NzgwMTY0Nzl9.W1MKosMzNupiWh0ZA6rp-5Qi-VPpsvEh48_gkodZsiA
+
+### Registrar segundo usuario para probar follow
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "username": "testuser2",
+  "email": "test2@test.com",
+  "password": "123456"
+}
+
+### Seguir a testuser2
+POST http://localhost:3000/api/users/testuser2/follow
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OWY5MGQ5ZjBkYTgzZTU5YjkyMDcwODQiLCJ1c2VybmFtZSI6InRlc3R1c2VyIiwiaWF0IjoxNzc3OTMwMDc5LCJleHAiOjE3NzgwMTY0Nzl9.W1MKosMzNupiWh0ZA6rp-5Qi-VPpsvEh48_gkodZsiA

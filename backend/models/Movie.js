@@ -6,25 +6,57 @@ const movieSchema = new mongoose.Schema({
     unique: true,
     sparse: true
   },
+  imdbId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   title: {
     type: String,
     required: [true, 'El título es obligatorio'],
     trim: true,
   },
-  releaseYear: {
-    type: Number,
-    required: [true, 'El año de lanzamiento es obligatorio'],
-    min: [1888, 'El año debe ser mayor o igual a 1888']
-  },
-  genre: {
+  overview: {
     type: String,
-    required: [true, 'El género es obligatorio'],
-    trim: true,
+    trim: true
   },
-  director: {
+  releaseDate: {
+    type: String  //"YYYY-MM-DD"
+  },
+  releaseYear: {
+    type: Number
+  },
+  runtime: {
+    type: Number  //en minutos
+  },
+  runtimeFormatted: {
+    type: String  //FORMATO"2h 28min"
+  },
+  rated: {
+    type: String,
+    trim: true    //"PG-13", "R", "G"
+  },
+  genres: [{
+    type: String,
+    trim: true
+  }],
+  originCountry: [{
+    type: String
+  }],
+  languages: [{
+    type: String
+  }],
+  imdbScore: {
+    type: Number
+  },
+  awards: {
+    type: String,
+    trim: true
+  },
+  directors: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Person'
-  },
+  }],
   actors: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Person'
@@ -32,6 +64,9 @@ const movieSchema = new mongoose.Schema({
   posterUrl: {
     type: String,
     default: 'https://via.placeholder.com/300x450?text=No+Image'
+  },
+  backdropUrl: {
+    type: String
   }
 })
 

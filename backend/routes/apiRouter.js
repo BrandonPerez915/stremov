@@ -5,6 +5,7 @@ import listsRouter from "./lists.js";
 import moviesRouter from "./movies.js";
 import personsRouter from "./persons.js";
 import reviewsRouter from "./reviews.js";
+import tmdbRouter from "./tmdbRouter.js";
 import authRouter from "./authRouter.js";
 
 const apiRouter = Router()
@@ -14,6 +15,7 @@ apiRouter.use('/lists', listsRouter)
 apiRouter.use('/movies', moviesRouter)
 apiRouter.use('/persons', personsRouter)
 apiRouter.use('/reviews', reviewsRouter)
+apiRouter.use('/tmdb', tmdbRouter)
 apiRouter.use('/login', authRouter)
 
 export default apiRouter

@@ -10,6 +10,9 @@ const personSchema = new mongoose.Schema({
     type: String,
     required: [true, 'El nombre es obligatorio'],
     trim: true
+  },
+  photoUrl: {
+    type: String
   }
 });
  

@@ -1,0 +1,120 @@
+import { StatusCodes } from '../config/constants.js';
+import { AppError } from './errorController.js';
+import { findOrCreateMovie, findOrCreatePerson, tmdbFetch } from '../services/tmdbService.js'; 
+
+//buscar películas por nombre con tmbd
+async function searchMovies(req, res, next) {
+  const { q, page = 1 } = req.query;
+
+  if (!q) {
+    return next(new AppError('El nombre es obligatorio', StatusCodes.BAD_REQUEST, 'ValidationError'));
+  }
+
+  try {
+    const data = await tmdbFetch(`/search/movie?query=${encodeURIComponent(q)}&page=${page}`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//obtener detalle de película. busca en mongoDB primero, si no existe llama a TMDB, guarda todo y devuelve. Una sola llamada para el frontend.
+async function getMovie(req, res, next) {
+  const { tmdbId } = req.params;
+
+  try {
+    const movie = await findOrCreateMovie(parseInt(tmdbId));
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      movie
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//películas populares: solo tmdb
+async function getPopularMovies(req, res, next) {
+  const { page = 1 } = req.query;
+
+  try {
+    const data = await tmdbFetch(`/movie/popular?page=${page}`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//películas mejor valoradas: solo tmdb
+async function getTopRatedMovies(req, res, next) {
+  const { page = 1 } = req.query;
+
+  try {
+    const data = await tmdbFetch(`/movie/top_rated?page=${page}`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//buscar persona: solo tmdb y no guarda en mongoDB
+async function searchPersons(req, res, next) {
+  const { q, page = 1 } = req.query;
+
+  if (!q) {
+    return next(new AppError('El parámetro q es obligatorio', StatusCodes.BAD_REQUEST, 'ValidationError'));
+  }
+
+  try {
+    const data = await tmdbFetch(`/search/person?query=${encodeURIComponent(q)}&page=${page}`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//info de persona busca en mongoDB primero, si no existe llama a TMDB, guarda y devuelve
+async function getPerson(req, res, next) {
+  const { tmdbId } = req.params;
+
+  try {
+    const data = await tmdbFetch(`/person/${tmdbId}`);
+    const person = await findOrCreatePerson({
+      tmdbId: parseInt(tmdbId),
+      name: data.name,
+      photoUrl: data.profile_path
+        ? `https://image.tmdb.org/t/p/w500${data.profile_path}`
+        : null
+    });
+
+    return res.status(StatusCodes.OK).json({
+      status: 'success',
+      person,         //datos de mongoDB (_id incluido)
+      tmdb: data      //datos completos de TMDB
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//trabajos de la persona: solo tmdb
+async function getPersonCredits(req, res, next) {
+  const { tmdbId } = req.params;
+
+  try {
+    const data = await tmdbFetch(`/person/${tmdbId}/movie_credits`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export {
+  searchMovies,
+  getMovie,
+  getPopularMovies,
+  getTopRatedMovies,
+  searchPersons,
+  getPerson,
+  getPersonCredits
+};

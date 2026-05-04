@@ -6,39 +6,34 @@ import { StatusCodes } from "../config/constants.js"
 import { AppError } from "./errorController.js"
 
 
-//si la obtendremos de TMDB - frontend nos envía tmdbID, title y posterUrl
-async function findOrCreateMovie(req, res, next) {
-  const { tmdbId, title, posterUrl } = req.body;
- 
-  try {
-    let movie = await Movie.findOne({ tmdbId });
- 
-    if (!movie) {
-      movie = await Movie.create({ tmdbId, title, posterUrl });
-    }
- 
-    return res.status(StatusCodes.OK).json({
-      status: 'success',
-      movie
-    });
-  } catch (error) {
-    return next(error);
-  }
-}
-
 
 //post de forma manual (puede no estar en TMDB)
 async function postMovie(req, res, next) {
-  const { title, releaseYear, genre, director, posterUrl } = req.body;
+  const { title, overview, releaseDate, releaseYear, runtime, runtimeFormatted,
+    rated, genres, originCountry, languages, posterUrl, backdropUrl,
+    imdbScore, awards, directors, actors
+  } = req.body;
 
   try {
     const movie = await Movie.create({
-      title,
-      releaseYear,
-      genre,
-      director,
-      posterUrl
+      title, 
+      overview, 
+      releaseDate, 
+      releaseYear, 
+      runtime, 
+      runtimeFormatted,
+      rated, 
+      genres, 
+      originCountry, 
+      languages, 
+      posterUrl, 
+      backdropUrl,
+      imdbScore, 
+      awards, 
+      directors, 
+      actors
     });
+
 
     return res.status(StatusCodes.CREATED).json({
       status: 'success',
@@ -54,7 +49,9 @@ async function getMovie(req, res, next) {
   const movieId = req.params.id;
 
   try {
-    const movie = await Movie.findById(movieId);
+    const movie = await Movie.findById(movieId)
+      .populate('directors', 'name photoUrl')
+      .populate('actors', 'name photoUrl');
 
     if (!movie) {
       const error = new AppError('Película no encontrada', StatusCodes.NOT_FOUND, 'MovieNotFound');
@@ -92,11 +89,16 @@ async function getMovieByTmdbId(req, res, next) {
 async function patchMovie(req, res, next) {
   const movieId = req.params.id;
 
-  const { title, releaseYear, genre, director, posterUrl } = req.body;
+  const { title, overview, releaseDate, releaseYear, runtime, runtimeFormatted,
+    rated, genres, originCountry, languages, posterUrl, backdropUrl,
+    imdbScore, awards, directors, actors
+  } = req.body;
 
-  if (!title && !releaseYear && !genre && !director && !posterUrl) {
-    const error = new AppError('Al menos un campo debe ser proporcionado para actualizar', StatusCodes.BAD_REQUEST, 'ValidationError');
-    return next(error);
+
+   if (!title && !overview && !releaseDate && !releaseYear && !runtime && !runtimeFormatted &&
+      !rated && !genres && !originCountry && !languages && !posterUrl && !backdropUrl &&
+      !imdbScore && !awards && !directors && !actors) {
+    return next(new AppError('Al menos un campo debe ser proporcionado para actualizar', StatusCodes.BAD_REQUEST, 'ValidationError'));
   }
 
   try {
@@ -108,10 +110,21 @@ async function patchMovie(req, res, next) {
     }
 
     if (title) movie.title = title;
+    if (overview) movie.overview = overview;
+    if (releaseDate) movie.releaseDate = releaseDate;
     if (releaseYear) movie.releaseYear = releaseYear;
-    if (genre) movie.genre = genre;
-    if (director) movie.director = director;
+    if (runtime) movie.runtime = runtime;
+    if (runtimeFormatted) movie.runtimeFormatted = runtimeFormatted;
+    if (rated) movie.rated = rated;
+    if (genres) movie.genres = genres;
+    if (originCountry) movie.originCountry = originCountry;
+    if (languages) movie.languages = languages;
     if (posterUrl) movie.posterUrl = posterUrl;
+    if (backdropUrl) movie.backdropUrl = backdropUrl;
+    if (imdbScore) movie.imdbScore = imdbScore;
+    if (awards) movie.awards = awards;
+    if (directors) movie.directors = directors;
+    if (actors) movie.actors = actors;
 
     await movie.save();
 
@@ -148,21 +161,26 @@ async function deleteMovie(req, res, next) {
 
 async function getAllMovies(req, res, next) {
   try {
-    const movies = await Movie.find();
+    const movies = await Movie.find()
+      .populate('directors', 'name')
+      .populate('actors','name');
+
     return res.status(StatusCodes.OK).json({
       status: 'success',
+      total: movies.length,
       movies
     });
+    
   } catch (error) {
     return next(error);
   }
 }
 
 export {
-  findOrCreateMovie,
+  //findOrCreateMovie,
   postMovie,
   getMovie,
-  getMovieByTmdbId,
+  //getMovieByTmdbId,
   patchMovie,
   deleteMovie,
   getAllMovies
