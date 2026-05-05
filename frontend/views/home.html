@@ -17,8 +17,21 @@
   <script src="../components/SidebarItem.js" defer></script>
   <script src="../components/CustomHeader.js" defer></script>
   <script src="../components/CustomSidebar.js" defer></script>
+  <script src="../components/CustomTextarea.js" defer></script>
   <script src="../components/MovieCard.js"></script>
   <script src="../components/HeroBanner.js" defer></script>
+  <script src="../components/MovieCarousel.js" defer></script>
+  <script src="../components/PersonCarousel.js" defer></script>
+  <script src="../components/PersonProfileCard.js" defer></script>
+  <script src="../components/ReviewCard.js" defer></script>
+  <script src="../components/StarsInput.js" defer></script>
+  <script src="../components/RatingBars.js" defer></script>
+
+  <script src="../components/MovieModalHeader.js" defer></script>
+  <script src="../components/MovieModalDetails.js" defer></script>
+  <script src="../components/MovieModalReviews.js" defer></script>
+  <script src="../components/MovieModalSimilar.js" defer></script>
+  <script src="../components/MovieModal.js" defer></script>
 </head>
 
 <body>
@@ -44,112 +57,89 @@
     </hero-banner>
 
     <!-- Carrouseles de películas y series -->
-    <div class="carousel-wrapper">
-      <h1>Most Popular Series</h1>
-      <button class="carousel-btn left" id="most-popular-series-btn-left">
-        <span class="icon left-arrow-icon">chevron_left</span>
-      </button>
+    <movie-carousel
+      title="Most Popular Series"
+      api-url="../mocks/popularSeries.json"
+      type="series">
+    </movie-carousel>
 
-      <div class="movie-row" id="most-popular-series-list"></div>
+    <movie-carousel
+      title="Most Popular Movies"
+      api-url="../mocks/popularMovies.json"
+      type="movies">
+    </movie-carousel>
 
-      <button class="carousel-btn right" id="most-popular-series-btn-right">
-        <span class="icon right-arrow-icon">chevron_right</span>
-      </button>
-    </div>
+    <person-carousel
+      title="Most Popular Actors"
+      api-url="../mocks/popularPeople.json">
+    </person-carousel>
 
-    <div class="carousel-wrapper">
-      <h1>Most Popular Movies</h1>
-      <button class="carousel-btn left" id="most-popular-movies-btn-left">
-        <span class="icon left-arrow-icon">chevron_left</span>
-      </button>
-
-      <div class="movie-row" id="most-popular-movies-list"></div>
-
-      <button class="carousel-btn right" id="most-popular-movies-btn-right">
-        <span class="icon right-arrow-icon">chevron_right</span>
-      </button>
-    </div>
-
-    <script>
-      const mostPopularList = document.getElementById('most-popular-movies-list');
-      const mostPopularSeriesList = document.getElementById('most-popular-series-list');
-      const mostPopularMoviesBtnLeft = document.getElementById('most-popular-movies-btn-left');
-      const mostPopularMoviesBtnRight = document.getElementById('most-popular-movies-btn-right');
-      const mostPopularSeriesBtnLeft = document.getElementById('most-popular-series-btn-left');
-      const mostPopularSeriesBtnRight = document.getElementById('most-popular-series-btn-right');
-
-      // Lógica para los botones de scroll
-      mostPopularMoviesBtnLeft.addEventListener('click', () => {
-        // Desplaza hacia la izquierda el equivalente a un par de tarjetas
-        mostPopularList.scrollBy({ left: -100, behavior: 'smooth' });
-      });
-
-      mostPopularMoviesBtnRight.addEventListener('click', () => {
-        // Desplaza hacia la derecha
-        mostPopularList.scrollBy({ left: 100, behavior: 'smooth' });
-      });
-
-      mostPopularSeriesBtnLeft.addEventListener('click', () => {
-        mostPopularSeriesList.scrollBy({ left: -100, behavior: 'smooth' });
-      });
-
-      mostPopularSeriesBtnRight.addEventListener('click', () => {
-        mostPopularSeriesList.scrollBy({ left: 100, behavior: 'smooth' });
-      });
-
-      async function loadMovies(url, element) {
-        try {
-          const response = await fetch(url);
-          const data = await response.json();
-
-          data.results.forEach(movie => {
-            const movieCard = document.createElement('movie-card');
-            movieCard.setAttribute('title', movie.title);
-            movieCard.setAttribute('poster', `https://image.tmdb.org/t/p/w500${movie.poster_path}`);
-            movieCard.setAttribute('rating', Math.round(movie.vote_average * 10) / 10);
-            if (movie.genre_ids.length > 1) {
-              movieCard.setAttribute('genres', `${movie.genre_ids[0]}, ${movie.genre_ids[1]}`);
-            } else if (movie.genre_ids.length === 1) {
-              movieCard.setAttribute('genres', `${movie.genre_ids[0]}`);
-            } else {
-              movieCard.setAttribute('genres', 'Unknown');
-            }
-            element.appendChild(movieCard);
-          });
-
-        } catch (error) {
-          console.error("Error cargando el JSON:", error);
-        }
-      }
-
-      async function loadSeries(url, element) {
-        try {
-          const response = await fetch(url);
-          const data = await response.json();
-
-          data.results.forEach(series => {
-            const seriesCard = document.createElement('movie-card');
-            seriesCard.setAttribute('title', series.name);
-            seriesCard.setAttribute('poster', `https://image.tmdb.org/t/p/w500${series.poster_path}`);
-            seriesCard.setAttribute('rating', Math.round(series.vote_average * 10) / 10);
-            if (series.genre_ids.length > 1) {
-              seriesCard.setAttribute('genres', `${series.genre_ids[0]}, ${series.genre_ids[1]}`);
-            } else if (series.genre_ids.length === 1) {
-              seriesCard.setAttribute('genres', `${series.genre_ids[0]}`);
-            } else {
-              seriesCard.setAttribute('genres', 'Unknown');
-            }
-            element.appendChild(seriesCard);
-          });
-
-        } catch (error) {
-          console.error("Error cargando el JSON:", error);
-        }
-
-      }
-
-      loadMovies('../mocks/mostRatedMovies.json', mostPopularList);
-      loadSeries('../mocks/mostRatedSeries.json', mostPopularSeriesList);
-    </script>
   </body>
+  <script>
+    const headerComponent = document.querySelector('movie-modal-header');
+
+    headerComponent.addEventListener('tab-changed', (e) => {
+      let lastTab = headerComponent.lastActiveTab || 'information';
+      console.log(lastTab, e.detail.tab);
+      let targetTab = e.detail.tab;
+
+      if (lastTab === targetTab) return;
+
+      const lastView = document.getElementById(`movie-${lastTab}-modal`);
+      const targetView = document.getElementById(`movie-${targetTab}-modal`);
+      const allViews = document.querySelectorAll('[id^="movie-"][id$="-modal"]');
+
+      targetView.classList.remove('hidden');
+      lastView.classList.toggle('hidden');
+    });
+
+    headerComponent.addEventListener('close-modal', (e) => {
+      let movieModalElement = document.getElementById(e.detail.modalId);
+
+      movieModalElement?.classList.add('close');
+      setTimeout(() => {
+        movieModalElement.style.display = 'none';
+      }, 400);
+    });
+
+    const detailsComponent = document.querySelector('movie-modal-details');
+
+    detailsComponent.addEventListener('action-rate', () => {
+      console.log("¡El usuario quiere calificar la película!");
+    });
+
+    detailsComponent.addEventListener('action-watchlist', () => {
+      console.log("¡Película añadida a la Watchlist!");
+    });
+    // Datos simulados (Inyeccion de reviews)
+    const reviewsData = [
+      {
+        username: "Albert Flores",
+        avatarSrc: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80",
+        rating: 2,
+        date: "17 Oct, 2020",
+        text: "It's good to use for the development as it having very good performance. I've taken it for Mobile Application Development and satisfied with the build performance."
+      },
+      {
+        username: "Cameron Williamson",
+        avatarSrc: "https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?auto=format&fit=crop&w=100&q=80",
+        rating: 4,
+        date: "24 Sep, 2020",
+        text: "Absolutely stunning display. The battery life is exactly as advertised, easily getting me through a full day of heavy coding."
+      }
+    ];
+
+    // Inyectar el JSON como string
+    const reviewsComponent = document.getElementById('reviews-component');
+    reviewsComponent.setAttribute('reviews-data', JSON.stringify(reviewsData));
+
+    // Escuchar el custom event de nueva reseña
+    reviewsComponent.addEventListener('review-submitted', (e) => {
+      const { rating, text } = e.detail;
+      console.log(`¡Nueva reseña guardada!\nEstrellas: ${rating}\nTexto: ${text}`);
+
+      // TODO: hacer push al array 'reviewsData' y volver a hacer setAttribute
+      // para que la nueva tarjeta aparezca instantáneamente en la interfaz.
+    });
+  </script>
 </html>
