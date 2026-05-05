@@ -109,6 +109,20 @@ async function getPersonCredits(req, res, next) {
   }
 }
 
+//discover por géneros
+async function discoverMovies(req, res, next) {
+  const { genre, page = 1 } = req.query;
+
+  try {
+    const data = await tmdbFetch(
+      `/discover/movie?with_genres=${genre}&page=${page}`
+    );
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 export {
   searchMovies,
   getMovie,
@@ -116,5 +130,6 @@ export {
   getTopRatedMovies,
   searchPersons,
   getPerson,
-  getPersonCredits
+  getPersonCredits,
+  discoverMovies
 };

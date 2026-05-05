@@ -9,6 +9,7 @@ const tmdbRouter = Router();
 tmdbRouter.get('/movies/search', tmdbController.searchMovies); //solo tmdb
 tmdbRouter.get('/movies/popular', tmdbController.getPopularMovies); //solo tmbd
 tmdbRouter.get('/movies/top-rated', tmdbController.getTopRatedMovies); //solo tmdb
+tmdbRouter.get('/movies/discover', tmdbController.discoverMovies); //género, tmdb
 tmdbRouter.get('/movies/:tmdbId', tmdbController.getMovie); //primero buscamos en mongoDB, si no está --> tmdb
 
 //personas

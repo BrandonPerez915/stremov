@@ -6,6 +6,11 @@ const listSchema = new mongoose.Schema({
     required: [true, 'El nombre de la lista es obligatorio'],
     trim: true,
   },
+  description: {
+    type: String,
+    trim: true,
+    maxlength: [300, 'La descripción no puede superar los 300 caracteres']
+  },
   movies: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Movie'

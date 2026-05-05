@@ -12,7 +12,7 @@ const OMDB_API_KEY = process.env.OMDB_API_KEY;
 //fetch base a TMDB
 async function tmdbFetch(endpoint) {
   const separator = endpoint.includes('?') ? '&' : '?';
-  const url = `${TMDB_BASE_URL}${endpoint}${separator}api_key=${TMDB_API_KEY}&language=es-MX`;
+  const url = `${TMDB_BASE_URL}${endpoint}${separator}api_key=${TMDB_API_KEY}&language=en-US`;
   const response = await fetch(url);
 
   if (!response.ok) {
