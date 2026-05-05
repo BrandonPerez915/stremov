@@ -244,6 +244,7 @@ class MovieCard extends HTMLElement {
     this._matchedGenres = [];
 
     this._isRendered = false;
+    this._movieId  = '';
   }
 
   static get observedAttributes() {
@@ -386,7 +387,18 @@ _getTitleParts(rawTitle) {
     `;
 
     this.shadowRoot.querySelector('.movie-card')?.addEventListener('click', () => {
-      window.location.href = `/frontend/views/movie.html?id=${this.dataset.imdbId || ''}`;
+      const event = new CustomEvent('movie-clicked', {
+        detail: {
+          movieId: this._movieId,
+          title: this._mainTitle,
+          poster: poster,
+          rating: rating,
+          genres: this._matchedGenres
+        },
+        bubbles: true,
+        composed: true
+      });
+      this.dispatchEvent(event);
     });
   }
 }

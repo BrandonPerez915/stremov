@@ -164,7 +164,7 @@ class PersonProfileCard extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['img-src', 'name', 'character', 'role', 'popularity'];
+    return ['img-src', 'name', 'character', 'role', 'popularity', 'job'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -180,7 +180,8 @@ class PersonProfileCard extends HTMLElement {
   _render() {
     const imgSrc = this.getAttribute('img-src') || 'https://via.placeholder.com/400x533';
     const name = this.getAttribute('name') || 'Unknown';
-    const character = this.getAttribute('character') || 'Unknown';
+    const character = this.getAttribute('character');
+    const job = this.getAttribute('job');
     const role = this.getAttribute('role') || 'Actor';
     const popularity = this.getAttribute('popularity') || '0.0';
 
@@ -190,10 +191,18 @@ class PersonProfileCard extends HTMLElement {
         <!-- TEXTO FUERA Y ARRIBA DE LA IMAGEN -->
         <div class="profile-text-header">
           <h3 class="cast-name-modern" title="${name}">${name}</h3>
+          ${ character ? `
           <div class="cast-character-wrapper">
             <span class="cast-character-prefix">as</span>
             <span class="cast-character-modern">${character}</span>
           </div>
+          ` : '' }
+          ${ job && !character ? `
+          <div class="cast-character-wrapper">
+            <span class="cast-character-prefix">as</span>
+            <span class="cast-character-modern">${job}</span>
+          </div>
+          ` : '' }
         </div>
 
         <!-- CONTENEDOR DE LA IMAGEN (Con sus efectos y botones) -->

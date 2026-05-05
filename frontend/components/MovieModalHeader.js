@@ -111,7 +111,6 @@ class MovieModalHeader extends HTMLElement {
         <nav class="nav-links" id="nav-links">
           <a href="#" data-tab="information">Information</a>
           <a href="#" data-tab="reviews">Reviews</a>
-          <a href="#" data-tab="cast">Cast</a>
           <a href="#" data-tab="similar">Similar</a>
         </nav>
         <span class="close-icon" id="close-icon">close</span>
