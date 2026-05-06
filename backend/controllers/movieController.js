@@ -9,9 +9,9 @@ import { findOrCreateMovie } from "../services/tmdbService.js"
 /**
  * @summary Crea una nueva película de forma manual.
  * @description Inserta un documento de película en la base de datos local con la información proporcionada en el cuerpo de la petición. Útil para títulos que no figuran en catálogos externos.
- * @param {import('express').Request} req - Objeto de petición. Espera todos los campos descriptivos de la película en req.body.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next para delegar errores.
+ * @param {express.Request} req - Objeto de petición. Espera todos los campos descriptivos de la película en req.body.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next para delegar errores.
  * @returns {Promise<void>} Responde con JSON de la película creada.
  */
 async function postMovie(req, res, next) {
@@ -53,9 +53,9 @@ async function postMovie(req, res, next) {
 /**
  * @summary Obtiene o sincroniza una película mediante su ID.
  * @description Utiliza el servicio `findOrCreateMovie` para buscar la película localmente o recuperarla de TMDB si no existe.
- * @param {import('express').Request} req - Objeto de petición. Espera `id` en req.params.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `id` en req.params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Responde con la película encontrada o procesada.
  */
 async function getMovie(req, res, next) {
@@ -81,9 +81,9 @@ async function getMovie(req, res, next) {
 /**
  * @summary Busca una película específicamente por su ID de TMDB.
  * @description Consulta directamente en la base de datos local un documento que coincida con el identificador de la API externa.
- * @param {import('express').Request} req - Objeto de petición. Espera `tmdbId` en req.params.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `tmdbId` en req.params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Objeto de la película encontrada.
  */
 async function getMovieByTmdbId(req, res, next) {
@@ -108,9 +108,9 @@ async function getMovieByTmdbId(req, res, next) {
 /**
  * @summary Actualiza parcialmente los datos de una película.
  * @description Valida que se envíe al menos un campo y actualiza el registro local. No sincroniza con fuentes externas.
- * @param {import('express').Request} req - Objeto de petición. Espera `id` en params y campos a editar en req.body.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `id` en params y campos a editar en req.body.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Responde con la película actualizada.
  */
 async function patchMovie(req, res, next) {
@@ -168,9 +168,9 @@ async function patchMovie(req, res, next) {
 /**
  * @summary Elimina una película de la base de datos.
  * @description Borra el registro de forma permanente utilizando su ID local.
- * @param {import('express').Request} req - Objeto de petición. Espera `id` en req.params.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `id` en req.params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Responde con el objeto de la película eliminada.
  */
 async function deleteMovie(req, res, next) {
@@ -197,9 +197,9 @@ async function deleteMovie(req, res, next) {
 /**
  * @summary Obtiene todas las películas registradas.
  * @description Recupera el catálogo completo de la base de datos local, poblando la información básica de directores y actores.
- * @param {import('express').Request} req - Objeto de petición.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Lista total de películas con sus referencias pobladas.
  */
 async function getAllMovies(req, res, next) {

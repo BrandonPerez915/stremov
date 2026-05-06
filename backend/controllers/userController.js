@@ -12,9 +12,9 @@ import { getRandomColor } from "../utils/random.js"
 /**
  * @summary Registra un nuevo usuario y configura su entorno inicial.
  * @description Crea el documento de usuario, genera un avatar dinámico basado en su nombre y crea automáticamente su lista predeterminada de "Favoritos".
- * @param {import('express').Request} req - Objeto de petición de Express. Espera `username`, `email` y `password` en req.body.
- * @param {import('express').Response} res - Objeto de respuesta de Express.
- * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @param {express.Request} req - Objeto de petición de Express. Espera `username`, `email` y `password` en req.body.
+ * @param {express.Response} res - Objeto de respuesta de Express.
+ * @param {express.NextFunction} next - Función Next para delegar errores.
  * @returns {Promise<void>} Responde con JSON del usuario creado (sin datos sensibles).
  */
 async function postUser(req, res, next) {
@@ -56,9 +56,9 @@ async function postUser(req, res, next) {
 /**
  * @summary Obtiene el perfil público de un usuario.
  * @description Busca un usuario por su nombre y realiza el "populate" de sus listas y redes sociales, excluyendo campos sensibles como contraseña o email.
- * @param {import('express').Request} req - Objeto de petición. Espera `name` en req.params.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @param {express.Request} req - Objeto de petición. Espera `name` en req.params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Función Next para delegar errores.
  * @returns {Promise<void>} Responde con el objeto del usuario y sus relaciones.
  */
 async function getUser(req, res, next) {
@@ -84,9 +84,9 @@ async function getUser(req, res, next) {
 /**
  * @summary Actualiza la información del perfil del usuario.
  * @description Permite modificar campos opcionales del perfil. Valida que el solicitante sea el propietario de la cuenta antes de guardar.
- * @param {import('express').Request} req - Objeto de petición. Espera `name` en params y campos opcionales en req.body. Requiere `req.userId` (auth).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @param {express.Request} req - Objeto de petición. Espera `name` en params y campos opcionales en req.body. Requiere `req.userId` (auth).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Función Next para delegar errores.
  * @returns {Promise<void>} Responde con los datos actualizados del usuario.
  */
 async function patchUser(req, res, next) {
@@ -135,9 +135,9 @@ async function patchUser(req, res, next) {
 /**
  * @summary Elimina la cuenta de un usuario.
  * @description Busca al usuario por nombre y verifica que quien realiza la petición sea el dueño de la cuenta antes de proceder con el borrado físico.
- * @param {import('express').Request} req - Objeto de petición. Espera `name` en params y `req.userId` (auth).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @param {express.Request} req - Objeto de petición. Espera `name` en params y `req.userId` (auth).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Función Next para delegar errores.
  * @returns {Promise<void>} Responde con un mensaje de éxito y los datos del usuario eliminado.
  */
 async function deleteUser(req, res, next) {
@@ -177,9 +177,9 @@ async function deleteUser(req, res, next) {
 /**
  * @summary Sigue a otro usuario.
  * @description Actualiza de forma atómica tanto la lista de "siguiendo" del solicitante como la lista de "seguidores" del objetivo. Valida duplicados y auto-seguimiento.
- * @param {import('express').Request} req - Objeto de petición. Espera `name` en params y `req.userId` (auth).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @param {express.Request} req - Objeto de petición. Espera `name` en params y `req.userId` (auth).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Función Next para delegar errores.
  * @returns {Promise<void>} Responde con confirmación del seguimiento.
  */
 async function followUser(req, res, next) {
@@ -218,9 +218,9 @@ async function followUser(req, res, next) {
 /**
  * @summary Deja de seguir a un usuario.
  * @description Remueve el vínculo de seguimiento entre dos usuarios utilizando el operador `$pull` en ambos documentos de forma simultánea.
- * @param {import('express').Request} req - Objeto de petición. Espera `name` en params y `req.userId` (auth).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @param {express.Request} req - Objeto de petición. Espera `name` en params y `req.userId` (auth).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Función Next para delegar errores.
  * @returns {Promise<void>} Responde con confirmación de la acción.
  */
 async function unfollowUser(req, res, next) {
@@ -255,9 +255,9 @@ async function unfollowUser(req, res, next) {
 /**
  * @summary Obtiene la lista de seguidores de un usuario.
  * @description Retorna un listado de usuarios que siguen al perfil especificado, incluyendo sus datos básicos de perfil (nombre y avatar).
- * @param {import('express').Request} req - Objeto de petición. Espera `name` en params.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @param {express.Request} req - Objeto de petición. Espera `name` en params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Función Next para delegar errores.
  * @returns {Promise<void>} Responde con el total y el arreglo de seguidores.
  */
 async function getFollowers(req, res, next) {
@@ -285,9 +285,9 @@ async function getFollowers(req, res, next) {
 /**
  * @summary Obtiene la lista de usuarios seguidos por un perfil.
  * @description Retorna un listado de los perfiles que el usuario especificado está siguiendo actualmente.
- * @param {import('express').Request} req - Objeto de petición. Espera `name` en params.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @param {express.Request} req - Objeto de petición. Espera `name` en params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Función Next para delegar errores.
  * @returns {Promise<void>} Responde con el total y el arreglo de usuarios seguidos.
  */
 async function getFollowing(req, res, next) {

@@ -7,9 +7,9 @@ import { findOrCreateMovie, findOrCreateSeries, findOrCreatePerson, tmdbFetch } 
 /**
  * @summary Busca películas en TMDB por término de búsqueda.
  * @description Realiza una consulta a la API de TMDB utilizando un string de búsqueda y devuelve resultados paginados.
- * @param {import('express').Request} req - Objeto de petición. Espera `q` (query) y opcionalmente `page` en req.query.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next para gestión de errores.
+ * @param {express.Request} req - Objeto de petición. Espera `q` (query) y opcionalmente `page` en req.query.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next para gestión de errores.
  * @returns {Promise<void>} Lista paginada de películas que coinciden con la búsqueda.
  */
 async function searchMovies(req, res, next) {
@@ -27,9 +27,9 @@ async function searchMovies(req, res, next) {
 /**
  * @summary Obtiene los datos detallados de una película.
  * @description Consulta TMDB y OMDb para obtener información completa, la sincroniza con la base de datos local (MongoDB) y devuelve el documento resultante.
- * @param {import('express').Request} req - Objeto de petición. Espera `tmdbId` en req.params.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `tmdbId` en req.params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Objeto de la película persistido en la base de datos.
  */
 async function getMovie(req, res, next) {
@@ -45,9 +45,9 @@ async function getMovie(req, res, next) {
 /**
  * @summary Obtiene la lista de películas populares.
  * @description Conecta directamente con el endpoint de popularidad de TMDB para obtener las tendencias actuales.
- * @param {import('express').Request} req - Objeto de petición. Acepta `page` opcional en req.query.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Acepta `page` opcional en req.query.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Lista de películas populares según TMDB.
  */
 async function getPopularMovies(req, res, next) {
@@ -63,9 +63,9 @@ async function getPopularMovies(req, res, next) {
 /**
  * @summary Obtiene las películas mejor valoradas.
  * @description Recupera el ranking de películas con mayor puntuación de la comunidad de TMDB.
- * @param {import('express').Request} req - Objeto de petición. Acepta `page` opcional en req.query.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Acepta `page` opcional en req.query.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Lista paginada de películas "Top Rated".
  */
 async function getTopRatedMovies(req, res, next) {
@@ -81,9 +81,9 @@ async function getTopRatedMovies(req, res, next) {
 /**
  * @summary Obtiene películas similares a una dada.
  * @description Utiliza el ID de una película para recomendar otros títulos con temática o género afín.
- * @param {import('express').Request} req - Objeto de petición. Espera `tmdbId` en params y `page` en query.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `tmdbId` en params y `page` en query.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Lista de películas similares.
  */
 async function getSimilarMovies(req, res, next) {
@@ -100,9 +100,9 @@ async function getSimilarMovies(req, res, next) {
 /**
  * @summary Descubre películas filtrando por géneros.
  * @description Permite explorar el catálogo de TMDB aplicando filtros específicos de categorías cinematográficas.
- * @param {import('express').Request} req - Objeto de petición. Espera `genre` (ID del género) y `page` en req.query.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `genre` (ID del género) y `page` en req.query.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Lista de películas que coinciden con el género.
  */
 async function discoverMovies(req, res, next) {
@@ -120,9 +120,9 @@ async function discoverMovies(req, res, next) {
 /**
  * @summary Obtiene los detalles de una serie de televisión.
  * @description Recupera la info de una serie y la normaliza para que el frontend pueda consumirla bajo una interfaz común (alias "movie"), inyectándola en la DB local.
- * @param {import('express').Request} req - Objeto de petición. Espera `tmdbId` en req.params.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `tmdbId` en req.params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Objeto de la serie normalizado para compatibilidad con el front.
  */
 async function getSeriesDetail(req, res, next) {
@@ -143,9 +143,9 @@ async function getSeriesDetail(req, res, next) {
 
 /**
  * @summary Obtiene las series de televisión populares.
- * @param {import('express').Request} req - Objeto de petición (`page` en query).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición (`page` en query).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Lista paginada de series populares.
  */
 async function getPopularSeries(req, res, next) {
@@ -160,9 +160,9 @@ async function getPopularSeries(req, res, next) {
 
 /**
  * @summary Obtiene las series mejor valoradas.
- * @param {import('express').Request} req - Objeto de petición (`page` en query).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición (`page` en query).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Lista paginada de series "Top Rated".
  */
 async function getTopRatedSeries(req, res, next) {
@@ -177,9 +177,9 @@ async function getTopRatedSeries(req, res, next) {
 
 /**
  * @summary Busca series de TV por nombre.
- * @param {import('express').Request} req - Objeto de petición (`q` para búsqueda).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición (`q` para búsqueda).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Resultados de búsqueda de series.
  */
 async function searchSeries(req, res, next) {
@@ -196,9 +196,9 @@ async function searchSeries(req, res, next) {
 
 /**
  * @summary Busca series similares a una específica.
- * @param {import('express').Request} req - Objeto de petición (`tmdbId` en params).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición (`tmdbId` en params).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Lista de series recomendadas.
  */
 async function getSimilarSeries(req, res, next) {
@@ -216,9 +216,9 @@ async function getSimilarSeries(req, res, next) {
 
 /**
  * @summary Obtiene celebridades populares (actores, directores).
- * @param {import('express').Request} req - Objeto de petición (`page` en query).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición (`page` en query).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Lista de personas populares en la industria.
  */
 async function getPopularPersons(req, res, next) {
@@ -233,9 +233,9 @@ async function getPopularPersons(req, res, next) {
 
 /**
  * @summary Busca personas en la base de datos de TMDB.
- * @param {import('express').Request} req - Objeto de petición (`q` para búsqueda).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición (`q` para búsqueda).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Resultados de búsqueda de personas.
  */
 async function searchPersons(req, res, next) {
@@ -253,9 +253,9 @@ async function searchPersons(req, res, next) {
 /**
  * @summary Obtiene el perfil detallado de una persona.
  * @description Extrae datos biográficos de TMDB y asegura la existencia de la persona en la base de datos local para permitir relaciones (como seguidores o favoritos).
- * @param {import('express').Request} req - Objeto de petición (`tmdbId` en params).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición (`tmdbId` en params).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Datos de la persona combinados (DB local + TMDB).
  */
 async function getPerson(req, res, next) {
@@ -281,9 +281,9 @@ async function getPerson(req, res, next) {
 /**
  * @summary Obtiene la filmografía de una persona.
  * @description Recupera todos los créditos de actuación y técnicos asociados a un individuo.
- * @param {import('express').Request} req - Objeto de petición (`tmdbId` en params).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición (`tmdbId` en params).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Listado de películas y programas de TV donde ha participado.
  */
 async function getPersonCredits(req, res, next) {
@@ -301,9 +301,9 @@ async function getPersonCredits(req, res, next) {
 /**
  * @summary Obtiene el reparto y equipo técnico de una producción.
  * @description Utilidad polimórfica que funciona tanto para películas como para series según el parámetro `:type`.
- * @param {import('express').Request} req - Objeto de petición (`type` [movie|tv] y `tmdbId` en params).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición (`type` [movie|tv] y `tmdbId` en params).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Lista de cast y crew de la obra.
  */
 async function getCredits(req, res, next) {
@@ -319,9 +319,9 @@ async function getCredits(req, res, next) {
 /**
  * @summary Obtiene recomendaciones similares genéricas.
  * @description Utilidad polimórfica para buscar contenido similar basándose en el tipo de medio proporcionado.
- * @param {import('express').Request} req - Objeto de petición (`type` y `tmdbId` en params).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición (`type` y `tmdbId` en params).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Lista de obras similares.
  */
 async function getSimilar(req, res, next) {

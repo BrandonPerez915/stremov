@@ -9,9 +9,9 @@ import { AppError } from './errorController.js';
 /**
  * @summary Crea una nueva lista para un usuario.
  * @description Crea un documento de lista vinculándolo al usuario autenticado y actualiza el perfil del usuario para incluir la referencia a esta nueva lista.
- * @param {import('express').Request} req - Objeto de petición. Espera `name` y `description` en req.body; `userId` debe estar presente por auth.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next para delegar errores.
+ * @param {express.Request} req - Objeto de petición. Espera `name` y `description` en req.body; `userId` debe estar presente por auth.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next para delegar errores.
  * @returns {Promise<void>} Responde con JSON de la lista creada.
  */
 async function postList(req, res, next) {
@@ -50,9 +50,9 @@ async function postList(req, res, next) {
 /**
  * @summary Obtiene los detalles de una lista específica del usuario.
  * @description Recupera una lista asegurando que pertenezca al usuario solicitante y puebla la información básica de las películas contenidas.
- * @param {import('express').Request} req - Objeto de petición. Espera `id` en params y `userId` (auth).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `id` en params y `userId` (auth).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Responde con la lista y sus películas pobladas.
  */
 async function getList(req, res, next) {
@@ -81,9 +81,9 @@ async function getList(req, res, next) {
 /**
  * @summary Obtiene todas las listas de un usuario específico.
  * @description Retorna un resumen de todas las listas creadas por un usuario, incluyendo el conteo de películas en cada una.
- * @param {import('express').Request} req - Objeto de petición. Espera `userId` en params.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `userId` en params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Lista de colecciones del usuario.
  */
 async function getUserLists(req, res, next) {
@@ -110,9 +110,9 @@ async function getUserLists(req, res, next) {
 /**
  * @summary Obtiene la lista especial de "Favoritos" de un usuario.
  * @description Busca específicamente la lista marcada con el nombre 'Favoritos' para el usuario indicado y puebla sus elementos.
- * @param {import('express').Request} req - Objeto de petición. Espera `userId` en params.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `userId` en params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Objeto de la lista de favoritos.
  */
 async function getFavoriteList(req, res, next) {
@@ -143,9 +143,9 @@ async function getFavoriteList(req, res, next) {
 /**
  * @summary Actualiza los metadatos o el contenido de una lista.
  * @description Permite editar el nombre, descripción o el arreglo completo de IDs de películas de una lista, validando siempre la propiedad del recurso.
- * @param {import('express').Request} req - Objeto de petición. Espera `id` en params y campos a actualizar en req.body.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `id` en params y campos a actualizar en req.body.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Responde con la lista actualizada.
  */
 async function patchList(req, res, next) {
@@ -188,9 +188,9 @@ async function patchList(req, res, next) {
 /**
  * @summary Elimina una lista y remueve su referencia del usuario.
  * @description Ejecuta un borrado físico de la lista y utiliza `$pull` para limpiar la referencia del arreglo `lists` en el documento del usuario.
- * @param {import('express').Request} req - Objeto de petición. Espera `id` en params y `userId` (auth).
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `id` en params y `userId` (auth).
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Responde con confirmación del borrado.
  */
 async function deleteList(req, res, next) {
@@ -222,9 +222,9 @@ async function deleteList(req, res, next) {
 /**
  * @summary Agrega una película a una lista existente.
  * @description Inserta un ID de película en el arreglo `movies` de la lista usando `$addToSet` para prevenir entradas duplicadas.
- * @param {import('express').Request} req - Objeto de petición. Espera `id` (lista) y `movieId` en req.params.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `id` (lista) y `movieId` en req.params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Responde con mensaje de éxito.
  */
 async function addMovieToList(req, res, next) {
@@ -256,9 +256,9 @@ async function addMovieToList(req, res, next) {
 /**
  * @summary Remueve una película de una lista.
  * @description Utiliza `$pull` para eliminar la referencia de una película específica dentro del arreglo de una lista, validando propiedad.
- * @param {import('express').Request} req - Objeto de petición. Espera `id` (lista) y `movieId` en req.params.
- * @param {import('express').Response} res - Objeto de respuesta.
- * @param {import('express').NextFunction} next - Middleware Next.
+ * @param {express.Request} req - Objeto de petición. Espera `id` (lista) y `movieId` en req.params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
  * @returns {Promise<void>} Responde con mensaje de éxito.
  */
 async function removeMovieFromList(req, res, next) {
