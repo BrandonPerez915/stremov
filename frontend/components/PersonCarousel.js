@@ -1,3 +1,5 @@
+import { apiClient } from '../scripts/utils/apiClient.js';
+
 const personCarouselSheet = new CSSStyleSheet();
 
 personCarouselSheet.replaceSync(`
@@ -131,8 +133,7 @@ class PersonCarousel extends HTMLElement {
       }
       // Prioridad 3: Fetch a una API URL
       else if (apiUrl) {
-        const response = await fetch(apiUrl);
-        rawData = await response.json();
+        rawData = await apiClient.get(apiUrl);
       } else {
         return; // Si no hay datos por ningún medio, salimos
       }

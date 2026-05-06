@@ -279,21 +279,30 @@ class MovieModal extends HTMLElement {
     // Escuchar el evento de reseña enviada para guardarla
     if (reviewsComponent) {
       reviewsComponent.addEventListener('review-submitted', async (e) => {
-        const { rating, text } = e.detail;
+        const { rating, text, isUpdate } = e.detail;
 
         try {
-          const result = await apiClient.post('/reviews', {
+          let result;
+          const payload = {
             movieId: this._currentBackendMovieId,
             score: rating,
             title: `Review for ${this._currentMovieTitle || 'Media'}`,
             body: text || 'No description provided.'
-          });
+          };
+
+          if (isUpdate) {
+            // Si el componente indica que ya ha calificado, hacemos un PATCH a la ruta "/movie/:id/me"
+            result = await apiClient.patch(`/reviews/movie/${this._currentBackendMovieId}/me`, payload);
+          } else {
+            // Sino, es reseña nueva y se manda POST
+            result = await apiClient.post('/reviews', payload);
+          }
 
           if (window.toast) {
             window.toast({
               type: 'success',
-              title: 'Review submitted',
-              message: 'Your review was posted successfully!',
+              title: isUpdate ? 'Review updated' : 'Review submitted',
+              message: isUpdate ? 'Your changes were saved successfully!' : 'Your review was posted successfully!',
               duration: 3000
             });
           }

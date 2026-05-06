@@ -205,6 +205,19 @@ class MovieModalReviews extends HTMLElement {
     if (!movieId) return;
 
     try {
+      // Cargar la reseña personal si existe (para modo de edición)
+      const myReviewData = await apiClient.get(`/reviews/movie/${movieId}/me`);
+      if (myReviewData && myReviewData.review) {
+        this.hasRated = true;
+        this.currentSelectedRating = myReviewData.review.score;
+        this._myReviewText = myReviewData.review.body;
+      } else {
+        this.hasRated = false;
+        this.currentSelectedRating = 0;
+        this._myReviewText = '';
+      }
+
+      // Cargar reseñas globales
       const data = await apiClient.get(`/reviews/movie/${movieId}`);
       if (data && data.status === 'success') {
         const remoteReviews = data.reviews.map(r => ({
@@ -219,6 +232,7 @@ class MovieModalReviews extends HTMLElement {
         this.setAttribute('overall-rating', data.average ? data.average.toString() : '0.0');
         this.setAttribute('total-ratings', data.total.toString());
         this.setAttribute('total-reviews', data.total.toString());
+        this.setAttribute('bar-distribution', data.distribution || '0,0,0,0,0');
       }
     } catch (error) {
       console.error('Error fetching reviews:', error);
@@ -305,6 +319,13 @@ class MovieModalReviews extends HTMLElement {
     const customTextarea = this.shadowRoot.getElementById('review-textarea');
     const submitBtn = this.shadowRoot.getElementById('submit-rate-btn');
 
+    // Inicializar valores según la reseña previa cargada (si la hay)
+    if (this.hasRated) {
+      toggleBtn.innerHTML = `Edit Rating <span class='rate-review-icon'>edit</span>`;
+      if (starsInput) starsInput.setAttribute('value', this.currentSelectedRating.toString());
+      if (customTextarea && this._myReviewText) customTextarea.setAttribute('value', this._myReviewText);
+    }
+
     // Toggle del formulario
     toggleBtn.addEventListener('click', () => {
       formContainer.classList.toggle('form-hidden');
@@ -315,6 +336,8 @@ class MovieModalReviews extends HTMLElement {
           : `Rate This <span class='rate-review-icon'>trending_up</span>`;
       } else {
         toggleBtn.textContent = 'Cancel';
+        // Render current local component values
+        if (starsInput) starsInput.setAttribute('value', this.currentSelectedRating.toString());
       }
     });
 
@@ -330,17 +353,20 @@ class MovieModalReviews extends HTMLElement {
         return;
       }
 
+      // Variable isUpdate para que MovieModal sepa que metodo usar
+      const isUpdate = this.hasRated;
       this.hasRated = true;
       formContainer.classList.add('form-hidden');
       toggleBtn.innerHTML = `Edit Rating <span class='rate-review-icon'>edit</span>`;
 
-      const reviewText = customTextarea.value;
+      const reviewText = customTextarea.value || customTextarea.getAttribute('value');
 
       // Custom event para cuando se envia una reseña
       this.dispatchEvent(new CustomEvent('review-submitted', {
         detail: {
           rating: this.currentSelectedRating,
-          text: reviewText
+          text: reviewText,
+          isUpdate: isUpdate
         },
         bubbles: true,
         composed: true

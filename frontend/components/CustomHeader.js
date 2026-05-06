@@ -242,6 +242,8 @@ class CustomHeader extends HTMLElement {
       } else {
         searchInput.value = '';
       }
+
+      this._dispatchSearch();
     });
 
     // Búsqueda al presionar "Enter"
@@ -253,12 +255,10 @@ class CustomHeader extends HTMLElement {
     });
   }
 
-  // Lógica centralizada para despachar el evento de búsqueda
+  // Lógica centralizada para lanzar el evento de búsqueda
   _dispatchSearch() {
     const searchInput = this.shadowRoot.querySelector('#search-input');
     const value = searchInput.value ? searchInput.value.trim() : '';
-
-    if (!value) return; // Evitar búsquedas vacías
 
     const searchEvent = new CustomEvent('header-search', {
       detail: { query: value },
