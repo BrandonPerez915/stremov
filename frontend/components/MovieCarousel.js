@@ -66,44 +66,6 @@ movieCarouselSheet.replaceSync(`
   @media (min-width: 1450px) {
     movie-card { width: calc((100% - 200px) / 5); }
   }
-
-  .carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    background: rgba(205, 205, 205, 0.1);
-    color: white;
-    border: 1px solid var(--bg-color, #1f2128);
-    border-radius: 12px;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    backdrop-filter: blur(8px);
-    transition: all 0.2s ease-in-out;
-  }
-
-  .carousel-btn:hover {
-    background: var(--primary-color, #3b82f6);
-    transform: translateY(-50%) scale(1.1);
-  }
-
-  .carousel-btn.left { left: 15px; }
-  .carousel-btn.right { right: 15px; }
-
-  .icon {
-    font-family: 'Material Symbols Outlined';
-    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    font-size: 38px;
-    color: white;
-  }
-
-  @media (max-width: 600px) {
-    .carousel-btn { display: none; }
-  }
 `);
 
 class MovieCarousel extends HTMLElement {
@@ -128,36 +90,12 @@ class MovieCarousel extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <div class="carousel-wrapper">
         <h1>${title}</h1>
-        <button class="carousel-btn left" id="btn-left">
-          <span class="icon">chevron_left</span>
-        </button>
 
         <div class="movie-row" id="movie-list">
           <!-- Las tarjetas se insertarán aquí dinámicamente -->
         </div>
-
-        <button class="carousel-btn right" id="btn-right">
-          <span class="icon">chevron_right</span>
-        </button>
       </div>
     `;
-
-    this._setupListeners();
-  }
-
-  _setupListeners() {
-    const list = this.shadowRoot.getElementById('movie-list');
-    const btnLeft = this.shadowRoot.getElementById('btn-left');
-    const btnRight = this.shadowRoot.getElementById('btn-right');
-
-    btnLeft.addEventListener('click', () => {
-      // Ajuste: scrollBy 100px como tenías originalmente, aunque puedes aumentarlo (ej. 300) para saltos más grandes
-      list.scrollBy({ left: -100, behavior: 'smooth' });
-    });
-
-    btnRight.addEventListener('click', () => {
-      list.scrollBy({ left: 100, behavior: 'smooth' });
-    });
   }
 
   async _fetchAndPopulate() {
@@ -180,6 +118,7 @@ class MovieCarousel extends HTMLElement {
         card.setAttribute('title', title);
         card.setAttribute('poster', `https://image.tmdb.org/t/p/w500${item.poster_path}`);
         card.setAttribute('rating', Math.round(item.vote_average * 10) / 10);
+        card._movieId = item.id; // Guardamos el ID para futuras referencias (como el modal)
 
         // Lógica original de géneros
         if (item.genre_ids.length > 1) {
@@ -189,6 +128,20 @@ class MovieCarousel extends HTMLElement {
         } else {
           card.setAttribute('genres', 'Unknown');
         }
+
+        card.addEventListener('movie-clicked', (event) => {
+
+          const baseURL = type === 'series' ? 'https://api.themoviedb.org/3/tv/' : 'https://api.themoviedb.org/3/movie/';
+          const apiKey = 'b7fcf224d742725d5ab77502464a0f49';
+          const movieId = event.detail.movieId;
+
+          const modal = document.createElement('movie-modal');
+          modal.setAttribute('id', `modal-${movieId}`);
+          modal.setAttribute('api-url', `${baseURL}${movieId}?api_key=${apiKey}&language=en-US`);
+          modal.setAttribute('open', 'true');
+
+          document.body.appendChild(modal);
+        });
 
         listElement.appendChild(card);
       });

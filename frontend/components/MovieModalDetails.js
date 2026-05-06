@@ -9,10 +9,27 @@ movieModalDetailsSheet.replaceSync(`
   height: 100%;
   font-family: 'Inter', sans-serif;
   box-sizing: border-box;
+  overflow: hidden; /* Desktop: Mantiene el componente padre fijo */
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Estilos globales de la barra de scroll para el componente */
+*::-webkit-scrollbar {
+  width: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--borders-color, #3a3f4c);
+  border-radius: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--text-secondary, #8b8e98);
+  border-radius: 10px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--text-primary, #ffffff);
 }
 
 .poster-container {
@@ -37,7 +54,10 @@ movieModalDetailsSheet.replaceSync(`
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-y: auto;
+  width: 100%;
+  min-width: 0;
+  overflow-y: auto; /* Desktop: Solo la información hace scroll */
+  overflow-x: hidden;
   padding-right: 15px;
 }
 
@@ -45,20 +65,12 @@ movieModalDetailsSheet.replaceSync(`
   flex-shrink: 0;
 }
 
-/* Estilos de la barra de scroll */
-.movie-details::-webkit-scrollbar {
-  width: 6px;
-}
-.movie-details::-webkit-scrollbar-track {
-  background: var(--border-color, #3a3f4c);
-  border-radius: 10px;
-}
-.movie-details::-webkit-scrollbar-thumb {
-  background: var(--text-secondary, #8b8e98);
-  border-radius: 10px;
-}
-.movie-details::-webkit-scrollbar-thumb:hover {
-  background: var(--text-primary, #ffffff);
+/* Forzar límites en los carruseles inyectados */
+person-carousel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: block;
 }
 
 .movie-details h1 {
@@ -156,7 +168,6 @@ movieModalDetailsSheet.replaceSync(`
   overflow: hidden;
 }
 
-/* La clase clamped es la que pone los puntos suspensivos */
 .synopsis.clamped {
   -webkit-line-clamp: 3;
 }
@@ -252,13 +263,10 @@ movieModalDetailsSheet.replaceSync(`
 }
 
 .extra-info {
-  margin-top: 10px;
   margin-bottom: 50px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border-top: 1px solid var(--border-color, #3a3f4c);
-  padding-top: 25px;
 }
 
 .extra-info h3 {
@@ -298,9 +306,6 @@ movieModalDetailsSheet.replaceSync(`
   .poster-container img {
     width: 250px;
   }
-  .movie-details {
-    height: 375px;
-  }
 }
 
 @media (max-height: 700px) {
@@ -320,6 +325,9 @@ movieModalDetailsSheet.replaceSync(`
     flex-direction: column;
     align-items: center;
     gap: 25px;
+    padding-right: 5px;
+    overflow-y: auto !important; /* Mobile: Obligamos al HOST a ser el contenedor que hace scroll */
+    overflow-x: hidden !important;
   }
 
   .poster-container img {
@@ -329,9 +337,12 @@ movieModalDetailsSheet.replaceSync(`
 
   .movie-details {
     align-items: center;
-    height: auto;
-    overflow-y: visible;
+    height: auto !important;
+    flex: 0 0 auto !important; /* FIX CLAVE: Anulamos el flex-grow. Obliga a que tome 100% de su propia altura */
+    overflow-y: visible !important; /* FIX CLAVE: Desactiva por completo cualquier intento de scroll interno */
+    overflow-x: visible !important;
     padding-right: 0;
+    width: 100%;
   }
 
   .movie-details h1 {
@@ -401,28 +412,61 @@ class MovieModalDetails extends HTMLElement {
   }
 
   static get observedAttributes() {
+    // Añadimos 'credits-api-url' como la única URL de la API necesaria para obtener cast y crew
     return [
       'poster-src', 'movie-title', 'year', 'tags', 'imdb-rating',
       'age-badge', 'duration', 'synopsis', 'awards', 'released',
-      'country', 'language'
+      'country', 'language', 'credits-api-url'
     ];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue !== newValue) {
-      this._render();
-      setTimeout(this.checkOverflow, 100);
+      if (name === 'credits-api-url') {
+        this._fetchCredits(); // Si cambia la URL, buscamos los nuevos créditos
+      } else {
+        this._render();
+        setTimeout(this.checkOverflow, 100);
+      }
     }
   }
 
   connectedCallback() {
     this._render();
+    this._fetchCredits(); // Buscamos la data al inicializar
     window.addEventListener('resize', this.checkOverflow);
     setTimeout(this.checkOverflow, 100);
   }
 
   disconnectedCallback() {
     window.removeEventListener('resize', this.checkOverflow);
+  }
+
+  // Nuevo método para obtener y repartir la data a los carruseles
+  async _fetchCredits() {
+    const creditsUrl = this.getAttribute('credits-api-url');
+    if (!creditsUrl) return;
+
+    try {
+      const response = await fetch(creditsUrl);
+      const data = await response.json();
+
+      // Buscamos los componentes dentro del Shadow DOM
+      const castCarousel = this.shadowRoot.getElementById('cast-carousel');
+      const crewCarousel = this.shadowRoot.getElementById('crew-carousel');
+
+      // Asignamos la data directamente usando el Setter (.data) que creamos antes
+      if (castCarousel && data.cast) {
+        castCarousel.data = data.cast;
+      }
+
+      if (crewCarousel && data.crew) {
+        crewCarousel.data = data.crew;
+      }
+
+    } catch (error) {
+      console.error("Error al obtener los créditos de TMDB:", error);
+    }
   }
 
   _render() {
@@ -478,6 +522,12 @@ class MovieModalDetails extends HTMLElement {
           READ MORE <span class="icon">keyboard_arrow_down</span>
         </div>
 
+        <h3>Cast</h3>
+        <person-carousel id="cast-carousel"></person-carousel>
+
+        <h3>Crew</h3>
+        <person-carousel id="crew-carousel" filter-department="Directing"></person-carousel>
+
         <div class="extra-info">
           <h3>Extra Information</h3>
           <div class="info-row">
@@ -514,18 +564,15 @@ class MovieModalDetails extends HTMLElement {
       const isExpanded = this.synopsisEl.classList.contains('expanded');
 
       if (!isExpanded) {
-        // --- ABRIENDO ---
         this.synopsisEl.classList.remove('clamped');
         this.synopsisEl.classList.add('expanded');
         this.readMoreBtn.classList.add('open');
         this.readMoreBtn.firstChild.textContent = 'READ LESS ';
       } else {
-        // --- CERRANDO ---
         this.synopsisEl.classList.remove('expanded');
         this.readMoreBtn.classList.remove('open');
         this.readMoreBtn.firstChild.textContent = 'READ MORE ';
 
-        // Esperar a la animacion de cierre
         setTimeout(() => {
           if (!this.synopsisEl.classList.contains('expanded')) {
             this.synopsisEl.classList.add('clamped');
@@ -534,7 +581,6 @@ class MovieModalDetails extends HTMLElement {
       }
     });
 
-    // Custom events para los botones de rate y watchlist
     this.shadowRoot.getElementById('btn-rate').addEventListener('click', () => {
       this.dispatchEvent(new CustomEvent('action-rate', { bubbles: true, composed: true }));
     });

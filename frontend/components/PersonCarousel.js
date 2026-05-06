@@ -24,7 +24,7 @@ personCarouselSheet.replaceSync(`
 
   .person-row {
     width: 100%;
-    padding: 10px 70px 50px 70px;
+    padding: 10px 70px 50px 20px;
     display: flex;
     gap: 30px; /* Un poco menos de gap que las películas para que se vean unidos */
     overflow-x: auto;
@@ -46,44 +46,6 @@ personCarouselSheet.replaceSync(`
     scroll-snap-align: start;
     width: 160px; /* Tamaño ideal que respeta el min-width y max-width de tu tarjeta */
   }
-
-  .carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    background: rgba(205, 205, 205, 0.1);
-    color: white;
-    border: 1px solid var(--bg-color, #1f2128);
-    border-radius: 12px;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    backdrop-filter: blur(8px);
-    transition: all 0.2s ease-in-out;
-  }
-
-  .carousel-btn:hover {
-    background: var(--primary-color, #3b82f6);
-    transform: translateY(-50%) scale(1.1);
-  }
-
-  .carousel-btn.left { left: 15px; }
-  .carousel-btn.right { right: 15px; }
-
-  .icon {
-    font-family: 'Material Symbols Outlined';
-    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    font-size: 38px;
-    color: white;
-  }
-
-  @media (max-width: 600px) {
-    .carousel-btn { display: none; }
-  }
 `);
 
 class PersonCarousel extends HTMLElement {
@@ -91,71 +53,107 @@ class PersonCarousel extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.adoptedStyleSheets = [personCarouselSheet];
+    this._directData = null; // Almacenará los datos si se pasan por JS
   }
 
   static get observedAttributes() {
-    return ['title', 'api-url', 'filter-department'];
+    // Añadido 'json-data' para detectar cuando se inyecta desde el HTML
+    return ['title', 'api-url', 'filter-department', 'json-data'];
+  }
+
+  // Getter y Setter para inyectar datos directamente desde JS
+  set data(value) {
+    this._directData = value;
+    this._loadAndPopulate();
+  }
+
+  get data() {
+    return this._directData;
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue) {
+      if (name === 'title') {
+        this._render();
+      }
+      if (name === 'api-url' || name === 'json-data' || name === 'filter-department') {
+        this._loadAndPopulate();
+      }
+    }
   }
 
   connectedCallback() {
     this._render();
-    this._fetchAndPopulate();
+    this._loadAndPopulate();
   }
 
   _render() {
-    const title = this.getAttribute('title') || 'Cast & Crew';
+    const title = this.getAttribute('title');
 
-    this.shadowRoot.innerHTML = `
-      <div class="carousel-wrapper">
-        <h1>${title}</h1>
-        <button class="carousel-btn left" id="btn-left">
-          <span class="icon">chevron_left</span>
-        </button>
-
-        <div class="person-row" id="person-list">
-          <!-- Las tarjetas se insertarán aquí dinámicamente -->
+    // Solo creamos la estructura si no existe para no borrar las tarjetas en un re-render del título
+    if (!this.shadowRoot.getElementById('person-list')) {
+      this.shadowRoot.innerHTML = `
+        <div class="carousel-wrapper">
+          <h1 id="carousel-title" style="display: ${title ? 'block' : 'none'};">${title || ''}</h1>
+          <div class="person-row" id="person-list">
+            <!-- Las tarjetas se insertarán aquí dinámicamente -->
+          </div>
         </div>
-
-        <button class="carousel-btn right" id="btn-right">
-          <span class="icon">chevron_right</span>
-        </button>
-      </div>
-    `;
-
-    this._setupListeners();
+      `;
+    } else {
+      // Si ya existe, solo actualizamos el título
+      const titleEl = this.shadowRoot.getElementById('carousel-title');
+      if (titleEl) {
+        titleEl.textContent = title || '';
+        titleEl.style.display = title ? 'block' : 'none';
+      }
+    }
   }
 
-  _setupListeners() {
-    const list = this.shadowRoot.getElementById('person-list');
-    const btnLeft = this.shadowRoot.getElementById('btn-left');
-    const btnRight = this.shadowRoot.getElementById('btn-right');
-
-    btnLeft.addEventListener('click', () => {
-      // 160px de tarjeta + 30px de gap
-      list.scrollBy({ left: -190, behavior: 'smooth' });
-    });
-
-    btnRight.addEventListener('click', () => {
-      list.scrollBy({ left: 190, behavior: 'smooth' });
-    });
-  }
-
-  async _fetchAndPopulate() {
+  async _loadAndPopulate() {
     const apiUrl = this.getAttribute('api-url');
+    const jsonString = this.getAttribute('json-data');
     const filterDept = this.getAttribute('filter-department'); // Ej: "Directing"
     const listElement = this.shadowRoot.getElementById('person-list');
 
-    if (!apiUrl) return;
+    if (!listElement) return;
+
+    let rawData = null;
 
     try {
-      const response = await fetch(apiUrl);
-      const data = await response.json();
+      // Prioridad 1: Datos pasados directamente por JavaScript (element.data = ...)
+      if (this._directData) {
+        rawData = this._directData;
+      }
+      // Prioridad 2: Datos pasados en el atributo HTML (json-data='[...]')
+      else if (jsonString) {
+        rawData = JSON.parse(jsonString);
+      }
+      // Prioridad 3: Fetch a una API URL
+      else if (apiUrl) {
+        const response = await fetch(apiUrl);
+        rawData = await response.json();
+      } else {
+        return; // Si no hay datos por ningún medio, salimos
+      }
 
-      let peopleList = data.cast || data.results || [];
+      // Normalizar la data (soporta arreglos directos o el formato de TMDB)
+      let peopleList = [];
+      if (Array.isArray(rawData)) {
+        peopleList = rawData;
+      } else if (rawData && rawData.cast) {
+        peopleList = rawData.cast; // Generalmente para películas/series
+      } else if (rawData && rawData.results) {
+        peopleList = rawData.results; // Generalmente para búsquedas de personas
+      }
 
+      // Filtrar por departamento si el atributo está presente
       if (filterDept) {
         peopleList = peopleList.filter(person => person.known_for_department === filterDept);
       }
+
+      // Limpiar el contenedor antes de agregar las nuevas tarjetas
+      listElement.innerHTML = '';
 
       peopleList.forEach(person => {
         const card = document.createElement('person-profile-card');
@@ -165,13 +163,15 @@ class PersonCarousel extends HTMLElement {
           : 'https://images.unsplash.com/photo-1544502062-f82887f03d1c?auto=format&fit=crop&w=400&q=80';
 
         const name = person.name || 'Unknown';
-        const character = person.character || 'Himself/Herself';
+        const character = person.character;
+        const job = person.job;
         const role = person.known_for_department || person.job || 'Actor';
         const popularity = person.popularity ? (Math.round(person.popularity * 10) / 10).toString() : '0.0';
 
         card.setAttribute('img-src', imgSrc);
         card.setAttribute('name', name);
-        card.setAttribute('character', character);
+        if (character) card.setAttribute('character', character);
+        if (job) card.setAttribute('job', job);
         card.setAttribute('role', role);
         card.setAttribute('popularity', popularity);
 
@@ -179,7 +179,7 @@ class PersonCarousel extends HTMLElement {
       });
 
     } catch (error) {
-      console.error("Error cargando el JSON en el carrusel de personas:", error);
+      console.error("Error cargando los datos en el carrusel de personas:", error);
     }
   }
 }
