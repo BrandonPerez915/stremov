@@ -56,7 +56,7 @@ async function register({ username, email, password }) {
 
 //USUARIOS
 
-async function getUser({ username }) {
+async function getUser(username) {
   return publicFetch(`/api/users/${username}`);
 }
 
@@ -67,29 +67,29 @@ async function updateUser({ username, data }) {
   });
 }
 
-async function deleteUser({ username }) {
+async function deleteUser(username) {
   return authFetch(`/api/users/${username}`, {
     method: 'DELETE'
   });
 }
 
-async function followUser({ username }) {
+async function followUser(username) {
   return authFetch(`/api/users/${username}/follow`, {
     method: 'POST'
   });
 }
 
-async function unfollowUser({ username }) {
+async function unfollowUser(username) {
   return authFetch(`/api/users/${username}/follow`, {
     method: 'DELETE'
   });
 }
 
-async function getFollowers({ username }) {
+async function getFollowers(username) {
   return publicFetch(`/api/users/${username}/followers`);
 }
 
-async function getFollowing({ username }) {
+async function getFollowing(username) {
   return publicFetch(`/api/users/${username}/following`);
 }
 
@@ -213,7 +213,7 @@ async function createReview({ movieId, score, title, body }) {
 }
 
 async function getMovieReviews(movieID) {
-  return publicFetch(`/api/reviews/movie/${movieId}`);
+  return publicFetch(`/api/reviews/movie/${movieID}`);
 }
 
 async function getMyReview(movieId) {
