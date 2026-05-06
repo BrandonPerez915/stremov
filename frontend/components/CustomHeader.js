@@ -67,7 +67,6 @@ customHeaderSheet.replaceSync(`
   margin: 0;
   width: 10px;
   height: 10px;
-
   top: 3px;
   right: 3px;
   background-color: var(--red-100);
@@ -75,6 +74,11 @@ customHeaderSheet.replaceSync(`
   border-radius: 100%;
   font-size: 8px;
   transition: background-color 0.3s ease;
+}
+
+.profile-wrapper {
+  position: relative;
+  flex-shrink: 0;
 }
 
 .profile-pic {
@@ -85,6 +89,131 @@ customHeaderSheet.replaceSync(`
   cursor: pointer;
   border: 2px solid transparent;
   flex-shrink: 0;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.profile-pic:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 25%, transparent);
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  min-width: 210px;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  z-index: 9000;
+  overflow: hidden;
+
+  opacity: 0;
+  transform: translateY(-8px) scale(0.97);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform-origin: top right;
+}
+
+.profile-dropdown.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* User summary at top of dropdown */
+.dropdown-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dropdown-user-info img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--primary-color);
+}
+
+.dropdown-user-info .user-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dropdown-user-info .user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-user-info .user-email {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Dropdown items */
+.dropdown-section {
+  padding: 8px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+  text-decoration: none;
+}
+
+.dropdown-item:hover {
+  background-color: color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+.dropdown-item .item-icon {
+  font-family: 'Material Symbols Outlined';
+  font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+  font-size: 20px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 4px 8px;
+}
+
+/* Danger item */
+.dropdown-item.danger {
+  color: var(--red-100);
+}
+.dropdown-item.danger .item-icon {
+  color: var(--red-100);
+}
+.dropdown-item.danger:hover {
+  background-color: color-mix(in srgb, var(--red-100) 10%, transparent);
 }
 
 custom-input {
@@ -139,7 +268,6 @@ label {
   #close-icon {
     display: block;
     position: absolute;
-
     right: 75px;
     top: 50%;
     transform: translateY(-50%);
@@ -159,6 +287,9 @@ class CustomHeader extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.adoptedStyleSheets = [customHeaderSheet];
+    this.onSearch = null;
+    this._dropdownOpen = false;
+    this._boundCloseDropdown = this._closeDropdown.bind(this);
   }
 
   connectedCallback() {
@@ -166,11 +297,37 @@ class CustomHeader extends HTMLElement {
     this._setupListeners();
   }
 
+  disconnectedCallback() {
+    document.removeEventListener('click', this._boundCloseDropdown);
+  }
+
+  _isLoggedIn() {
+    return !!localStorage.getItem('jwtToken');
+  }
+
+  // Call this after login to refresh the header state
+  refresh() {
+    this._render();
+    this._setupListeners();
+  }
+
   _render() {
     const inputPlaceholder = this.getAttribute('placeholder') || 'Input your search...';
-    const imgSrc = this.getAttribute('img-src') || '';
+    const onSearchCallback = this.getAttribute('on-search') || null;
     const hasNotifications = this.hasAttribute('has-notifications');
+    const isLoggedIn = this._isLoggedIn();
+
+    this.onSearch = onSearchCallback ? new Function('searchTerm', onSearchCallback) : null;
     const notificationsHTML = hasNotifications ? `<span class="notification-badge"></span>` : '';
+
+    // Default avatar when not logged in
+    const defaultAvatar = 'https://ui-avatars.com/api/?name=Guest&background=3a3f4c&color=888&size=100';
+    const imgSrc = this.getAttribute('img-src') || defaultAvatar;
+
+    // Dropdown content differs based on auth state
+    const dropdownContent = isLoggedIn
+      ? this._renderAuthDropdown(imgSrc)
+      : this._renderGuestDropdown();
 
     this.shadowRoot.innerHTML = `
       <header class="custom-header">
@@ -178,7 +335,6 @@ class CustomHeader extends HTMLElement {
           <span id="menu-icon" class="icon header-icon">menu</span>
         </div>
         <div id="header-right-side">
-
           <custom-input
             id="search-input"
             type="text"
@@ -190,10 +346,85 @@ class CustomHeader extends HTMLElement {
           <span id="search-icon" class="icon header-icon">search</span>
           <span id="notifications-icon" class="icon header-icon">notifications ${notificationsHTML}</span>
 
-          <img class="profile-pic" src="${imgSrc}" alt="Profile">
+          <div class="profile-wrapper">
+            <img id="profile-pic" class="profile-pic" src="${imgSrc}" alt="Profile">
+            <div class="profile-dropdown" id="profile-dropdown">
+              ${dropdownContent}
+            </div>
+          </div>
         </div>
       </header>
     `;
+  }
+
+  _renderAuthDropdown(imgSrc) {
+    // Try to read stored user info
+    const storedUser = this._getStoredUser();
+    const name = storedUser?.username || this.getAttribute('username') || 'My Account';
+    const email = storedUser?.email || this.getAttribute('email') || '';
+
+    return `
+      <div class="dropdown-user-info">
+        <img src="${imgSrc}" alt="${name}">
+        <div class="user-text">
+          <span class="user-name">${name}</span>
+          ${email ? `<span class="user-email">${email}</span>` : ''}
+        </div>
+      </div>
+      <div class="dropdown-section">
+        <button class="dropdown-item" id="dd-profile">
+          <span class="item-icon">manage_accounts</span>
+          Profile Settings
+        </button>
+        <button class="dropdown-item" id="dd-settings">
+          <span class="item-icon">settings</span>
+          Settings
+        </button>
+      </div>
+      <div class="dropdown-divider"></div>
+      <div class="dropdown-section">
+        <button class="dropdown-item danger" id="dd-logout">
+          <span class="item-icon">logout</span>
+          Sign Out
+        </button>
+      </div>
+    `;
+  }
+
+  _renderGuestDropdown() {
+    return `
+      <div class="dropdown-section">
+        <button class="dropdown-item" id="dd-login">
+          <span class="item-icon">login</span>
+          Sign In
+        </button>
+        <button class="dropdown-item" id="dd-register">
+          <span class="item-icon">person_add</span>
+          Create Account
+        </button>
+      </div>
+    `;
+  }
+
+  _getStoredUser() {
+    try {
+      const raw = localStorage.getItem('userData');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  _toggleDropdown() {
+    this._dropdownOpen = !this._dropdownOpen;
+    const dropdown = this.shadowRoot.getElementById('profile-dropdown');
+    dropdown?.classList.toggle('open', this._dropdownOpen);
+  }
+
+  _closeDropdown() {
+    this._dropdownOpen = false;
+    const dropdown = this.shadowRoot.getElementById('profile-dropdown');
+    dropdown?.classList.remove('open');
   }
 
   _setupListeners() {
@@ -202,6 +433,7 @@ class CustomHeader extends HTMLElement {
     const notificationsIcon = this.shadowRoot.querySelector('#notifications-icon');
     const closeIcon = this.shadowRoot.querySelector('#close-icon');
     const searchInput = this.shadowRoot.querySelector('#search-input');
+    const profilePic = this.shadowRoot.getElementById('profile-pic');
     const sidebar = document.querySelector('custom-sidebar');
     const backdrop = document.querySelector('.backdrop');
 
@@ -214,33 +446,30 @@ class CustomHeader extends HTMLElement {
       }
     });
 
+    // Search toggle
     const toggleIcons = () => {
-      menuIcon.classList.toggle('hidden-icon');
-      notificationsIcon.classList.toggle('hidden-icon');
-      searchIcon.classList.toggle('hidden-icon');
-      closeIcon.classList.toggle('hidden-icon');
+      menuIcon?.classList.toggle('hidden-icon');
+      notificationsIcon?.classList.toggle('hidden-icon');
+      searchIcon?.classList.toggle('hidden-icon');
+      closeIcon?.classList.toggle('hidden-icon');
     };
 
     // Mostrar la barra de búsqueda en móvil
     searchIcon.addEventListener('click', () => {
       toggleIcons();
-      searchInput.classList.add('visible');
-
+      searchInput?.classList.add('visible');
       setTimeout(() => {
-        const inner = searchInput.shadowRoot ? searchInput.shadowRoot.querySelector('input') : searchInput;
-        if(inner) inner.focus();
+        const inner = searchInput?.shadowRoot?.querySelector('input');
+        if (inner) inner.focus();
       }, 50);
     });
 
     // Ocultar la barra de búsqueda en móvil
     closeIcon.addEventListener('click', () => {
       toggleIcons();
-      searchInput.classList.remove('visible');
-
-      if (typeof searchInput._updateValue === 'function') {
+      searchInput?.classList.remove('visible');
+      if (typeof searchInput?._updateValue === 'function') {
         searchInput._updateValue('');
-      } else {
-        searchInput.value = '';
       }
 
       this._dispatchSearch();
@@ -267,6 +496,46 @@ class CustomHeader extends HTMLElement {
     });
 
     this.dispatchEvent(searchEvent);
+    // toggle del dropdown del perfil
+    profilePic?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this._toggleDropdown();
+    });
+
+    //listeners de elementos del dropdown
+    const isLoggedIn = this._isLoggedIn();
+
+    if (isLoggedIn) {
+      this.shadowRoot.getElementById('dd-profile')?.addEventListener('click', () => {
+        this._closeDropdown();
+        window.location.href = '/profile';
+      });
+
+      this.shadowRoot.getElementById('dd-settings')?.addEventListener('click', () => {
+        this._closeDropdown();
+        window.location.href = '/profile';
+      });
+
+      this.shadowRoot.getElementById('dd-logout')?.addEventListener('click', () => {
+        this._closeDropdown();
+        // Dispatch event — main.js / profile page handles the modal
+        this.dispatchEvent(new CustomEvent('header-logout-request', {
+          bubbles: true,
+          composed: true
+        }));
+      });
+    } else {
+      this.shadowRoot.getElementById('dd-login')?.addEventListener('click', () => {
+        window.location.href = '/auth';
+      });
+      this.shadowRoot.getElementById('dd-register')?.addEventListener('click', () => {
+        window.location.href = '/auth';
+      });
+    }
+
+    // Close dropdown when clicking outside
+    document.removeEventListener('click', this._boundCloseDropdown);
+    document.addEventListener('click', this._boundCloseDropdown);
   }
 }
 

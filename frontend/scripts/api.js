@@ -35,6 +35,7 @@ async function publicFetch(url) {
 
 function logout() {
   localStorage.removeItem('jwtToken');
+  localStorage.removeItem('userData');
   window.location.href = '/home';
 }
 
@@ -57,7 +58,7 @@ async function register({ username, email, password }) {
 //USUARIOS
 
 async function getUser(username) {
-  return publicFetch(`/api/users/${username}`);
+  return authFetch(`/api/users/${username}`);
 }
 
 async function updateUser({ username, data }) {
@@ -363,5 +364,5 @@ export {
   getPerson,
   createPerson,
   updatePerson,
-  deletePerson,
+  deletePerson
 };

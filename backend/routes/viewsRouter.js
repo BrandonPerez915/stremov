@@ -60,4 +60,8 @@ viewsRouter.get('/search.html', (req, res) => {
   res.sendFile('/views/search.html', { root: './frontend' })
 })
 
+viewsRouter.get('/profileConfig', (req, res) => {
+  res.sendFile('/views/profileConfig.html', { root: './frontend' })
+})
+
 export default viewsRouter
