@@ -1,0 +1,172 @@
+@import './global.css';
+
+body {
+  background-color: var(--bg-color);
+  height: 100dvh;
+  width: 100dvw;
+  overflow-x: hidden;
+  padding-left: 260px;
+  padding-top: 90px;
+}
+
+custom-header {
+  width: calc(100% - 260px);
+  background-color: var(--bg-color);
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 900;
+}
+
+custom-sidebar {
+  width: 260px;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  animation: slide-in 0.3s ease-out both;
+  z-index: 1000;
+}
+
+h1 {
+  color: var(--text-primary);
+  font-size: 24px;
+  padding-left: 30px;
+}
+
+.backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.backdrop.hidden {
+  display: none !important;
+}
+
+custom-sidebar.open { animation: slide-in 0.3s ease-out both; }
+custom-sidebar.closed { animation: slide-out 0.3s ease-out both; }
+
+@media (max-width: 900px) {
+  body {
+    padding: 80px 0;
+  }
+
+  custom-header {
+    width: 100%;
+  }
+
+  custom-sidebar {
+    animation: slide-out 0.3s ease-out both;
+  }
+
+  .backdrop {
+    display: block;
+  }
+}
+
+@keyframes slide-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slide-out {
+  to { transform: translateX(-100%); }
+}
+
+movie-modal-header {
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+#movie-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-color);
+
+  width: 1000px;
+  max-width: 90vw;
+  height: 800px;
+  max-height: 90vh;
+
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 40px;
+  box-sizing: border-box;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+#movie-information-modal {
+  flex-grow: 1;
+  display: flex;
+  min-height: 0;
+}
+
+h1.cast-title {
+  padding-bottom: 30px;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0px;
+  color: var(--text-primary);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.open {
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+.close {
+  animation: fade-out 0.4s ease-out forwards;
+}
+
+#movie-modal::-webkit-scrollbar { width: 8px; }
+#movie-modal::-webkit-scrollbar-track { background: transparent; }
+#movie-modal::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+
+movie-modal-header,
+movie-modal-reviews {
+  width: 100%;
+}
+
+@media (max-width: 700px) {
+  #movie-modal {
+    padding: 20px;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+}
