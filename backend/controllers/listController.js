@@ -46,8 +46,9 @@ async function getList(req, res, next) {
 
   try {
     const list = await List.findOne({ _id: id, owner: userId })
-      .select('name movies')
-      .populate('movies', 'title posterUrl');
+      .select('name description movies owner')
+      .populate('owner', 'username avatarUrl')
+      .populate('movies', 'title posterUrl tmdbId imdbScore genres overview releaseDate runtime runtimeFormatted rated');
 
     if (!list) {
       throw new AppError('Lista no encontrada', StatusCodes.NOT_FOUND, 'ListNotFound');

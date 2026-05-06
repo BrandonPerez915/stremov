@@ -142,8 +142,8 @@ class CustomSidebar extends HTMLElement {
         <section class="menu-section">
           <h3 class="section-title">News Feed</h3>
           <nav class="nav-menu" id="main-nav">
-            <sidebar-item icon="home" text="Home" href="#" active></sidebar-item>
-            <sidebar-item icon="video_library" text="Your Lists" href="#"></sidebar-item>
+            <sidebar-item icon="home" text="Home" href="/home" active></sidebar-item>
+            <sidebar-item icon="video_library" text="Your Lists" href="/your-lists"></sidebar-item>
             <sidebar-item icon="group" text="Social" href="#"></sidebar-item>
             <sidebar-item icon="trending_up" text="Ranking" href="#"></sidebar-item>
             <sidebar-item icon="settings" text="Settings" href="#"></sidebar-item>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark" primary-color="blue">
+
+<head>
+	<link rel="stylesheet" href="../assets/css/home.css">
+	<link rel="stylesheet" href="../assets/css/yourLists.css">
+
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Your Lists - stremov</title>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,250,0,0" />
+
+	<script src="../components/CustomInput.js" defer></script>
+	<script src="../components/CustomTextarea.js" defer></script>
+	<script src="../components/SidebarUser.js" defer></script>
+	<script src="../components/SidebarItem.js" defer></script>
+	<script src="../components/CustomHeader.js" defer></script>
+	<script src="../components/CustomSidebar.js" defer></script>
+	<script src="../components/ListCard.js" defer></script>
+	<script src="../components/CreateListModal.js" defer></script>
+	<script src="../components/YourListsView.js" defer></script>
+</head>
+
+<body>
+	<div class="backdrop hidden"></div>
+
+	<custom-header
+		placeholder="Search lists..."
+		img-src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&auto=format&fit=crop"
+		on-search="console.log('Buscando listas:', searchTerm)"
+		has-notifications></custom-header>
+
+	<custom-sidebar
+		following-users-info='[
+			{"name": "Brandon Perez", "imgSrc": "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D", "verified": true},
+			{"name": "Alex Juarez", "imgSrc": "https://images.unsplash.com/photo-1654110455429-cf322b40a906?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D", "verified": false},
+			{"name": "Carla Torres", "imgSrc": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&auto=format&fit=crop", "verified": true}
+		]'></custom-sidebar>
+
+  
+	<your-lists-view></your-lists-view>
+  
+
+</html>

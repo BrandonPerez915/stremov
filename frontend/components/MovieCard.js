@@ -2,11 +2,11 @@ const movieCardSheet = new CSSStyleSheet();
 
 movieCardSheet.replaceSync(`
   :host {
-    display: inline-block;
+    display: block;
     font-family: 'Inter', sans-serif;
-    flex: 1;
-    min-width: 170px;
-    max-width: 350px;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
   }
 
   .icon {
