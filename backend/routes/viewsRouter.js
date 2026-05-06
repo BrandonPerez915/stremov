@@ -51,12 +51,13 @@ viewsRouter.get('/lists/:id', (req, res) => {
   res.sendFile('/views/listDetail.html', { root: './frontend' })
 })
 
+
 /**
- * @route GET /movie/:id
- * @summary Sirve la vista de detalle de una película.
+ * @route GET /search.html
+ * @summary Sirve la vista de resultados de búsqueda basada en query string.
  */
-viewsRouter.get('/movie/:id', (req, res) => {
-  res.sendFile('/views/movie.html', { root: './frontend' })
+viewsRouter.get('/search.html', (req, res) => {
+  res.sendFile('/views/search.html', { root: './frontend' })
 })
 
 export default viewsRouter
