@@ -35,7 +35,20 @@ async function loginUser(username, password) {
   try {
     const data = await apiClient.post('/login', payload);
 
+    //guardar token
     localStorage.setItem('jwtToken', data.token);
+
+    //guardamos datos del usuario para usarlos en el frontend sin llamadas extra
+    if (data.token) {
+      try {
+        const payload = JSON.parse(atob(data.token.split('.')[1]));
+        localStorage.setItem('userData', JSON.stringify({
+          _id: payload.userId,
+          username: payload.username,
+          role: payload.role
+        }));
+      } catch {}
+    }
 
     window.toast({
       type: 'success',
@@ -62,7 +75,7 @@ const registerSection = document.getElementById('register-section');
 const loginForm = document.getElementById('login-form');
 const loginSection = document.getElementById('login-section');
 
-function validateForm(form, hasToConfirmPassword=false) {
+function validateForm(form, hasToConfirmPassword = false) {
   let formIsValid = true;
   const inputs = form.querySelectorAll('custom-input');
 
@@ -80,7 +93,7 @@ function validateForm(form, hasToConfirmPassword=false) {
         input.showError('Invalid data');
       }
     }
-  })
+  });
 
   if (hasToConfirmPassword) {
     const passwordInput = form.querySelector('.password-input');
@@ -95,7 +108,7 @@ function validateForm(form, hasToConfirmPassword=false) {
   return formIsValid;
 }
 
-loginForm.addEventListener('submit',  async (e) => {
+loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const formIsValid = validateForm(loginForm);
 
@@ -105,19 +118,15 @@ loginForm.addEventListener('submit',  async (e) => {
       title: 'Validation Error',
       message: 'Please correct the errors in the form.',
       duration: 3000
-    })
-    return
+    });
+    return;
   }
 
   const usernameInput = e.target.querySelector('custom-input[name="username"]');
   const passwordInput = e.target.querySelector('custom-input[name="password"]');
-  const payload = {
-    username: usernameInput.value || '',
-    password: passwordInput.value || ''
-  };
 
   try {
-    await loginUser(payload.username, payload.password);
+    await loginUser(usernameInput.value || '', passwordInput.value || '');
   } catch (error) {
     window.toast({
       type: 'error',
@@ -138,14 +147,15 @@ registerForm.addEventListener('submit', async (e) => {
       title: 'Validation Error',
       message: 'Please correct the errors in the form.',
       duration: 3000
-    })
-    return
+    });
+    return;
   }
 
   const usernameInput = e.target.querySelector('custom-input[name="username"]');
   const emailInput = e.target.querySelector('custom-input[name="email"]');
   const passwordInput = e.target.querySelector('custom-input[name="password"]');
   const confirmPasswordInput = e.target.querySelector('custom-input[name="confirm-password"]');
+
   const payload = {
     username: usernameInput.value || '',
     email: emailInput.value || '',
@@ -168,16 +178,13 @@ registerForm.addEventListener('submit', async (e) => {
       message: 'Your account has been created! You can now log in.',
       duration: 3000
     });
-
   } catch (error) {
     if (error.statusCode === 409) {
       const cause = error.cause || {};
       if (cause.field === 'username') {
-        const nameInput = registerForm.querySelector('custom-input[name="username"]');
-        nameInput.showError('This username already exists');
+        registerForm.querySelector('custom-input[name="username"]')?.showError('This username already exists');
       } else if (cause.field === 'email') {
-        const emailInput = registerForm.querySelector('custom-input[name="email"]');
-        emailInput.showError('This email already exists');
+        registerForm.querySelector('custom-input[name="email"]')?.showError('This email already exists');
       }
       return;
     }
@@ -189,4 +196,4 @@ registerForm.addEventListener('submit', async (e) => {
       duration: 3000
     });
   }
-})
+});

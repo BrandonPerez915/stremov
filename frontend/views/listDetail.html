@@ -10,11 +10,22 @@
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,250,0,0" />
 
+	<!-- Componentes base -->
+	<script src="../components/CustomInput.js" defer></script>
+	<script src="../components/CustomTextarea.js" defer></script>
+	<script src="../components/CustomToast.js" defer></script>
 	<script src="../components/SidebarUser.js" defer></script>
 	<script src="../components/SidebarItem.js" defer></script>
+	<script src="../components/CustomHeader.js" defer></script>
 	<script src="../components/CustomSidebar.js" defer></script>
-	<script src="../components/MovieCard.js" defer></script>
-	<script src="../components/MovieModalHeader.js" defer></script>
+
+	<!-- MovieCard y Modal -->
+	<script src="../components/MovieCard.js"></script>
+	<script src="../components/StarsInput.js" defer></script>
+	<script src="../components/RatingBars.js" defer></script>
+	<script src="../components/ReviewCard.js" defer></script>
+	<script src="../components/PersonProfileCard.js" defer></script>
+	<script src="../components/PersonCarousel.js" defer></script>
 	<script src="../components/MovieModalDetails.js" defer></script>
 	<script src="../components/MovieModalReviews.js" defer></script>
 	<script src="../components/MovieModalSimilar.js" defer></script>
@@ -24,12 +35,14 @@
 <body>
 	<div class="backdrop hidden"></div>
 
+	<custom-header
+		placeholder="Search something..."
+		has-notifications>
+	</custom-header>
+
 	<custom-sidebar
-		following-users-info='[
-			{"name": "Brandon Perez", "imgSrc": "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D", "verified": true},
-			{"name": "Alex Juarez", "imgSrc": "https://images.unsplash.com/photo-1654110455429-cf322b40a906?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D", "verified": false},
-			{"name": "Carla Torres", "imgSrc": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&auto=format&fit=crop", "verified": true}
-		]'></custom-sidebar>
+		following-users-info='[]'>
+	</custom-sidebar>
 
 	<main class="list-detail-page">
 		<section class="detail-hero">
@@ -39,8 +52,6 @@
 				<p class="detail-description" id="list-description">We are fetching the list information.</p>
 
 				<div class="detail-meta">
-					<div class="meta-pill"><span>Owner</span> <strong id="list-owner">Loading...</strong></div>
-					<div class="meta-pill"><span>List ID</span> <strong id="list-id">-</strong></div>
 					<div class="meta-pill"><span>Movies</span> <strong id="movies-count">0 movies</strong></div>
 				</div>
 			</div>
@@ -53,6 +64,7 @@
 			</div>
 		</section>
 
+		<!-- Modal de edición -->
 		<div class="edit-modal hidden" id="edit-list-modal" aria-hidden="true">
 			<div class="edit-modal__backdrop" data-close-edit-modal></div>
 
@@ -60,7 +72,7 @@
 				<div class="modal__header">
 					<div>
 						<h2 id="edit-list-title">Edit List</h2>
-						<p>Name and description come from the model. Change what you need and save the changes or delete the list if you no longer want it.</p>
+						<p>Change what you need and save the changes or delete the list if you no longer want it.</p>
 					</div>
 
 					<button class="modal__close" type="button" data-close-edit-modal aria-label="Close edit modal">
@@ -89,11 +101,12 @@
 			</section>
 		</div>
 
+		<!-- Sección de películas -->
 		<section class="movies-section">
 			<div class="section-header">
 				<div>
 					<h2>Movies in this list</h2>
-					<p>Click on a movie card to open the movie modal.</p>
+					<p>Click on a movie card to open the movie details.</p>
 				</div>
 			</div>
 
@@ -107,6 +120,31 @@
 	</main>
 
 	<script src="../scripts/listDetail.js" type="module"></script>
+
+	<script>
+		// Inicializar header con datos del usuario logueado
+		document.addEventListener('DOMContentLoaded', () => {
+			const header = document.querySelector('custom-header');
+			try {
+				const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+				if (userData?.username) {
+					header?.setAttribute('username', userData.username);
+				}
+				const avatarUrl = localStorage.getItem('avatarUrl');
+				if (avatarUrl) {
+					header?.setAttribute('img-src', avatarUrl);
+				}
+			} catch {}
+
+			// Escuchar el evento de logout del header
+			document.addEventListener('header-logout-request', () => {
+				localStorage.removeItem('jwtToken');
+				localStorage.removeItem('userData');
+				localStorage.removeItem('avatarUrl');
+				window.location.href = '/home';
+			});
+		});
+	</script>
 </body>
 
 </html>

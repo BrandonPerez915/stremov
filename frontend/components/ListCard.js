@@ -36,7 +36,6 @@ class ListCard extends HTMLElement {
 				<div class="list-card__body">
 					<div class="list-card__top">
 						<div>
-							<p class="list-card__meta">${listId || 'List'}</p>
 							<h3>${list.name || 'Untitled list'}</h3>
 						</div>
 						<button class="list-card__menu" type="button" aria-label="List options">

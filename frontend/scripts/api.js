@@ -11,7 +11,7 @@ async function authFetch(url, options = {}) {
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
-      ...(token ? { 'Authorization': token } : {})
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}) //por cambios en backend y apiClient
     }
   });
 

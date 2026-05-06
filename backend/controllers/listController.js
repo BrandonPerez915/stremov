@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 import List from '../models/List.js';
 import User from '../models/User.js';
+import Movie from '../models/Movie.js';
 
 import { StatusCodes } from '../config/constants.js';
 import { AppError } from './errorController.js';

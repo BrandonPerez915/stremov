@@ -50,7 +50,7 @@ listsRouter.route('/user/:userId/favorites')
  * @access Privado (Requiere Token)
  */
 listsRouter.route('/:id')
-  .get(authMiddleware, listController.getList)
+  .get(authMiddleware, listController.getList) 
   .patch(authMiddleware, listController.patchList)
   .delete(authMiddleware, listController.deleteList);
 

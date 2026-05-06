@@ -1,7 +1,5 @@
-import { deleteList, getList, updateList } from './api.js';
+import { getList, updateList, deleteList } from './api.js';
 
-const TMDB_API_KEY = 'b7fcf224d742725d5ab77502464a0f49';
-const TMDB_MOVIE_BASE_URL = 'https://api.themoviedb.org/3/movie/';
 const FALLBACK_POSTER = 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/3Qud19bBUrrJAzy0Ilm8gRJlJXP.jpg';
 
 function getListIdFromLocation() {
@@ -42,75 +40,60 @@ function formatOwner(owner) {
   return owner.username || owner.name || 'Unknown owner';
 }
 
-function getMovieApiUrl(movieId) {
-  return `${TMDB_MOVIE_BASE_URL}${movieId}?api_key=${TMDB_API_KEY}&language=en-US`;
+function getMovieApiUrl(tmdbId) {
+  return `/api/tmdb/movies/${tmdbId}`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   const state = {
     listId: getListIdFromLocation(),
     list: null,
-    fallbackUsed: false,
   };
 
-  const titleElement = document.getElementById('list-title');
+  const titleElement       = document.getElementById('list-title');
   const descriptionElement = document.getElementById('list-description');
-  const ownerElement = document.getElementById('list-owner');
   const moviesCountElement = document.getElementById('movies-count');
-  const listIdElement = document.getElementById('list-id');
-  const editModal = document.getElementById('edit-list-modal');
-  const form = document.getElementById('list-form');
-  const nameInput = document.getElementById('list-name-input');
-  const descriptionInput = document.getElementById('list-description-input');
-  const moviesGrid = document.getElementById('movies-grid');
-  const statusElement = document.getElementById('form-status');
-  const editListButton = document.getElementById('edit-list-btn');
-  const saveButton = document.getElementById('save-list-btn');
-  const deleteButton = document.getElementById('delete-list-btn');
+  const editModal          = document.getElementById('edit-list-modal');
+  const form               = document.getElementById('list-form');
+  const nameInput          = document.getElementById('list-name-input');
+  const descriptionInput   = document.getElementById('list-description-input');
+  const moviesGrid         = document.getElementById('movies-grid');
+  const statusElement      = document.getElementById('form-status');
+  const editListButton     = document.getElementById('edit-list-btn');
+  const saveButton         = document.getElementById('save-list-btn');
+  const deleteButton       = document.getElementById('delete-list-btn');
 
   function setStatus(message, type = '') {
     if (!statusElement) return;
     statusElement.textContent = message;
     statusElement.classList.remove('is-success', 'is-error');
-    if (type) {
-      statusElement.classList.add(type === 'success' ? 'is-success' : 'is-error');
-    }
+    if (type) statusElement.classList.add(type === 'success' ? 'is-success' : 'is-error');
   }
 
   function openEditModal() {
     if (!editModal) return;
-
     editModal.classList.remove('hidden');
     editModal.setAttribute('aria-hidden', 'false');
-
-    window.requestAnimationFrame(() => {
-      nameInput?.focus();
-    });
+    window.requestAnimationFrame(() => nameInput?.focus());
   }
 
   function closeEditModal() {
     if (!editModal) return;
-
     editModal.classList.add('hidden');
     editModal.setAttribute('aria-hidden', 'true');
   }
 
   function renderDetails() {
     if (!state.list) return;
-
-    titleElement.textContent = state.list.name;
-    descriptionElement.textContent = state.list.description || 'No description provided yet.';
-    ownerElement.textContent = formatOwner(state.list.owner);
+    titleElement.textContent       = state.list.name;
+    descriptionElement.textContent = state.list.description || '';
     moviesCountElement.textContent = `${state.list.movies.length} movies`;
-    listIdElement.textContent = state.list._id;
-
-    nameInput.value = state.list.name;
-    descriptionInput.value = state.list.description || '';
+    nameInput.value                = state.list.name;
+    descriptionInput.value         = state.list.description || '';
   }
 
   function createMovieCard(movie) {
     const card = document.createElement('movie-card');
-    card.className = 'movie-card-shell';
     card.setAttribute('title', movie.title);
     card.setAttribute('poster', movie.posterUrl || FALLBACK_POSTER);
     card.setAttribute('rating', movie.imdbScore ? movie.imdbScore.toFixed(1) : '0.0');
@@ -122,11 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
     card._movieId = movie.tmdbId || movie._id;
 
     card.addEventListener('movie-clicked', (event) => {
-      const movieId = event.detail?.movieId || card._movieId;
-      if (!movieId) return;
+      const movieTmdbId = event.detail?.movieId || card._movieId;
+      if (!movieTmdbId) return;
 
       const existingModal = document.getElementById('list-detail-movie-modal');
-      const apiUrl = getMovieApiUrl(movieId);
+      const apiUrl = getMovieApiUrl(movieTmdbId);
 
       if (existingModal) {
         existingModal.setAttribute('api-url', apiUrl);
@@ -146,15 +129,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderMovies() {
     if (!moviesGrid) return;
-
     moviesGrid.innerHTML = '';
 
     if (!state.list?.movies?.length) {
       moviesGrid.innerHTML = `
-        <article class="empty-state">
-          <h3>No movies in this list</h3>
-          <p>Add some titles from the catalog to start filling it up.</p>
-        </article>
+        <div class="empty-state-container" style="grid-column: 1 / -1; width: 100%;">
+          <article class="empty-state">
+            <h3>No movies in this list</h3>
+            <p>Add some titles from the catalog to start filling it up.</p>
+          </article>
+        </div>
       `;
       return;
     }
@@ -180,37 +164,19 @@ document.addEventListener('DOMContentLoaded', () => {
       state.list = normalizeList(response.list);
       setStatus('');
     } catch (error) {
-      try {
-        const response = await fetch('../mocks/userLists.json');
-        const data = await response.json();
-          const fallbackList = data.lists.find((list) => list._id === state.listId || list.id === state.listId);
-
-        if (!fallbackList) {
-            throw new Error(`List not found: ${state.listId}`);
-        }
-
-        state.list = normalizeList(fallbackList);
-        state.fallbackUsed = true;
-        setStatus('Loaded fallback mock data', 'success');
-      } catch (fallbackError) {
-        moviesGrid.innerHTML = `
-          <article class="empty-state">
-            <h3>List unavailable</h3>
-            <p>We could not load the list data.</p>
-          </article>
-        `;
-        setStatus(fallbackError.message || 'Error loading list', 'error');
-        console.error('Error loading list detail:', error, fallbackError);
-        return;
-      }
+      moviesGrid.innerHTML = `
+        <article class="empty-state">
+          <h3>List unavailable</h3>
+          <p>We could not load the list data.</p>
+        </article>
+      `;
+      setStatus(error.message || 'Error loading list', 'error');
+      console.error('Error loading list detail:', error);
+      return;
     }
 
     renderDetails();
     renderMovies();
-
-    if (state.fallbackUsed) {
-      moviesCountElement.textContent = `${state.list.movies.length} movies `;
-    }
   }
 
   async function handleSubmit(event) {
@@ -259,9 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
   form?.addEventListener('submit', handleSubmit);
   deleteButton?.addEventListener('click', handleDelete);
   editModal?.addEventListener('click', (event) => {
-    if (event.target?.hasAttribute('data-close-edit-modal')) {
-      closeEditModal();
-    }
+    if (event.target?.hasAttribute('data-close-edit-modal')) closeEditModal();
   });
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && editModal && !editModal.classList.contains('hidden')) {
