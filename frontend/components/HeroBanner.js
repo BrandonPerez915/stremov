@@ -228,6 +228,21 @@ class HeroBanner extends HTMLElement {
         banner.style.setProperty('--hero-bg', `url('${newSrc}')`);
       });
     });
+
+    const hero = this.shadowRoot.querySelector('.hero-banner');
+    hero.addEventListener('click', () => {
+      const event = new CustomEvent('movie-clicked', {
+        detail: {
+          title: this.getAttribute('title'),
+          rating: this.getAttribute('rating'),
+          badgeText: this.getAttribute('badge-text'),
+          images: this.getAttribute('images')
+        },
+        bubbles: true,
+        composed: true
+      });
+      this.dispatchEvent(event);
+    });
   }
 }
 

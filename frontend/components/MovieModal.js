@@ -1,3 +1,5 @@
+import { apiClient } from '../scripts/utils/apiClient.js';
+
 const movieModalSheet = new CSSStyleSheet();
 
 movieModalSheet.replaceSync(`
@@ -179,7 +181,7 @@ class MovieModal extends HTMLElement {
     }
     if (name === 'open') {
       if (this.hasAttribute('open')) {
-        document.body.style.overflow = 'hidden'; // Bloquea el scroll de la página de fondo
+        document.body.style.overflow = 'hidden';
       } else {
         document.body.style.overflow = '';
       }
@@ -195,7 +197,7 @@ class MovieModal extends HTMLElement {
   }
 
   disconnectedCallback() {
-    document.body.style.overflow = ''; // Limpieza de seguridad
+    document.body.style.overflow = '';
   }
 
   _render() {
@@ -260,6 +262,57 @@ class MovieModal extends HTMLElement {
         this.shadowRoot.getElementById(`tab-${targetId}`).classList.add('active');
       });
     });
+
+    const detailsComponent = this.shadowRoot.getElementById('details-component');
+    const reviewsComponent = this.shadowRoot.getElementById('reviews-component');
+
+    // Cambiar a la pestaña de reviews cuando se da click a "Rate" en info
+    if (detailsComponent) {
+      detailsComponent.addEventListener('action-rate', () => {
+        const reviewsBtn = Array.from(tabBtns).find(btn => btn.dataset.target === 'reviews');
+        if (reviewsBtn) {
+          reviewsBtn.click();
+        }
+      });
+    }
+
+    // Escuchar el evento de reseña enviada para guardarla
+    if (reviewsComponent) {
+      reviewsComponent.addEventListener('review-submitted', async (e) => {
+        const { rating, text } = e.detail;
+
+        try {
+          const result = await apiClient.post('/reviews', {
+            movieId: this._currentBackendMovieId,
+            score: rating,
+            title: `Review for ${this._currentMovieTitle || 'Media'}`,
+            body: text || 'No description provided.'
+          });
+
+          if (window.toast) {
+            window.toast({
+              type: 'success',
+              title: 'Review submitted',
+              message: 'Your review was posted successfully!',
+              duration: 3000
+            });
+          }
+
+          if (reviewsComponent._fetchReviews) {
+            reviewsComponent._fetchReviews();
+          }
+        } catch (error) {
+          if (window.toast) {
+            window.toast({
+              type: 'error',
+              title: 'Could not post review',
+              message: error.message || 'Please login to rate',
+              duration: 3000
+            });
+          }
+        }
+      });
+    }
   }
 
   // Utilidad para convertir minutos a formato "3h 12m"
@@ -275,8 +328,9 @@ class MovieModal extends HTMLElement {
     if (!apiUrl) return;
 
     try {
-      const response = await fetch(apiUrl);
-      const data = await response.json();
+      const jsonResponse = await apiClient.get(apiUrl);
+      // El backend nuestro devuelve { status: 'success', movie: {...} } y el de serie devuelve la data directa
+      const data = jsonResponse.movie || jsonResponse;
 
       const detailsComponent = this.shadowRoot.getElementById('details-component');
       const reviewsComponent = this.shadowRoot.getElementById('reviews-component');
@@ -284,13 +338,31 @@ class MovieModal extends HTMLElement {
 
       // 1. Formatear y pasar datos al componente de Detalles
       const title = data.title || data.name || 'Unknown';
-      const year = data.release_date ? data.release_date.substring(0, 4) : '';
-      const tags = data.genres ? data.genres.map(g => g.name).join(', ') : 'N/A';
-      const rating = data.vote_average ? (Math.round(data.vote_average * 10) / 10).toString() : 'N/A';
-      const duration = this._formatRuntime(data.runtime || data.episode_run_time?.[0]);
-      const country = data.production_countries ? data.production_countries.map(c => c.name).join(', ') : 'N/A';
-      const language = data.spoken_languages ? data.spoken_languages.map(l => l.english_name).join(', ') : 'N/A';
-      const posterSrc = data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : '';
+      const releaseDate = data.releaseDate || data.release_date;
+      const year = releaseDate ? releaseDate.substring(0, 4) : '';
+
+      let tags = 'N/A';
+      if (data.genres) {
+        tags = typeof data.genres[0] === 'string' ? data.genres.join(', ') : data.genres.map(g => g.name).join(', ');
+      }
+
+      const rawRating = data.imdbScore || data.vote_average;
+      const rating = rawRating ? (Math.round(rawRating * 10) / 10).toString() : 'N/A';
+      const duration = data.runtimeFormatted || this._formatRuntime(data.runtime || data.episode_run_time?.[0]);
+
+      let country = 'N/A';
+      if (data.originCountry && data.originCountry.length > 0) country = data.originCountry.join(', ');
+      else if (data.production_countries && data.production_countries.length > 0) country = data.production_countries.map(c => c.name).join(', ');
+
+      let language = 'N/A';
+      if (data.languages && data.languages.length > 0) language = data.languages.join(', ');
+      else if (data.spoken_languages && data.spoken_languages.length > 0) language = data.spoken_languages.map(l => l.english_name).join(', ');
+
+      const posterSrc = data.posterUrl || (data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : '');
+
+      // Guardamos la ID interna de MongoDB (data._id) para que la reseña se ligue correctamente a nuestra DB
+      this._currentBackendMovieId = data._id;
+      this._currentMovieTitle = title;
 
       detailsComponent.setAttribute('movie-title', title);
       detailsComponent.setAttribute('poster-src', posterSrc);
@@ -303,32 +375,31 @@ class MovieModal extends HTMLElement {
       detailsComponent.setAttribute('language', language);
 
       // TMDB no da badges de edad ni premios directos en la llamada base, ponemos un default
-      detailsComponent.setAttribute('age-badge', data.adult ? '18+' : 'PG-13');
-      detailsComponent.setAttribute('awards', 'See IMDb for awards');
-      detailsComponent.setAttribute('released', data.release_date || 'N/A');
+      const rated = data.rated || (data.adult ? '18+' : 'PG-13');
+      detailsComponent.setAttribute('age-badge', rated);
+      detailsComponent.setAttribute('awards', data.awards || 'See IMDb for awards');
+      detailsComponent.setAttribute('released', releaseDate || 'N/A');
 
       // 2. Autogenerar URLs para los otros componentes
-      // Parseamos la URL para inyectar /credits, /similar y /reviews antes de los query parameters (?api_key=...)
-      const urlObj = new URL(apiUrl, window.location.origin); // Se provee un origen por si la ruta es relativa
-      const basePath = urlObj.pathname; // Ej: /3/movie/872585
-      const queryParams = urlObj.search; // Ej: ?api_key=XXX&language=en-US
+      // (Dado que usamos tu API para el apiClient, construimos la ruta base)
+      const isSeries = data.name ? true : false;
+      const creditsUrl = isSeries ? `/tmdb/series/${data.id}/credits` : `/tmdb/movies/${data.tmdbId}/credits`;
+      const similarUrl = isSeries ? `/tmdb/series/${data.id}/similar` : `/tmdb/movies/${data.tmdbId}/similar`;
 
-      const isAbsolute = apiUrl.startsWith('http');
-      const baseHost = isAbsolute ? urlObj.origin : '';
-
-      const creditsUrl = `${baseHost}${basePath}/credits${queryParams}`;
-      const similarUrl = `${baseHost}${basePath}/similar${queryParams}`;
-      // const reviewsUrl = `${baseHost}${basePath}/reviews${queryParams}`; // Si tu modal-reviews lo soporta
-
-      // Asignar las URLs autogeneradas
+      // Asignar las URLs (aunque tengas que crearlas luego en backend para evitar error 404 de los tabs internos)
       detailsComponent.setAttribute('credits-api-url', creditsUrl);
 
       similarComponent.setAttribute('movie-title', title);
       similarComponent.setAttribute('api-url', similarUrl);
-      similarComponent.setAttribute('type', data.name ? 'series' : 'movie');
+      similarComponent.setAttribute('type', isSeries ? 'series' : 'movie');
 
-      // Asignar títulos al componente de reviews (asumiendo su estructura)
+      // Asignar títulos al componente de reviews
       reviewsComponent.setAttribute('movie-title', title);
+
+      // Asignamos una property (data setter) o la URL al componente para que pueda ir a traer las reviews.
+      if (this._currentBackendMovieId) {
+        reviewsComponent.setAttribute('movie-id', this._currentBackendMovieId);
+      }
 
     } catch (error) {
       console.error("Error obteniendo datos principales de la película:", error);

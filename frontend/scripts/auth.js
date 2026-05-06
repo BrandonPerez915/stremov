@@ -1,3 +1,5 @@
+import { apiClient } from "./utils/apiClient.js";
+
 class AppError extends Error {
   constructor(message, statusCode, name, cause = null) {
     super(message);
@@ -12,61 +14,47 @@ class AppError extends Error {
 }
 
 async function registerUser(username, email, password) {
-  const payload = {
-    username,
-    email,
-    password
-  };
-  const response = await fetch('/api/users', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  })
+  const payload = { username, email, password };
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new AppError(errorData.message || 'Failed to register user', response.status, 'RegisterUserError', errorData.cause);
+  try {
+    const data = await apiClient.post('/users', payload);
+    return data;
+  } catch (error) {
+    throw new AppError(
+      error.message || 'Failed to register user',
+      error.status,
+      'RegisterUserError',
+      error.cause
+    );
   }
-
-  const data = await response.json();
-  return data;
 }
 
 async function loginUser(username, password) {
-  const payload = {
-    username,
-    password
-  };
+  const payload = { username, password };
 
-  const response = await fetch('/api/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  });
+  try {
+    const data = await apiClient.post('/login', payload);
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new AppError(errorData.message || 'Failed to login user', response.status, 'LoginUserError', errorData.cause);
+    localStorage.setItem('jwtToken', data.token);
+
+    window.toast({
+      type: 'success',
+      title: `Welcome ${username}!`,
+      message: 'Redirecting to home page...',
+      duration: 1000
+    });
+
+    setTimeout(() => {
+      window.location.href = '/home';
+    }, 1000);
+  } catch (error) {
+    throw new AppError(
+      error.message || 'Failed to login user',
+      error.status,
+      'LoginUserError',
+      error.cause
+    );
   }
-
-  const data = await response.json();
-
-  localStorage.setItem('jwtToken', data.token);
-
-  window.toast({
-    type: 'success',
-    title: `Welcome ${username}!`,
-    message: 'Redirecting to home page...',
-    duration: 1000
-  });
-
-  setTimeout(() => {
-    window.location.href = '/home';
-  }, 1000);
 }
 
 const registerForm = document.getElementById('register-form');

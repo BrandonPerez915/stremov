@@ -12,16 +12,14 @@ tmdbRouter.get('/movies/top-rated', tmdbController.getTopRatedMovies); //solo tm
 tmdbRouter.get('/movies/discover', tmdbController.discoverMovies); //género, tmdb
 tmdbRouter.get('/movies/:tmdbId/similar', tmdbController.getSimilarMovies); //similar
 tmdbRouter.get('/movies/:tmdbId', tmdbController.getMovie); //primero buscamos en mongoDB, si no está --> tmdb
-
+tmdbRouter.get('/movies/:tmdbId/credits', (req, res, next) => { req.params.type = 'movie'; next(); }, tmdbController.getCredits);
+tmdbRouter.get('/movies/:tmdbId/similar', (req, res, next) => { req.params.type = 'movie'; next(); }, tmdbController.getSimilar);
 
 //series
-tmdbRouter.get('/series/search', tmdbController.searchSeries);
-tmdbRouter.get('/series/popular', tmdbController.getPopularSeries);
-tmdbRouter.get('/series/top-rated', tmdbController.getTopRatedSeries);
-tmdbRouter.get('/series/:tmdbId/credits', tmdbController.getSerieCredits);
-tmdbRouter.get('/series/:tmdbId/similar', tmdbController.getSimilarSeries);
-tmdbRouter.get('/series/:tmdbId', tmdbController.getSerie);
-
+tmdbRouter.get('/series/popular', tmdbController.getPopularSeries); //solo tmdb
+tmdbRouter.get('/series/:tmdbId', tmdbController.getSeries); //solo tmdb
+tmdbRouter.get('/series/:tmdbId/credits', (req, res, next) => { req.params.type = 'tv'; next(); }, tmdbController.getCredits);
+tmdbRouter.get('/series/:tmdbId/similar', (req, res, next) => { req.params.type = 'tv'; next(); }, tmdbController.getSimilar);
 
 //personas
 tmdbRouter.get('/persons/search', tmdbController.searchPersons); //solo tmdb por ser búsqueda

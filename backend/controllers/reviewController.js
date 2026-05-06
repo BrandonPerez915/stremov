@@ -77,10 +77,21 @@ async function getMovieReviews(req, res, next) {
       ? Math.round((reviews.reduce((sum, r) => sum + r.score, 0) / reviews.length) * 10) / 10
       : null;
 
+    // Calculate bar distribution for 5 bars: 5 stars to 1 star
+    // Ratings are 1-10. Group by Math.ceil(score / 2) -> 1 to 5.
+    const distribution = [0, 0, 0, 0, 0];
+    reviews.forEach(r => {
+      const starIndex = Math.ceil(r.score / 2) - 1; // 0 to 4
+      if (starIndex >= 0 && starIndex < 5) {
+        distribution[4 - starIndex]++; // 0th element is 5 stars, 4th is 1 star
+      }
+    });
+
     return res.status(StatusCodes.OK).json({
       status: 'success',
       total: reviews.length,
       average,
+      distribution: distribution.join(','),
       reviews
     });
   } catch (error) {

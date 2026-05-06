@@ -1,27 +1,39 @@
+import { apiClient } from '../scripts/utils/apiClient.js';
+
 const movieModalReviewsSheet = new CSSStyleSheet();
 
 movieModalReviewsSheet.replaceSync(`
 :host {
   display: block;
   width: 100%;
+  height: 100%; /* FIX: Obliga al componente a respetar el alto de la modal */
+  overflow-y: auto; /* FIX: Activa el scroll vertical en toda la vista de reseñas */
+  overflow-x: hidden;
   font-family: 'Inter', sans-serif;
   box-sizing: border-box;
+  padding-right: 15px; /* Espacio para que la barra de scroll no pise el contenido */
 }
 
 * {
   box-sizing: border-box;
 }
 
+/* Estilos de la barra de scroll movidos al contenedor principal */
+:host::-webkit-scrollbar { width: 6px; }
+:host::-webkit-scrollbar-track { background: var(--border-color, #3a3f4c); border-radius: 10px; }
+:host::-webkit-scrollbar-thumb { background: var(--text-secondary, #8b8e98); border-radius: 10px; }
+:host::-webkit-scrollbar-thumb:hover { background: var(--text-primary, #ffffff); }
+
 h1.reviews-title {
   padding-bottom: 30px;
   font-size: 20px;
   font-weight: 600;
   margin: 0;
-  color: var(--text-primary);
+  color: var(--text-primary, #ffffff);
 }
 
 .reviews-layout {
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color, #3a3f4c);
   display: flex;
   gap: 50px;
   width: 100%;
@@ -47,18 +59,18 @@ h1.reviews-title {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--text-primary);
+  color: var(--text-primary, #ffffff);
 }
 
 .star-main {
   font-family: 'Material Symbols Outlined';
   font-size: 36px;
   font-variation-settings: 'FILL' 1;
-  color: var(--yellow-100);
+  color: var(--yellow-100, #f5c518);
 }
 
 .subtitle {
-  color: var(--text-secondary);
+  color: var(--text-secondary, #8b8e98);
   font-size: 13px;
   margin: 0;
 }
@@ -86,7 +98,7 @@ h1.reviews-title {
 }
 
 .btn-primary {
-  background-color: var(--primary-color);
+  background-color: var(--primary-color, #4ade80);
   color: white;
 }
 
@@ -96,14 +108,14 @@ h1.reviews-title {
 
 .btn-secondary {
   background-color: transparent;
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  color: var(--text-primary, #ffffff);
+  border: 1px solid var(--border-color, #3a3f4c);
   margin-top: 10px;
 }
 
 .btn-secondary:hover {
-  background-color: var(--text-primary);
-  color: var(--bg-color);
+  background-color: var(--text-primary, #ffffff);
+  color: var(--bg-color, #1f2128);
 }
 
 .form-hidden {
@@ -116,23 +128,13 @@ h1.reviews-title {
 }
 
 .reviews-list {
-  padding: 20px;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 100%;
-  /* Añadimos scroll a la lista de reseñas para que el modal no crezca infinitamente */
-  max-height: 600px;
-  overflow-y: auto;
-  padding-right: 10px;
+  /* FIX: Eliminamos el max-height y el overflow interno para que el scroll fluya en todo el modal */
 }
-
-/* Estilos de la barra de scroll */
-.reviews-list::-webkit-scrollbar { width: 6px; }
-.reviews-list::-webkit-scrollbar-track { background: var(--border-color); border-radius: 10px; }
-.reviews-list::-webkit-scrollbar-thumb { background: var(--text-secondary); border-radius: 10px; }
-.reviews-list::-webkit-scrollbar-thumb:hover { background: var(--text-primary); }
 
 review-card {
   width: 100%;
@@ -147,14 +149,13 @@ review-card {
   .reviews-sidebar {
     flex: none;
     width: 100%;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color, #3a3f4c);
     padding-bottom: 40px;
   }
 
-  .reviews-list {
-    max-height: none;
-    overflow-y: visible;
-    padding-right: 0;
+  h1.reviews-title {
+    font-size: 24px;
+    text-align: center;
   }
 }
 `);
@@ -176,19 +177,52 @@ class MovieModalReviews extends HTMLElement {
       'overall-rating',
       'total-ratings',
       'total-reviews',
-      'bar-distribution', /* String separado por comas (ej. "3100,14000,...") */
-      'reviews-data'      /* JSON stringificado con el array de reviews */
+      'bar-distribution',
+      'reviews-data',
+      'movie-id'
     ];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue !== newValue) {
-      this._render();
+      if (name === 'movie-id' && newValue) {
+        this._fetchReviews();
+      } else {
+        this._render();
+      }
     }
   }
 
   connectedCallback() {
     this._render();
+    if (this.hasAttribute('movie-id')) {
+      this._fetchReviews();
+    }
+  }
+
+  async _fetchReviews() {
+    const movieId = this.getAttribute('movie-id');
+    if (!movieId) return;
+
+    try {
+      const data = await apiClient.get(`/reviews/movie/${movieId}`);
+      if (data && data.status === 'success') {
+        const remoteReviews = data.reviews.map(r => ({
+          username: r.user.username,
+          avatarSrc: r.user.avatarUrl || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
+          rating: r.score,
+          date: new Date(r.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
+          text: r.body
+        }));
+
+        this.setAttribute('reviews-data', JSON.stringify(remoteReviews));
+        this.setAttribute('overall-rating', data.average ? data.average.toString() : '0.0');
+        this.setAttribute('total-ratings', data.total.toString());
+        this.setAttribute('total-reviews', data.total.toString());
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
   }
 
   _render() {
@@ -285,7 +319,7 @@ class MovieModalReviews extends HTMLElement {
     });
 
     // Escuchar el componente de estrellas interno
-    starsInput.addEventListener('rating-changed', (e) => {
+    starsInput?.addEventListener('rating-changed', (e) => {
       this.currentSelectedRating = e.detail.rating;
     });
 
@@ -311,10 +345,6 @@ class MovieModalReviews extends HTMLElement {
         bubbles: true,
         composed: true
       }));
-
-      // TODO: Enviar la data al backend, y al recibir
-      // respuesta positiva, actualizarías el atributo 'reviews-data' para que
-      // la nueva tarjeta aparezca en la lista automáticamente.
     });
   }
 }

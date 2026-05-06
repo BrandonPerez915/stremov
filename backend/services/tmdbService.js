@@ -9,7 +9,7 @@ const TMDB_BACKDROP_BASE = 'https://image.tmdb.org/t/p/original';
 const OMDB_BASE_URL = 'https://www.omdbapi.com';
 const OMDB_API_KEY = process.env.OMDB_API_KEY;
 
-//fetch base a TMDB
+// Fetch base a TMDB
 async function tmdbFetch(endpoint) {
   const separator = endpoint.includes('?') ? '&' : '?';
   const url = `${TMDB_BASE_URL}${endpoint}${separator}api_key=${TMDB_API_KEY}&language=en-US`;
@@ -22,22 +22,22 @@ async function tmdbFetch(endpoint) {
   return response.json();
 }
 
-//fetch base a OMDB con imdbId (obtenido del fetch a tmdb)
+// Fetch base a OMDB con imdbId (obtenido del fetch a tmdb)
 async function omdbFetch(imdbId) {
   const url = `${OMDB_BASE_URL}/?i=${imdbId}&apikey=${OMDB_API_KEY}`;
   const response = await fetch(url);
- 
+
   if (!response.ok) {
     throw new Error(`OMDb error ${response.status} para ${imdbId}`);
   }
- 
+
   const data = await response.json();
- 
-  //omdb devuelve { Response: "False", Error: "..." } si no encuentra
+
+  // Omdb devuelve { Response: "False", Error: "..." } si no encuentra
   if (data.Response === 'False') {
     throw new Error(`OMDb: ${data.Error}`);
   }
- 
+
   return data;
 }
 
@@ -52,7 +52,7 @@ function formatRuntime(minutes) {
 }
 
 
-//findOrCreate de Person a partir de datos de TMDB
+// FindOrCreate de Person a partir de datos de TMDB
 async function findOrCreatePerson({ tmdbId, name, photoUrl }) {
   let person = await Person.findOne({ tmdbId });
 
@@ -63,34 +63,34 @@ async function findOrCreatePerson({ tmdbId, name, photoUrl }) {
   return person;
 }
 
-//findOrCreate de Movie completo: busca en MongoDB primero, y si no existe llama a TMDB, guarda todo y devuelve
+// FindOrCreate de Movie completo: busca en MongoDB primero, y si no existe llama a TMDB, guarda todo y devuelve
 async function findOrCreateMovie(tmdbId) {
-  
-  //buscar en mongoDB primero
+
+  // Buscar en mongoDB primero
   let movie = await Movie.findOne({ tmdbId })
     .populate('directors', 'name photoUrl')
     .populate('actors', 'name photoUrl');
 
   if (movie) return movie;
 
-  //si no está en mongoDB se trae los datos de TMDB
+  // Si no está en mongoDB se trae los datos de TMDB
   const [movieData, creditsData] = await Promise.all([
     tmdbFetch(`/movie/${tmdbId}`),
     tmdbFetch(`/movie/${tmdbId}/credits`)
   ]);
 
-  //traer datos de omdb si hay imdbId
+  // Traer datos de omdb si hay imdbId
   let omdbData = null;
   if (movieData.imdb_id) {
     try {
       omdbData = await omdbFetch(movieData.imdb_id);
     } catch (error) {
-      //si OMDb falla no rompemos el flujo, seguimos sin esos datos
+      // Si OMDb falla no rompemos el flujo, seguimos sin esos datos
       console.warn(`OMDb no disponible para ${movieData.imdb_id}:`, error.message);
     }
   }
 
-  //procesar director(es)
+  // Procesar director(es)
   const directorDocs = await Promise.all(
     creditsData.crew
       .filter(c => c.job === 'Director')
@@ -105,7 +105,7 @@ async function findOrCreateMovie(tmdbId) {
       )
   );
 
-  //procesar actores (top 10)
+  // Procesar actores (top 10)
   const actorsData = creditsData.cast.slice(0, 10);
   const actorDocs = await Promise.all(
     actorsData.map(actor =>
@@ -119,7 +119,7 @@ async function findOrCreateMovie(tmdbId) {
     )
   );
 
-  //crear Movie en mongoDB con todos los datos
+  // Crear Movie en mongoDB con todos los datos
   movie = await Movie.create({
     tmdbId,
     imdbId: movieData.imdb_id || null,
@@ -141,7 +141,7 @@ async function findOrCreateMovie(tmdbId) {
     backdropUrl: movieData.backdrop_path
       ? `${TMDB_BACKDROP_BASE}${movieData.backdrop_path}`
       : null,
-    imdbScore: omdbData?.imdbRating
+    imdbScore: (omdbData?.imdbRating && omdbData.imdbRating !== "N/A")
       ? parseFloat(omdbData.imdbRating)
       : null,
     awards: omdbData?.Awards || null,
@@ -149,11 +149,85 @@ async function findOrCreateMovie(tmdbId) {
     actors: actorDocs.map(a => a._id)
   });
 
-  //populate antes de devolver
+  // Populate antes de devolver
   await movie.populate('directors', 'name photoUrl');
   await movie.populate('actors', 'name photoUrl');
 
   return movie;
 }
 
-export { findOrCreateMovie, findOrCreatePerson, tmdbFetch, formatRuntime };
+async function findOrCreateSeries(tmdbId) {
+  // Guardamos las series con ID negativo para no chocar con las de películas
+  const dbTmdbId = -Math.abs(tmdbId);
+
+  let series = await Movie.findOne({ tmdbId: dbTmdbId })
+    .populate('directors', 'name photoUrl')
+    .populate('actors', 'name photoUrl');
+
+  if (series) return series;
+
+  // Si no está en mongoDB se trae los datos de TMDB (TV Endpoint)
+  const [tvData, creditsData] = await Promise.all([
+    tmdbFetch(`/tv/${tmdbId}`),
+    tmdbFetch(`/tv/${tmdbId}/aggregate_credits`)
+  ]);
+
+  const creators = tvData.created_by || [];
+  const directorDocs = await Promise.all(
+    creators.map(d =>
+      findOrCreatePerson({
+        tmdbId: d.id,
+        name: d.name,
+        photoUrl: d.profile_path
+          ? `${TMDB_IMAGE_BASE}${d.profile_path}`
+          : null
+      })
+    )
+  );
+
+  const actorsData = (creditsData.cast || []).slice(0, 10);
+  const actorDocs = await Promise.all(
+    actorsData.map(actor =>
+      findOrCreatePerson({
+        tmdbId: actor.id,
+        name: actor.name,
+        photoUrl: actor.profile_path
+          ? `${TMDB_IMAGE_BASE}${actor.profile_path}`
+          : null
+      })
+    )
+  );
+
+  const runtime = tvData.episode_run_time?.[0] || null;
+
+  series = await Movie.create({
+    tmdbId: dbTmdbId,
+    title: tvData.name,
+    overview: tvData.overview,
+    releaseDate: tvData.first_air_date || null,
+    releaseYear: tvData.first_air_date
+      ? new Date(tvData.first_air_date).getFullYear()
+      : null,
+    runtime: runtime,
+    runtimeFormatted: formatRuntime(runtime),
+    genres: (tvData.genres || []).map(g => g.name),
+    originCountry: tvData.origin_country || [],
+    languages: tvData.languages || [],
+    posterUrl: tvData.poster_path
+      ? `${TMDB_IMAGE_BASE}${tvData.poster_path}`
+      : null,
+    backdropUrl: tvData.backdrop_path
+      ? `${TMDB_BACKDROP_BASE}${tvData.backdrop_path}`
+      : null,
+    imdbScore: tvData.vote_average ? parseFloat(tvData.vote_average.toFixed(1)) : null,
+    directors: directorDocs.map(d => d._id),
+    actors: actorDocs.map(a => a._id)
+  });
+
+  await series.populate('directors', 'name photoUrl');
+  await series.populate('actors', 'name photoUrl');
+
+  return series;
+}
+
+export { findOrCreateMovie, findOrCreateSeries, findOrCreatePerson, tmdbFetch, formatRuntime };

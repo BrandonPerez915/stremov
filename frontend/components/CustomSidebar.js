@@ -145,11 +145,11 @@ class CustomSidebar extends HTMLElement {
             <sidebar-item icon="home" text="Home" href="/home" active></sidebar-item>
             <sidebar-item icon="video_library" text="Your Lists" href="/your-lists"></sidebar-item>
             <sidebar-item icon="group" text="Social" href="#"></sidebar-item>
-            <sidebar-item icon="trending_up" text="Ranking" href="#"></sidebar-item>
             <sidebar-item icon="settings" text="Settings" href="#"></sidebar-item>
           </nav>
         </section>
 
+        <!--
         <section class="menu-section">
           <h3 class="section-title">Following</h3>
           <div class="following-list">
@@ -167,6 +167,7 @@ class CustomSidebar extends HTMLElement {
             See more
           </button>
         </section>
+        -->
       </aside>
     `;
   }

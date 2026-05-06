@@ -1,3 +1,5 @@
+import { apiClient } from '../scripts/utils/apiClient.js';
+
 const movieModalSimilarSheet = new CSSStyleSheet();
 
 movieModalSimilarSheet.replaceSync(`
@@ -29,8 +31,8 @@ h1.similar-title {
   padding: 40px 0;
 }
 
-/* Las movie-cards inyectadas dinámicamente */
-movie-card {
+/* Las media-cards inyectadas dinámicamente */
+media-card {
   width: 100%;
   display: block;
 }
@@ -89,7 +91,7 @@ class MovieModalSimilar extends HTMLElement {
       <h1 class="similar-title">${title} - Similar Titles</h1>
 
       <div class="movie-grid" id="similar-grid">
-        <!-- Las movie-cards se insertarán aquí dinámicamente -->
+        <!-- Las media-cards se insertarán aquí dinámicamente -->
       </div>
     `;
   }
@@ -102,8 +104,7 @@ class MovieModalSimilar extends HTMLElement {
     if (!apiUrl || !gridElement) return;
 
     try {
-      const response = await fetch(apiUrl);
-      const data = await response.json();
+      const data = await apiClient.get(apiUrl);
 
       const results = data.results || [];
 
@@ -119,7 +120,7 @@ class MovieModalSimilar extends HTMLElement {
         // Evitar items sin póster para no romper el diseño del grid
         if (!item.poster_path) return;
 
-        const card = document.createElement('movie-card');
+        const card = document.createElement('media-card');
 
         // Dependiendo si es película o serie la API devuelve title o name
         const cardTitle = type === 'series' ? item.name : item.title;

@@ -9,7 +9,7 @@ const moviesRouter = new Router();
 
 moviesRouter.route('/')
   .get(movieController.getAllMovies)
-  .post(authMiddleware, adminMiddleware, movieController.postMovie); //manual, solo admins eventualmente
+  .post(authMiddleware, adminMiddleware, movieController.postMovie); // manual, solo admins eventualmente
 
 moviesRouter.route('/:id')
   .get(movieController.getMovie)

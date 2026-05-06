@@ -18,9 +18,9 @@
   <script src="../components/CustomHeader.js" defer></script>
   <script src="../components/CustomSidebar.js" defer></script>
   <script src="../components/CustomTextarea.js" defer></script>
-  <script src="../components/MovieCard.js"></script>
+  <script src="../components/MediaCard.js"></script>
   <script src="../components/HeroBanner.js" defer></script>
-  <script src="../components/MovieCarousel.js" defer></script>
+  <script type="module" src="../components/MediaCarousel.js" defer></script>
   <script src="../components/PersonCarousel.js" defer></script>
   <script src="../components/PersonProfileCard.js" defer></script>
   <script src="../components/ReviewCard.js" defer></script>
@@ -28,10 +28,10 @@
   <script src="../components/RatingBars.js" defer></script>
 
   <script src="../components/MovieModalHeader.js" defer></script>
-  <script src="../components/MovieModalDetails.js" defer></script>
-  <script src="../components/MovieModalReviews.js" defer></script>
-  <script src="../components/MovieModalSimilar.js" defer></script>
-  <script src="../components/MovieModal.js" defer></script>
+  <script type="module" src="../components/MovieModalDetails.js" defer></script>
+  <script type="module" src="../components/MovieModalReviews.js" defer></script>
+  <script type="module" src="../components/MovieModalSimilar.js" defer></script>
+  <script type="module" src="../components/MovieModal.js" defer></script>
 </head>
 
 <body>
@@ -57,17 +57,17 @@
     </hero-banner>
 
     <!-- Carrouseles de películas y series -->
-    <movie-carousel
+    <media-carousel
       title="Most Popular Series"
-      api-url="../mocks/popularSeries.json"
+      api-url="/tmdb/series/popular"
       type="series">
-    </movie-carousel>
+    </media-carousel>
 
-    <movie-carousel
+    <media-carousel
       title="Most Popular Movies"
-      api-url="../mocks/popularMovies.json"
+      api-url="/tmdb/movies/popular"
       type="movies">
-    </movie-carousel>
+    </media-carousel>
 
     <person-carousel
       title="Most Popular Actors"
@@ -76,70 +76,9 @@
 
   </body>
   <script>
-    const headerComponent = document.querySelector('movie-modal-header');
-
-    headerComponent.addEventListener('tab-changed', (e) => {
-      let lastTab = headerComponent.lastActiveTab || 'information';
-      console.log(lastTab, e.detail.tab);
-      let targetTab = e.detail.tab;
-
-      if (lastTab === targetTab) return;
-
-      const lastView = document.getElementById(`movie-${lastTab}-modal`);
-      const targetView = document.getElementById(`movie-${targetTab}-modal`);
-      const allViews = document.querySelectorAll('[id^="movie-"][id$="-modal"]');
-
-      targetView.classList.remove('hidden');
-      lastView.classList.toggle('hidden');
-    });
-
-    headerComponent.addEventListener('close-modal', (e) => {
-      let movieModalElement = document.getElementById(e.detail.modalId);
-
-      movieModalElement?.classList.add('close');
-      setTimeout(() => {
-        movieModalElement.style.display = 'none';
-      }, 400);
-    });
-
-    const detailsComponent = document.querySelector('movie-modal-details');
-
-    detailsComponent.addEventListener('action-rate', () => {
-      console.log("¡El usuario quiere calificar la película!");
-    });
-
-    detailsComponent.addEventListener('action-watchlist', () => {
-      console.log("¡Película añadida a la Watchlist!");
-    });
-    // Datos simulados (Inyeccion de reviews)
-    const reviewsData = [
-      {
-        username: "Albert Flores",
-        avatarSrc: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80",
-        rating: 2,
-        date: "17 Oct, 2020",
-        text: "It's good to use for the development as it having very good performance. I've taken it for Mobile Application Development and satisfied with the build performance."
-      },
-      {
-        username: "Cameron Williamson",
-        avatarSrc: "https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?auto=format&fit=crop&w=100&q=80",
-        rating: 4,
-        date: "24 Sep, 2020",
-        text: "Absolutely stunning display. The battery life is exactly as advertised, easily getting me through a full day of heavy coding."
-      }
-    ];
-
-    // Inyectar el JSON como string
-    const reviewsComponent = document.getElementById('reviews-component');
-    reviewsComponent.setAttribute('reviews-data', JSON.stringify(reviewsData));
-
-    // Escuchar el custom event de nueva reseña
-    reviewsComponent.addEventListener('review-submitted', (e) => {
-      const { rating, text } = e.detail;
-      console.log(`¡Nueva reseña guardada!\nEstrellas: ${rating}\nTexto: ${text}`);
-
-      // TODO: hacer push al array 'reviewsData' y volver a hacer setAttribute
-      // para que la nueva tarjeta aparezca instantáneamente en la interfaz.
+    document.addEventListener('header-search', (e) => {
+      console.log('Buscando:', e.detail.query);
+      // Aquí iría la lógica para realizar la búsqueda, por ejemplo, redirigir a una página de resultados
     });
   </script>
 </html>

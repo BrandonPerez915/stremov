@@ -37,7 +37,7 @@ const handleJWTExpiredError = () => {
 }
 
 const handleUnknownError = (error) => {
-  console.error("Error no controlado:", error.message);
+  console.error("Error no controlado:", error.stack || error.message);
   return new AppError('Ocurrió un error inesperado. Por favor, intenta nuevamente más tarde.', StatusCodes.INTERNAL_SERVER_ERROR);
 }
 

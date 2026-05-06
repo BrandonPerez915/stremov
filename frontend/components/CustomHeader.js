@@ -159,9 +159,6 @@ class CustomHeader extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.adoptedStyleSheets = [customHeaderSheet];
-
-    // Propiedad para que asignes tu lógica de búsqueda (Callback)
-    this.onSearch = null;
   }
 
   connectedCallback() {
@@ -172,10 +169,7 @@ class CustomHeader extends HTMLElement {
   _render() {
     const inputPlaceholder = this.getAttribute('placeholder') || 'Input your search...';
     const imgSrc = this.getAttribute('img-src') || '';
-    const onSearchCallback = this.getAttribute('on-search') || null;
     const hasNotifications = this.hasAttribute('has-notifications');
-
-    this.onSearch = onSearchCallback ? new Function('searchTerm', onSearchCallback) : null;
     const notificationsHTML = hasNotifications ? `<span class="notification-badge"></span>` : '';
 
     this.shadowRoot.innerHTML = `
@@ -211,10 +205,13 @@ class CustomHeader extends HTMLElement {
     const sidebar = document.querySelector('custom-sidebar');
     const backdrop = document.querySelector('.backdrop');
 
+    // Mostrar el sidebar en móvil
     menuIcon.addEventListener('click', () => {
-      sidebar.classList.add('open');
-      sidebar.classList.remove('closed');
-      backdrop.classList.remove('hidden');
+      if (sidebar && backdrop) {
+        sidebar.classList.add('open');
+        sidebar.classList.remove('closed');
+        backdrop.classList.remove('hidden');
+      }
     });
 
     const toggleIcons = () => {
@@ -224,6 +221,7 @@ class CustomHeader extends HTMLElement {
       closeIcon.classList.toggle('hidden-icon');
     };
 
+    // Mostrar la barra de búsqueda en móvil
     searchIcon.addEventListener('click', () => {
       toggleIcons();
       searchInput.classList.add('visible');
@@ -234,6 +232,7 @@ class CustomHeader extends HTMLElement {
       }, 50);
     });
 
+    // Ocultar la barra de búsqueda en móvil
     closeIcon.addEventListener('click', () => {
       toggleIcons();
       searchInput.classList.remove('visible');
@@ -243,34 +242,31 @@ class CustomHeader extends HTMLElement {
       } else {
         searchInput.value = '';
       }
-    })
+    });
 
-    // Callback para búsqueda al presionar Enter
+    // Búsqueda al presionar "Enter"
     searchInput.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
         event.preventDefault();
-
-        const innerInput = searchInput.shadowRoot ? searchInput.shadowRoot.querySelector('input') : searchInput;
-        const searchQuery = innerInput.value.trim();
-
-        if (searchQuery !== '') {
-          if (typeof this.onSearch === 'function') {
-            this.onSearch(searchQuery);
-          }
-        }
+        this._dispatchSearch();
       }
     });
+  }
 
-    // searchInput.shadowRoot.querySelector('.icon').addEventListener('click', () => {
-    //   const innerInput = searchInput.shadowRoot ? searchInput.shadowRoot.querySelector('input') : searchInput;
-    //   const searchQuery = innerInput.value.trim();
+  // Lógica centralizada para despachar el evento de búsqueda
+  _dispatchSearch() {
+    const searchInput = this.shadowRoot.querySelector('#search-input');
+    const value = searchInput.value ? searchInput.value.trim() : '';
 
-    //   if (searchQuery !== '') {
-    //     if (typeof this.onSearch === 'function') {
-    //       this.onSearch(searchQuery);
-    //     }
-    //   }
-    // });
+    if (!value) return; // Evitar búsquedas vacías
+
+    const searchEvent = new CustomEvent('header-search', {
+      detail: { query: value },
+      bubbles: true,
+      composed: true
+    });
+
+    this.dispatchEvent(searchEvent);
   }
 }
 

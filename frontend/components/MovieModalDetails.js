@@ -1,3 +1,5 @@
+import { apiClient } from '../scripts/utils/apiClient.js';
+
 const movieModalDetailsSheet = new CSSStyleSheet();
 
 movieModalDetailsSheet.replaceSync(`
@@ -448,8 +450,7 @@ class MovieModalDetails extends HTMLElement {
     if (!creditsUrl) return;
 
     try {
-      const response = await fetch(creditsUrl);
-      const data = await response.json();
+      const data = await apiClient.get(creditsUrl);
 
       // Buscamos los componentes dentro del Shadow DOM
       const castCarousel = this.shadowRoot.getElementById('cast-carousel');

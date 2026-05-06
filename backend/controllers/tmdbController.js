@@ -1,8 +1,8 @@
 import { StatusCodes } from '../config/constants.js';
 import { AppError } from './errorController.js';
-import { findOrCreateMovie, findOrCreatePerson, tmdbFetch } from '../services/tmdbService.js'; 
+import { findOrCreateMovie, findOrCreateSeries, findOrCreatePerson, tmdbFetch } from '../services/tmdbService.js';
 
-//buscar películas por nombre con tmbd
+// Buscar películas por nombre con tmbd
 async function searchMovies(req, res, next) {
   const { q, page = 1 } = req.query;
 
@@ -45,6 +45,61 @@ async function getPopularMovies(req, res, next) {
   }
 }
 
+//series populares: solo tmdb
+async function getPopularSeries(req, res, next) {
+  const { page = 1 } = req.query;
+
+  try {
+    const data = await tmdbFetch(`/tv/popular?page=${page}`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//obtener serie: solo tmdb
+async function getSeries(req, res, next) {
+  const { tmdbId } = req.params;
+
+  try {
+    const movie = await findOrCreateSeries(parseInt(tmdbId));
+    // Pasamos el modelo a Objecto puro
+    const movieObj = movie.toObject();
+
+    // Le creamos los aliases que el frontend necesita para funcionar y saber que es Serie
+    movieObj.name = movieObj.title;
+    movieObj.id = tmdbId;
+
+    return res.status(StatusCodes.OK).json({ status: 'success', movie: movieObj });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// CREDITOS de serie/pelicula: solo tmdb
+async function getCredits(req, res, next) {
+  const { type, tmdbId } = req.params; // type puede ser 'movie' o 'tv'
+
+  try {
+    const data = await tmdbFetch(`/${type}/${tmdbId}/credits`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+// SIMILARES de serie/pelicula: solo tmdb
+async function getSimilar(req, res, next) {
+  const { type, tmdbId } = req.params; // type puede ser 'movie' o 'tv'
+
+  try {
+    const data = await tmdbFetch(`/${type}/${tmdbId}/similar`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 //películas mejor valoradas: solo tmdb
 async function getTopRatedMovies(req, res, next) {
   const { page = 1 } = req.query;
@@ -75,7 +130,7 @@ async function discoverMovies(req, res, next) {
 async function getSimilarMovies(req, res, next) {
   const { tmdbId } = req.params;
   const { page = 1 } = req.query;
- 
+
   try {
     const data = await tmdbFetch(`/movie/${tmdbId}/similar?page=${page}`);
     return res.status(StatusCodes.OK).json(data);
@@ -89,7 +144,7 @@ async function getSimilarMovies(req, res, next) {
 //populares
 async function getPopularSeries(req, res, next) {
   const { page = 1 } = req.query;
- 
+
   try {
     const data = await tmdbFetch(`/tv/popular?page=${page}`);
     return res.status(StatusCodes.OK).json(data);
@@ -102,7 +157,7 @@ async function getPopularSeries(req, res, next) {
 //mejor valoradas
 async function getTopRatedSeries(req, res, next) {
   const { page = 1 } = req.query;
- 
+
   try {
     const data = await tmdbFetch(`/tv/top_rated?page=${page}`);
     return res.status(StatusCodes.OK).json(data);
@@ -114,11 +169,11 @@ async function getTopRatedSeries(req, res, next) {
 //busqueda por nombre
 async function searchSeries(req, res, next) {
   const { q, page = 1 } = req.query;
- 
+
   if (!q) {
     return next(new AppError('El nombre es obligatorio', StatusCodes.BAD_REQUEST, 'ValidationError'));
   }
- 
+
   try {
     const data = await tmdbFetch(`/search/tv?query=${encodeURIComponent(q)}&page=${page}`);
     return res.status(StatusCodes.OK).json(data);
@@ -130,7 +185,7 @@ async function searchSeries(req, res, next) {
 //detalles
 async function getSerie(req, res, next) {
   const { tmdbId } = req.params;
- 
+
   try {
     const data = await tmdbFetch(`/tv/${tmdbId}`);
     return res.status(StatusCodes.OK).json(data);
@@ -142,7 +197,7 @@ async function getSerie(req, res, next) {
 //créditos de serie
 async function getSerieCredits(req, res, next) {
   const { tmdbId } = req.params;
- 
+
   try {
     const data = await tmdbFetch(`/tv/${tmdbId}/credits`);
     return res.status(StatusCodes.OK).json(data);
@@ -155,7 +210,7 @@ async function getSerieCredits(req, res, next) {
 async function getSimilarSeries(req, res, next) {
   const { tmdbId } = req.params;
   const { page = 1 } = req.query;
- 
+
   try {
     const data = await tmdbFetch(`/tv/${tmdbId}/similar?page=${page}`);
     return res.status(StatusCodes.OK).json(data);
@@ -166,10 +221,10 @@ async function getSimilarSeries(req, res, next) {
 
 //PERSONAS
 
-//populares 
+//populares
 async function getPopularPersons(req, res, next) {
   const { page = 1 } = req.query;
- 
+
   try {
     const data = await tmdbFetch(`/person/popular?page=${page}`);
     return res.status(StatusCodes.OK).json(data);
@@ -194,7 +249,7 @@ async function searchPersons(req, res, next) {
   }
 }
 
-//info de persona busca en mongoDB primero, si no existe llama a TMDB, guarda y devuelve
+// Info de persona busca en mongoDB primero, si no existe llama a TMDB, guarda y devuelve
 async function getPerson(req, res, next) {
   const { tmdbId } = req.params;
 
@@ -236,6 +291,10 @@ export {
   searchMovies,
   getMovie,
   getPopularMovies,
+  getPopularSeries,
+  getSeries,
+  getCredits,
+  getSimilar,
   getTopRatedMovies,
   discoverMovies,
   getSimilarMovies,
@@ -250,5 +309,6 @@ export {
   getPopularPersons,
   searchPersons,
   getPerson,
-  getPersonCredits  
+  getPersonCredits,
+  discoverMovies
 };

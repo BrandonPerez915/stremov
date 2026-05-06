@@ -4,10 +4,9 @@ import Movie from "../models/Movie.js"
 
 import { StatusCodes } from "../config/constants.js"
 import { AppError } from "./errorController.js"
+import { findOrCreateMovie } from "../services/tmdbService.js"
 
-
-
-//post de forma manual (puede no estar en TMDB)
+// Post de forma manual (puede no estar en TMDB)
 async function postMovie(req, res, next) {
   const { title, overview, releaseDate, releaseYear, runtime, runtimeFormatted,
     rated, genres, originCountry, languages, posterUrl, backdropUrl,
@@ -16,24 +15,23 @@ async function postMovie(req, res, next) {
 
   try {
     const movie = await Movie.create({
-      title, 
-      overview, 
-      releaseDate, 
-      releaseYear, 
-      runtime, 
+      title,
+      overview,
+      releaseDate,
+      releaseYear,
+      runtime,
       runtimeFormatted,
-      rated, 
-      genres, 
-      originCountry, 
-      languages, 
-      posterUrl, 
+      rated,
+      genres,
+      originCountry,
+      languages,
+      posterUrl,
       backdropUrl,
-      imdbScore, 
-      awards, 
-      directors, 
+      imdbScore,
+      awards,
+      directors,
       actors
     });
-
 
     return res.status(StatusCodes.CREATED).json({
       status: 'success',
@@ -46,16 +44,13 @@ async function postMovie(req, res, next) {
 }
 
 async function getMovie(req, res, next) {
-  const movieId = req.params.id;
+  const { id } = req.params;
 
   try {
-    const movie = await Movie.findById(movieId)
-      .populate('directors', 'name photoUrl')
-      .populate('actors', 'name photoUrl');
+    const movie = await findOrCreateMovie(id);
 
     if (!movie) {
-      const error = new AppError('Película no encontrada', StatusCodes.NOT_FOUND, 'MovieNotFound');
-      return next(error);
+      return next(new AppError('No se pudo recuperar la película', StatusCodes.NOT_FOUND));
     }
 
     return res.status(StatusCodes.OK).json({
@@ -63,20 +58,21 @@ async function getMovie(req, res, next) {
       movie
     });
   } catch (error) {
+    console.error(`[Controller Error] getMovie: ${error.message}`);
     return next(error);
   }
 }
 
 async function getMovieByTmdbId(req, res, next) {
   const { tmdbId } = req.params;
- 
+
   try {
     const movie = await Movie.findOne({ tmdbId });
- 
+
     if (!movie) {
       throw new AppError('Película no encontrada', StatusCodes.NOT_FOUND, 'MovieNotFound');
     }
- 
+
     return res.status(StatusCodes.OK).json({
       status: 'success',
       movie
@@ -170,7 +166,7 @@ async function getAllMovies(req, res, next) {
       total: movies.length,
       movies
     });
-    
+
   } catch (error) {
     return next(error);
   }

@@ -10,7 +10,12 @@ function authMiddleware(req, res, next) {
       throw new AppError('No se proporcionó token de autenticación', StatusCodes.UNAUTHORIZED, 'JWTError');
     }
 
-    const decoded = jwt.verify(authHeader, process.env.JWT_SECRET);
+    const token = authHeader.split(' ')[1]; // Extraer el token del formato "Bearer <token>"
+
+    if (!token) {
+      throw new AppError('Token de autenticación mal formado', StatusCodes.UNAUTHORIZED, 'JWTError');
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     //mandamos userId y usernamr en request para controllers
     req.userId = decoded.userId;
