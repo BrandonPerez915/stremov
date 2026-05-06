@@ -3,6 +3,14 @@ import Person from '../models/Person.js';
 import { StatusCodes } from '../config/constants.js';
 import { AppError } from './errorController.js';
 
+/**
+ * @summary Crea una nueva persona en la base de datos local.
+ * @description Registra un documento de persona utilizando únicamente el nombre proporcionado en el cuerpo de la petición.
+ * @param {import('express').Request} req - Objeto de petición. Espera `name` en req.body.
+ * @param {import('express').Response} res - Objeto de respuesta.
+ * @param {import('express').NextFunction} next - Middleware Next para gestión de errores.
+ * @returns {Promise<void>} Responde con el objeto de la persona creada.
+ */
 async function postPerson(req, res, next) {
   const { name } = req.body;
 
@@ -19,6 +27,14 @@ async function postPerson(req, res, next) {
   }
 }
 
+/**
+ * @summary Obtiene una persona por su ID de base de datos.
+ * @description Busca un registro específico utilizando el ObjectId de MongoDB. Lanza un error 404 si no existe.
+ * @param {import('express').Request} req - Objeto de petición. Espera `id` en req.params.
+ * @param {import('express').Response} res - Objeto de respuesta.
+ * @param {import('express').NextFunction} next - Middleware Next.
+ * @returns {Promise<void>} Responde con los datos de la persona encontrada.
+ */
 async function getPerson(req, res, next) {
   const { id } = req.params;
 
@@ -38,6 +54,14 @@ async function getPerson(req, res, next) {
   }
 }
 
+/**
+ * @summary Busca personas por coincidencia de nombre.
+ * @description Realiza una búsqueda flexible utilizando una expresión regular (case-insensitive). Si no se provee un nombre, devuelve todos los registros ordenados alfabéticamente.
+ * @param {import('express').Request} req - Objeto de petición. Acepta `name` opcional en req.query.
+ * @param {import('express').Response} res - Objeto de respuesta.
+ * @param {import('express').NextFunction} next - Middleware Next.
+ * @returns {Promise<void>} Lista de personas que coinciden con el criterio.
+ */
 async function searchPersons(req, res, next) {
   const { name } = req.query;
 
@@ -58,6 +82,14 @@ async function searchPersons(req, res, next) {
   }
 }
 
+/**
+ * @summary Actualiza el nombre de una persona existente.
+ * @description Modifica el campo `name` de un registro tras validar su existencia. Requiere que el nuevo nombre no sea nulo.
+ * @param {import('express').Request} req - Objeto de petición. Espera `id` en params y `name` en req.body.
+ * @param {import('express').Response} res - Objeto de respuesta.
+ * @param {import('express').NextFunction} next - Middleware Next.
+ * @returns {Promise<void>} Responde con el objeto actualizado.
+ */
 async function patchPerson(req, res, next) {
   const { id } = req.params;
   const { name } = req.body;
@@ -87,6 +119,14 @@ async function patchPerson(req, res, next) {
   }
 }
 
+/**
+ * @summary Elimina permanentemente una persona de la base de datos local.
+ * @description Ejecuta un borrado físico del documento basado en su ID único.
+ * @param {import('express').Request} req - Objeto de petición. Espera `id` en req.params.
+ * @param {import('express').Response} res - Objeto de respuesta.
+ * @param {import('express').NextFunction} next - Middleware Next.
+ * @returns {Promise<void>} Responde con un mensaje de éxito y los datos del registro eliminado.
+ */
 async function deletePerson(req, res, next) {
   const { id } = req.params;
 

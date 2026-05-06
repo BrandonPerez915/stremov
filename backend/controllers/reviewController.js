@@ -5,6 +5,14 @@ import Movie from '../models/Movie.js';
 import { StatusCodes } from '../config/constants.js';
 import { AppError } from './errorController.js';
 
+/**
+ * @summary Crea una nueva reseña para una película.
+ * @description Verifica que el usuario y la película existan antes de insertar el documento en la base de datos. Emite un error si ya existe una reseña.
+ * @param {express.Request} req - Objeto de petición de Express. Espera `movieId`, `score`, `title`, `body` en req.body.
+ * @param {express.Response} res - Objeto de respuesta de Express.
+ * @param {express.NextFunction} next - Función Next de Express para delegar errores.
+ * @returns {Promise<void>} Responde con JSON incluyendo la reseña creada.
+ */
 async function postReview(req, res, next) {
   const { movieId, score, title, body } = req.body;
   const { userId } = req;
@@ -38,6 +46,13 @@ async function postReview(req, res, next) {
   }
 }
 
+/**
+ * @summary Obtiene la reseña del usuario autenticado para una película específica.
+ * @param {express.Request} req - Objeto de petición de Express. Requiere `movieId` en params y `userId` del JWT.
+ * @param {express.Response} res - Objeto de respuesta de Express.
+ * @param {express.NextFunction} next - Función Next de Express.
+ * @returns {Promise<void>} Objeto de la reseña poblada.
+ */
 async function getReview(req, res, next) {
   const { movieId } = req.params;
   const { userId } = req;
@@ -56,10 +71,22 @@ async function getReview(req, res, next) {
       review
     });
   } catch (error) {
+    // Si no la encuentra, en vez de reventar podemos simplemente devolver un success sin contenido
+    // para que el frontend sepa que no hay reseña y deba mostrar el formulario limpio.
+    if (error.name === 'ReviewNotFound') {
+      return res.status(StatusCodes.OK).json({ status: 'success', review: null });
+    }
     return next(error);
   }
 }
 
+/**
+ * @summary Obtiene todas las reseñas de una película y calcula promedios y distribución.
+ * @param {express.Request} req - Objeto de petición de Express. Requiere `movieId`.
+ * @param {express.Response} res - Objeto de respuesta de Express.
+ * @param {express.NextFunction} next - Función Next de Express.
+ * @returns {Promise<void>} JSON con arreglo de reseñas, promedio total y distribución por estrellas en CSV.
+ */
 async function getMovieReviews(req, res, next) {
   const { movieId } = req.params;
 
@@ -77,13 +104,12 @@ async function getMovieReviews(req, res, next) {
       ? Math.round((reviews.reduce((sum, r) => sum + r.score, 0) / reviews.length) * 10) / 10
       : null;
 
-    // Calculate bar distribution for 5 bars: 5 stars to 1 star
-    // Ratings are 1-10. Group by Math.ceil(score / 2) -> 1 to 5.
+    // Calculamos el arreglo de distribución de barras [5 estrellas, 4 estrellas, ..., 1 estrella]
     const distribution = [0, 0, 0, 0, 0];
     reviews.forEach(r => {
-      const starIndex = Math.ceil(r.score / 2) - 1; // 0 to 4
+      const starIndex = Math.ceil(r.score / 2) - 1; // Transforma base de 10 a base de 5
       if (starIndex >= 0 && starIndex < 5) {
-        distribution[4 - starIndex]++; // 0th element is 5 stars, 4th is 1 star
+        distribution[4 - starIndex]++;
       }
     });
 
@@ -99,6 +125,13 @@ async function getMovieReviews(req, res, next) {
   }
 }
 
+/**
+ * @summary Obtiene las reseñas globales emitidas por un usuario específico (para su perfil).
+ * @param {express.Request} req - Objeto de petición. Requiere `userId` en params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
+ * @returns {Promise<void>} Lista de reseñas emitidas.
+ */
 async function getUserReviews(req, res, next) {
   const { userId } = req.params;
 
@@ -122,6 +155,14 @@ async function getUserReviews(req, res, next) {
   }
 }
 
+/**
+ * @summary Actualiza parcialmente una reseña existente.
+ * @description En lugar de borrar y crear, se modifica la nota y el cuerpo de la reseña usando PATCH.
+ * @param {express.Request} req - Objeto de petición.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
+ * @returns {Promise<void>}
+ */
 async function patchReview(req, res, next) {
   const { movieId } = req.params;
   const { userId } = req;
@@ -155,6 +196,13 @@ async function patchReview(req, res, next) {
   }
 }
 
+/**
+ * @summary Borra la reseña existente para el usuario autenticado y película dada.
+ * @param {express.Request} req - Objeto de petición.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Middleware Next.
+ * @returns {Promise<void>}
+ */
 async function deleteReview(req, res, next) {
   const { movieId } = req.params;
   const { userId } = req;

@@ -7,6 +7,16 @@ import { StatusCodes } from "../config/constants.js"
 import { AppError } from "./errorController.js"
 import { getRandomColor } from "../utils/random.js"
 
+// --- GESTIÓN DE USUARIOS ---
+
+/**
+ * @summary Registra un nuevo usuario y configura su entorno inicial.
+ * @description Crea el documento de usuario, genera un avatar dinámico basado en su nombre y crea automáticamente su lista predeterminada de "Favoritos".
+ * @param {import('express').Request} req - Objeto de petición de Express. Espera `username`, `email` y `password` en req.body.
+ * @param {import('express').Response} res - Objeto de respuesta de Express.
+ * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @returns {Promise<void>} Responde con JSON del usuario creado (sin datos sensibles).
+ */
 async function postUser(req, res, next) {
   const { username, email, password } = req.body;
 
@@ -43,6 +53,14 @@ async function postUser(req, res, next) {
   }
 }
 
+/**
+ * @summary Obtiene el perfil público de un usuario.
+ * @description Busca un usuario por su nombre y realiza el "populate" de sus listas y redes sociales, excluyendo campos sensibles como contraseña o email.
+ * @param {import('express').Request} req - Objeto de petición. Espera `name` en req.params.
+ * @param {import('express').Response} res - Objeto de respuesta.
+ * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @returns {Promise<void>} Responde con el objeto del usuario y sus relaciones.
+ */
 async function getUser(req, res, next) {
   const name = req.params.name;
 
@@ -63,12 +81,20 @@ async function getUser(req, res, next) {
   }
 }
 
+/**
+ * @summary Actualiza la información del perfil del usuario.
+ * @description Permite modificar campos opcionales del perfil. Valida que el solicitante sea el propietario de la cuenta antes de guardar.
+ * @param {import('express').Request} req - Objeto de petición. Espera `name` en params y campos opcionales en req.body. Requiere `req.userId` (auth).
+ * @param {import('express').Response} res - Objeto de respuesta.
+ * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @returns {Promise<void>} Responde con los datos actualizados del usuario.
+ */
 async function patchUser(req, res, next) {
   const name = req.params.name;
   const { username, password, email, avatarUrl } = req.body;
 
   if (!username && !password && !email && !avatarUrl) {
-    const error = new AppError('Al menos un campo (username, password, email, avatarUrl) debe ser proporcionado para actualizar', StatusCodes.BAD_REQUEST, 'ValidationError');
+    const error = new AppError('Al menos un campo debe ser proporcionado para actualizar', StatusCodes.BAD_REQUEST, 'ValidationError');
     return next(error);
   }
 
@@ -80,7 +106,6 @@ async function patchUser(req, res, next) {
       return next(error);
     }
 
-    // Solo el propietario puede editar su cuenta
     if (user._id.toString() !== req.userId.toString()) {
       throw new AppError('No tienes permiso para editar esta cuenta', StatusCodes.UNAUTHORIZED, 'UnauthorizedError');
     }
@@ -107,6 +132,14 @@ async function patchUser(req, res, next) {
   }
 }
 
+/**
+ * @summary Elimina la cuenta de un usuario.
+ * @description Busca al usuario por nombre y verifica que quien realiza la petición sea el dueño de la cuenta antes de proceder con el borrado físico.
+ * @param {import('express').Request} req - Objeto de petición. Espera `name` en params y `req.userId` (auth).
+ * @param {import('express').Response} res - Objeto de respuesta.
+ * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @returns {Promise<void>} Responde con un mensaje de éxito y los datos del usuario eliminado.
+ */
 async function deleteUser(req, res, next) {
   const name = req.params.name;
 
@@ -139,6 +172,16 @@ async function deleteUser(req, res, next) {
   }
 }
 
+// --- RED SOCIAL (FOLLOWS) ---
+
+/**
+ * @summary Sigue a otro usuario.
+ * @description Actualiza de forma atómica tanto la lista de "siguiendo" del solicitante como la lista de "seguidores" del objetivo. Valida duplicados y auto-seguimiento.
+ * @param {import('express').Request} req - Objeto de petición. Espera `name` en params y `req.userId` (auth).
+ * @param {import('express').Response} res - Objeto de respuesta.
+ * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @returns {Promise<void>} Responde con confirmación del seguimiento.
+ */
 async function followUser(req, res, next) {
   const { name } = req.params;
   const { userId } = req;
@@ -153,13 +196,11 @@ async function followUser(req, res, next) {
       throw new AppError('No puedes seguirte a ti mismo', StatusCodes.BAD_REQUEST, 'ValidationError');
     }
 
-    //verificar si ya lo sigue
     const alreadyFollowing = targetUser.followers.some(id => id.toString() === userId.toString());
     if (alreadyFollowing) {
       throw new AppError('Ya sigues a este usuario', StatusCodes.CONFLICT, 'AlreadyFollowing');
     }
 
-    //actualizar ambos usuarios en paralelo
     await Promise.all([
       User.findByIdAndUpdate(userId,          { $addToSet: { following: targetUser._id } }),
       User.findByIdAndUpdate(targetUser._id,  { $addToSet: { followers: userId } })
@@ -174,6 +215,14 @@ async function followUser(req, res, next) {
   }
 }
 
+/**
+ * @summary Deja de seguir a un usuario.
+ * @description Remueve el vínculo de seguimiento entre dos usuarios utilizando el operador `$pull` en ambos documentos de forma simultánea.
+ * @param {import('express').Request} req - Objeto de petición. Espera `name` en params y `req.userId` (auth).
+ * @param {import('express').Response} res - Objeto de respuesta.
+ * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @returns {Promise<void>} Responde con confirmación de la acción.
+ */
 async function unfollowUser(req, res, next) {
   const { name } = req.params;
   const { userId } = req;
@@ -184,13 +233,11 @@ async function unfollowUser(req, res, next) {
       throw new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
     }
 
-    //verificar si sí lo sigue
     const isFollowing = targetUser.followers.some(id => id.toString() === userId.toString());
     if (!isFollowing) {
       throw new AppError('No sigues a este usuario', StatusCodes.BAD_REQUEST, 'ValidationError');
     }
 
-    //actualizar ambos usuarios en paralelo
     await Promise.all([
       User.findByIdAndUpdate(userId,          { $pull: { following: targetUser._id } }),
       User.findByIdAndUpdate(targetUser._id,  { $pull: { followers: userId } })
@@ -205,6 +252,14 @@ async function unfollowUser(req, res, next) {
   }
 }
 
+/**
+ * @summary Obtiene la lista de seguidores de un usuario.
+ * @description Retorna un listado de usuarios que siguen al perfil especificado, incluyendo sus datos básicos de perfil (nombre y avatar).
+ * @param {import('express').Request} req - Objeto de petición. Espera `name` en params.
+ * @param {import('express').Response} res - Objeto de respuesta.
+ * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @returns {Promise<void>} Responde con el total y el arreglo de seguidores.
+ */
 async function getFollowers(req, res, next) {
   const { name } = req.params;
 
@@ -227,7 +282,14 @@ async function getFollowers(req, res, next) {
   }
 }
 
-
+/**
+ * @summary Obtiene la lista de usuarios seguidos por un perfil.
+ * @description Retorna un listado de los perfiles que el usuario especificado está siguiendo actualmente.
+ * @param {import('express').Request} req - Objeto de petición. Espera `name` en params.
+ * @param {import('express').Response} res - Objeto de respuesta.
+ * @param {import('express').NextFunction} next - Función Next para delegar errores.
+ * @returns {Promise<void>} Responde con el total y el arreglo de usuarios seguidos.
+ */
 async function getFollowing(req, res, next) {
   const { name } = req.params;
 
@@ -249,7 +311,6 @@ async function getFollowing(req, res, next) {
     return next(error);
   }
 }
-
 
 export {
   postUser,
