@@ -142,6 +142,33 @@ movieModalSheet.replaceSync(`
     to { opacity: 1; }
   }
 
+  /* Loader spinner */
+  .loader-container {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-color, #1f2128);
+    z-index: 50;
+  }
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--primary-color, #4ade80);
+    animation: spin 1s ease-in-out infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Esconder elementos hasta que carguen */
+  .content-hidden {
+    display: none !important;
+  }
+
   @media (max-width: 700px) {
     .tabs-header {
       padding: 15px 20px 0 20px;
@@ -209,13 +236,17 @@ class MovieModal extends HTMLElement {
           <span class="icon">close</span>
         </button>
 
-        <div class="tabs-header" id="tabs-header">
+        <div id="loader" class="loader-container">
+          <div class="spinner"></div>
+        </div>
+
+        <div class="tabs-header content-hidden" id="tabs-header">
           <button class="tab-btn active" data-target="info">Information</button>
           <button class="tab-btn" data-target="reviews">Reviews</button>
           <button class="tab-btn" data-target="similar">Similar</button>
         </div>
 
-        <div class="tabs-content">
+        <div class="tabs-content content-hidden" id="tabs-content">
           <!-- PANEL DE INFORMACIÓN -->
           <div class="tab-pane active" id="tab-info">
             <movie-modal-details id="details-component"></movie-modal-details>
@@ -239,11 +270,13 @@ class MovieModal extends HTMLElement {
     // Cerrar modal con el backdrop
     this.shadowRoot.getElementById('backdrop').addEventListener('click', () => {
       this.removeAttribute('open');
+      this.remove();
     });
 
     // Cerrar modal con la X
     this.shadowRoot.getElementById('close-btn').addEventListener('click', () => {
       this.removeAttribute('open');
+      this.remove();
     });
 
     // Lógica de las pestañas
@@ -336,6 +369,15 @@ class MovieModal extends HTMLElement {
     const apiUrl = this.getAttribute('api-url');
     if (!apiUrl) return;
 
+    const loader = this.shadowRoot.getElementById('loader');
+    const tabsHeader = this.shadowRoot.getElementById('tabs-header');
+    const tabsContent = this.shadowRoot.getElementById('tabs-content');
+
+    // Show loader
+    if (loader) loader.classList.remove('content-hidden');
+    if (tabsHeader) tabsHeader.classList.add('content-hidden');
+    if (tabsContent) tabsContent.classList.add('content-hidden');
+
     try {
       const jsonResponse = await apiClient.get(apiUrl);
       // El backend nuestro devuelve { status: 'success', movie: {...} } y el de serie devuelve la data directa
@@ -410,8 +452,15 @@ class MovieModal extends HTMLElement {
         reviewsComponent.setAttribute('movie-id', this._currentBackendMovieId);
       }
 
+      // Hide loader and show content
+      if (loader) loader.classList.add('content-hidden');
+      if (tabsHeader) tabsHeader.classList.remove('content-hidden');
+      if (tabsContent) tabsContent.classList.remove('content-hidden');
+
     } catch (error) {
       console.error("Error obteniendo datos principales de la película:", error);
+      // Hide loader even on error
+      if (loader) loader.classList.add('content-hidden');
     }
   }
 }

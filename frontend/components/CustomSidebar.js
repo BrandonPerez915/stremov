@@ -179,14 +179,16 @@ class CustomSidebar extends HTMLElement {
     closeIcon.addEventListener('click', () => {
       this.classList.remove('open');
       this.classList.add('closed');
-      backdrop.classList.add('hidden');
+      if (backdrop) backdrop.classList.add('hidden');
     });
 
-    backdrop.addEventListener('click', () => {
-      this.classList.remove('open');
-      this.classList.add('closed');
-      backdrop.classList.add('hidden');
-    });
+    if (backdrop) {
+      backdrop.addEventListener('click', () => {
+        this.classList.remove('open');
+        this.classList.add('closed');
+        backdrop.classList.add('hidden');
+      });
+    }
   }
 }
 

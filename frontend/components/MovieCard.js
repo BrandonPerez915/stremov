@@ -2,11 +2,11 @@ const movieCardSheet = new CSSStyleSheet();
 
 movieCardSheet.replaceSync(`
   :host {
-    display: block;
+    display: inline-block;
     font-family: 'Inter', sans-serif;
-    flex: 1 1 auto;
-    min-width: 0;
-    max-width: none;
+    flex: 1;
+    min-width: 170px;
+    max-width: 350px;
   }
 
   .icon {
@@ -248,11 +248,19 @@ class MovieCard extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['poster', 'title', 'rating', 'genres'];
+    return ['type', 'poster', 'title', 'rating', 'genres', 'media-id'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
+
+    if (name === 'media-id') {
+      this._movieId = newValue;
+    }
+
+    if (name === 'type') {
+      this._type = newValue;
+    }
 
     if (name === 'title') {
       const { mainTitle, remainingTitle } = this._getTitleParts(newValue || '');
@@ -386,10 +394,11 @@ _getTitleParts(rawTitle) {
       </div>
     `;
 
-    this.shadowRoot.querySelector('.movie-card')?.addEventListener('click', () => {
+    this.shadowRoot.querySelector('.movie-card').addEventListener('click', () => {
       const event = new CustomEvent('movie-clicked', {
         detail: {
           movieId: this._movieId,
+          type: this._type || 'movies',
           title: this._mainTitle,
           poster: poster,
           rating: rating,
