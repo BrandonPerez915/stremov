@@ -56,7 +56,7 @@ async function register({ username, email, password }) {
 
 //USUARIOS
 
-async function getUser({ username }) {
+async function getUser(username) {
   return publicFetch(`/api/users/${username}`);
 }
 
@@ -67,38 +67,38 @@ async function updateUser({ username, data }) {
   });
 }
 
-async function deleteUser({ username }) {
+async function deleteUser(username) {
   return authFetch(`/api/users/${username}`, {
     method: 'DELETE'
   });
 }
 
-async function followUser({ username }) {
+async function followUser(username) {
   return authFetch(`/api/users/${username}/follow`, {
     method: 'POST'
   });
 }
 
-async function unfollowUser({ username }) {
+async function unfollowUser(username) {
   return authFetch(`/api/users/${username}/follow`, {
     method: 'DELETE'
   });
 }
 
-async function getFollowers({ username }) {
+async function getFollowers(username) {
   return publicFetch(`/api/users/${username}/followers`);
 }
 
-async function getFollowing({ username }) {
+async function getFollowing(username) {
   return publicFetch(`/api/users/${username}/following`);
 }
 
 //LISTAS
 
-async function createList({ name }) {
+async function createList({ name, description }) {
   return authFetch('/api/lists', {
     method: 'POST',
-    body: JSON.stringify({ name })
+    body: JSON.stringify({ name, description })
   });
 }
 
@@ -175,7 +175,7 @@ async function searchMovies(name, page = 1) {
   return publicFetch(`/api/tmdb/movies/search?q=${encodeURIComponent(name)}&page=${page}`);
 }
 
-async function getTmdbMovie({ tmdbId }) {
+async function getTmdbMovie(tmdbId) {
   return publicFetch(`/api/tmdb/movies/${tmdbId}`);
 }
 
@@ -191,16 +191,34 @@ async function discoverMovies(genre, page = 1) {
   return publicFetch(`/api/tmdb/movies/discover?genre=${genre}&page=${page}`);
 }
 
-async function searchPersons(name, page = 1) {
-  return publicFetch(`/api/tmdb/persons/search?q=${encodeURIComponent(name)}&page=${page}`);
+async function getSimilarMovies(tmdbId, page = 1) {
+  return publicFetch(`/api/tmdb/movies/${tmdbId}/similar?page=${page}`);
 }
 
-async function getTmdbPerson(tmdbId) {
-  return publicFetch(`/api/tmdb/persons/${tmdbId}`);
-}
+//TMDB SERIES
 
-async function getPersonCredits(tmdbId) {
-  return publicFetch(`/api/tmdb/persons/${tmdbId}/credits`);
+async function searchSeries(name, page = 1) {
+  return publicFetch(`/api/tmdb/series/search?q=${encodeURIComponent(name)}&page=${page}`);
+}
+ 
+async function getPopularSeries(page = 1) {
+  return publicFetch(`/api/tmdb/series/popular?page=${page}`);
+}
+ 
+async function getTopRatedSeries(page = 1) {
+  return publicFetch(`/api/tmdb/series/top-rated?page=${page}`);
+}
+ 
+async function getTmdbSerie(tmdbId) {
+  return publicFetch(`/api/tmdb/series/${tmdbId}`);
+}
+ 
+async function getSerieCredits(tmdbId) {
+  return publicFetch(`/api/tmdb/series/${tmdbId}/credits`);
+}
+ 
+async function getSimilarSeries(tmdbId, page = 1) {
+  return publicFetch(`/api/tmdb/series/${tmdbId}/similar?page=${page}`);
 }
 
 //REVIEWS
@@ -213,7 +231,7 @@ async function createReview({ movieId, score, title, body }) {
 }
 
 async function getMovieReviews(movieID) {
-  return publicFetch(`/api/reviews/movie/${movieId}`);
+  return publicFetch(`/api/reviews/movie/${movieID}`);
 }
 
 async function getMyReview(movieId) {
@@ -235,6 +253,24 @@ async function deleteReview(movieId) {
 
 async function getUserReviews(userId) {
   return publicFetch(`/api/reviews/user/${userId}`);
+}
+
+//TMDB PERSONAS
+
+async function searchPersons(name, page = 1) {
+  return publicFetch(`/api/tmdb/persons/search?q=${encodeURIComponent(name)}&page=${page}`);
+}
+
+async function getPopularPersons(page = 1) {
+  return publicFetch(`/api/tmdb/persons/popular?page=${page}`);
+}
+
+async function getTmdbPerson(tmdbId) {
+  return publicFetch(`/api/tmdb/persons/${tmdbId}`);
+}
+
+async function getPersonCredits(tmdbId) {
+  return publicFetch(`/api/tmdb/persons/${tmdbId}/credits`);
 }
 
 //PERSONS (MongoDB)
@@ -296,15 +332,25 @@ export {
   createMovie,
   updateMovie,
   deleteMovie,
-  //tmdb
+  //tmdb peliculas
   searchMovies,
   getTmdbMovie,
   getPopularMovies,
   getTopRatedMovies,
+  discoverMovies,
+  getSimilarMovies,
+  //tmdb series
+  searchSeries,
+  getPopularSeries,
+  getTopRatedSeries,
+  getTmdbSerie,
+  getSerieCredits,
+  getSimilarSeries,
+  //tmdb personas
   searchPersons,
+  getPopularPersons,
   getTmdbPerson,
   getPersonCredits,
-  discoverMovies,
   //reviews
   createReview,
   getMovieReviews,
@@ -317,5 +363,5 @@ export {
   getPerson,
   createPerson,
   updatePerson,
-  deletePerson
+  deletePerson,
 };

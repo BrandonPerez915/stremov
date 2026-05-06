@@ -57,12 +57,133 @@ async function getTopRatedMovies(req, res, next) {
   }
 }
 
+//discover por géneros
+async function discoverMovies(req, res, next) {
+  const { genre, page = 1 } = req.query;
+
+  try {
+    const data = await tmdbFetch(
+      `/discover/movie?with_genres=${genre}&page=${page}`
+    );
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//buscar peliculas similares
+async function getSimilarMovies(req, res, next) {
+  const { tmdbId } = req.params;
+  const { page = 1 } = req.query;
+ 
+  try {
+    const data = await tmdbFetch(`/movie/${tmdbId}/similar?page=${page}`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//SERIES
+
+//populares
+async function getPopularSeries(req, res, next) {
+  const { page = 1 } = req.query;
+ 
+  try {
+    const data = await tmdbFetch(`/tv/popular?page=${page}`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+
+//mejor valoradas
+async function getTopRatedSeries(req, res, next) {
+  const { page = 1 } = req.query;
+ 
+  try {
+    const data = await tmdbFetch(`/tv/top_rated?page=${page}`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//busqueda por nombre
+async function searchSeries(req, res, next) {
+  const { q, page = 1 } = req.query;
+ 
+  if (!q) {
+    return next(new AppError('El nombre es obligatorio', StatusCodes.BAD_REQUEST, 'ValidationError'));
+  }
+ 
+  try {
+    const data = await tmdbFetch(`/search/tv?query=${encodeURIComponent(q)}&page=${page}`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//detalles
+async function getSerie(req, res, next) {
+  const { tmdbId } = req.params;
+ 
+  try {
+    const data = await tmdbFetch(`/tv/${tmdbId}`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//créditos de serie
+async function getSerieCredits(req, res, next) {
+  const { tmdbId } = req.params;
+ 
+  try {
+    const data = await tmdbFetch(`/tv/${tmdbId}/credits`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//similares
+async function getSimilarSeries(req, res, next) {
+  const { tmdbId } = req.params;
+  const { page = 1 } = req.query;
+ 
+  try {
+    const data = await tmdbFetch(`/tv/${tmdbId}/similar?page=${page}`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//PERSONAS
+
+//populares 
+async function getPopularPersons(req, res, next) {
+  const { page = 1 } = req.query;
+ 
+  try {
+    const data = await tmdbFetch(`/person/popular?page=${page}`);
+    return res.status(StatusCodes.OK).json(data);
+  } catch (error) {
+    return next(error);
+  }
+}
+
 //buscar persona: solo tmdb y no guarda en mongoDB
 async function searchPersons(req, res, next) {
   const { q, page = 1 } = req.query;
 
   if (!q) {
-    return next(new AppError('El parámetro q es obligatorio', StatusCodes.BAD_REQUEST, 'ValidationError'));
+    return next(new AppError('El parámetro nombre es obligatorio', StatusCodes.BAD_REQUEST, 'ValidationError'));
   }
 
   try {
@@ -109,27 +230,25 @@ async function getPersonCredits(req, res, next) {
   }
 }
 
-//discover por géneros
-async function discoverMovies(req, res, next) {
-  const { genre, page = 1 } = req.query;
-
-  try {
-    const data = await tmdbFetch(
-      `/discover/movie?with_genres=${genre}&page=${page}`
-    );
-    return res.status(StatusCodes.OK).json(data);
-  } catch (error) {
-    return next(error);
-  }
-}
 
 export {
+  //peliculas
   searchMovies,
   getMovie,
   getPopularMovies,
   getTopRatedMovies,
+  discoverMovies,
+  getSimilarMovies,
+  //series
+  getPopularSeries,
+  getTopRatedSeries,
+  searchSeries,
+  getSerie,
+  getSerieCredits,
+  getSimilarSeries,
+  //personas
+  getPopularPersons,
   searchPersons,
   getPerson,
-  getPersonCredits,
-  discoverMovies
+  getPersonCredits  
 };
