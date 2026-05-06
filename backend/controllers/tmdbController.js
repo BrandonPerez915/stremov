@@ -183,7 +183,7 @@ async function searchPersons(req, res, next) {
   const { q, page = 1 } = req.query;
 
   if (!q) {
-    return next(new AppError('El parámetro q es obligatorio', StatusCodes.BAD_REQUEST, 'ValidationError'));
+    return next(new AppError('El parámetro nombre es obligatorio', StatusCodes.BAD_REQUEST, 'ValidationError'));
   }
 
   try {
