@@ -18,10 +18,10 @@
   <script src="../components/CustomHeader.js" defer></script>
   <script src="../components/CustomSidebar.js" defer></script>
   <script src="../components/CustomTextarea.js" defer></script>
-  <script src="../components/MediaCard.js"></script>
+  <script type="module" src="../components/MovieCard.js"></script>
   <script src="../components/HeroBanner.js" defer></script>
-  <script type="module" src="../components/MediaCarousel.js" defer></script>
-  <script src="../components/PersonCarousel.js" defer></script>
+  <script type="module" src="../components/movieCarousel.js" defer></script>
+  <script type="module" src="../components/PersonCarousel.js" defer></script>
   <script src="../components/PersonProfileCard.js" defer></script>
   <script src="../components/ReviewCard.js" defer></script>
   <script src="../components/StarsInput.js" defer></script>
@@ -71,14 +71,28 @@
 
     <person-carousel
       title="Most Popular Actors"
-      api-url="../mocks/popularPeople.json">
+      api-url="/tmdb/persons/popular">
     </person-carousel>
 
   </body>
   <script>
     document.addEventListener('header-search', (e) => {
-      console.log('Buscando:', e.detail.query);
-      // Aquí iría la lógica para realizar la búsqueda, por ejemplo, redirigir a una página de resultados
+      const query = e.detail.query;
+      console.log('Buscando:', query);
+      if (query && query.trim() !== '') {
+        window.location.href = `search.html?query=${encodeURIComponent(query.trim())}`;
+      }
+    });
+
+    document.addEventListener('movie-clicked', (e) => {
+      const { movieId, type } = e.detail;
+      console.log(`Película clickeada: ID=${movieId}`);
+
+      const modal = document.createElement('movie-modal');
+      const endpoint = type === 'series' ? 'series' : 'movies';
+      modal.setAttribute('api-url', `/tmdb/${endpoint}/${movieId}`);
+      modal.setAttribute('open', '');
+      document.body.appendChild(modal);
     });
   </script>
 </html>
