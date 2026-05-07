@@ -143,24 +143,32 @@ class ReviewsFavoritesContainer extends HTMLElement {
   set data({ userId, listId }) {
     this.userId = userId;
     this.listId = listId;
+    console.log('ReviewsFavoritesContainer data set:', { userId, listId });
     this._loadData();
   }
 
   async _loadData() {
     try {
+      console.log('Loading reviews and favorites for:', { userId: this.userId, listId: this.listId });
+      
       const [reviewsResult, favoritesResult] = await Promise.allSettled([
         this.userId ? getUserReviews(this.userId) : Promise.resolve({ reviews: [] }),
-        this.listId ? getFavoriteList(this.listId) : Promise.resolve({ movies: [] })
+        this.listId ? getFavoriteList(this.listId) : Promise.resolve({ list: { movies: [] } })
       ]);
+
+      console.log('Reviews result:', reviewsResult);
+      console.log('Favorites result:', favoritesResult);
 
       this.reviews = reviewsResult.status === 'fulfilled' 
         ? (reviewsResult.value?.reviews || []) 
         : [];
       
+      // La estructura del backend es: { status: 'success', list: { movies: [...] } }
       this.favorites = favoritesResult.status === 'fulfilled' 
-        ? (favoritesResult.value?.movies || []) 
+        ? (favoritesResult.value?.list?.movies || []) 
         : [];
 
+      console.log('Processed data:', { reviews: this.reviews, favorites: this.favorites });
       this._render();
     } catch (err) {
       console.error('Error loading reviews/favorites:', err);
