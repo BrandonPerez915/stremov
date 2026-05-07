@@ -99,23 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     card._movieId = movie.tmdbId || movie._id;
 
-    card.addEventListener('movie-clicked', (event) => {
-      const movieTmdbId = event.detail?.movieId || card._movieId;
-      if (!movieTmdbId) return;
-
-      const existingModal = document.getElementById('list-detail-movie-modal');
-      const apiUrl = getMovieApiUrl(movieTmdbId);
-
-      if (existingModal) {
-        existingModal.setAttribute('api-url', apiUrl);
-        existingModal.setAttribute('open', 'true');
-        return;
-      }
+    card.addEventListener('movie-clicked', (e) => {
+      const { movieId, type } = e.detail;
+      console.log(`Película clickeada: ID=${movieId}`);
 
       const modal = document.createElement('movie-modal');
-      modal.id = 'list-detail-movie-modal';
-      modal.setAttribute('api-url', apiUrl);
-      modal.setAttribute('open', 'true');
+      const endpoint = type === 'series' ? 'series' : 'movies';
+      modal.setAttribute('api-url', `/tmdb/${endpoint}/${movieId}`);
+      modal.setAttribute('open', '');
       document.body.appendChild(modal);
     });
 

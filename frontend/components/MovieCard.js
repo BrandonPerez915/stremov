@@ -2,10 +2,6 @@ import { apiClient } from "../scripts/utils/apiClient.js";
 import './CustomToast.js';
 import './AddToListModal.js';
 
-// ==========================================
-// CACHÉ GLOBAL DE FAVORITOS
-// Evita hacer 20 peticiones iguales al backend
-// ==========================================
 let favoritesCachePromise = null;
 
 function getFavoritesList(userId) {
@@ -243,6 +239,7 @@ class MovieCard extends HTMLElement {
 
     this._isFavorite = false;
     this._backendMovieId = null;
+    this._type = 'movies';
   }
 
   _openAddToListModal() {

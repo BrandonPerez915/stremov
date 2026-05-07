@@ -67,6 +67,13 @@
       type="persons">
     </person-carousel>
 
+    <person-carousel id="user-results"
+      title="Users Results"
+      api-url=""
+      type="persons">
+    </person-carousel>
+
+
   </body>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -91,6 +98,8 @@
 
         const personsCarousel = document.getElementById('person-results');
         personsCarousel.setAttribute('api-url', `/tmdb/persons/search?q=${encodeURIComponent(query)}`);
+
+        const usersCarousel = document.getElementById('user-results');
       }
     });
 

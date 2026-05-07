@@ -136,8 +136,6 @@ class CustomSidebar extends HTMLElement {
     const navItems = [
       { icon: 'home', text: 'Home', href: '/home' },
       { icon: 'video_library', text: 'Your Lists', href: '/your-lists' },
-      { icon: 'group', text: 'Social', href: '#' },
-      { icon: 'trending_up', text: 'Ranking', href: '#' },
       { icon: 'person', text: 'Profile', href: '/profile' },
     ];
 

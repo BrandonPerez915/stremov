@@ -168,6 +168,7 @@ class CustomInput extends HTMLElement {
 
   // Exponer las propiedades nativas
   get value() { return this.inputEl.value; }
+  set value(val) { this._updateValue(val); }
   get validity() { return this.inputEl.validity; }
   checkValidity() { return this.inputEl.checkValidity(); }
 }

@@ -420,7 +420,6 @@ class MovieModal extends HTMLElement {
       const rawRating = data.imdbScore || data.vote_average;
       const rating = rawRating ? (Math.round(rawRating * 10) / 10).toString() : 'N/A';
       const duration = data.runtimeFormatted || this._formatRuntime(data.runtime || data.episode_run_time?.[0]);
-      const apiUrl = this.getAttribute('api-url') || '';
       const tmdbId = apiUrl.split('/').pop();
       const type = apiUrl.includes('/tmdb/series/') ? 'series' : 'movies';
       this._currentMovieData = {
