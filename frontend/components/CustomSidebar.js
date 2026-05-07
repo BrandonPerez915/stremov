@@ -131,6 +131,27 @@ class CustomSidebar extends HTMLElement {
   _render() {
     const followingUsersInfo = this.getAttribute('following-users-info') || '[]'
     const followingUsers = JSON.parse(followingUsersInfo);
+    const currentPath = window.location.pathname;
+
+    const navItems = [
+      { icon: 'home', text: 'Home', href: '/home' },
+      { icon: 'video_library', text: 'Your Lists', href: '/your-lists' },
+      { icon: 'group', text: 'Social', href: '#' },
+      { icon: 'trending_up', text: 'Ranking', href: '#' },
+      { icon: 'settings', text: 'Settings', href: '/profileConfig' },
+    ];
+
+    const navHTML = navItems.map(item => {
+      const isActive = currentPath === item.href || 
+                      (item.href !== '#' && currentPath.startsWith(item.href));
+      return `<sidebar-item 
+        icon="${item.icon}" 
+        text="${item.text}" 
+        href="${item.href}"
+        ${isActive ? 'active' : ''}>
+      </sidebar-item>`;
+    }).join('');
+
 
     this.shadowRoot.innerHTML = `
       <aside class="sidebar">
@@ -142,10 +163,7 @@ class CustomSidebar extends HTMLElement {
         <section class="menu-section">
           <h3 class="section-title">News Feed</h3>
           <nav class="nav-menu" id="main-nav">
-            <sidebar-item icon="home" text="Home" href="/home" active></sidebar-item>
-            <sidebar-item icon="video_library" text="Your Lists" href="/your-lists"></sidebar-item>
-            <sidebar-item icon="group" text="Social" href="#"></sidebar-item>
-            <sidebar-item icon="settings" text="Settings" href="#"></sidebar-item>
+            ${navHTML}
           </nav>
         </section>
 
