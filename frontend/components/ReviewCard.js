@@ -1,3 +1,4 @@
+// ReviewCard Component - Hidden by default, opens in modal on click
 const reviewCardSheet = new CSSStyleSheet();
 
 reviewCardSheet.replaceSync(`
