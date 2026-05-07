@@ -1,4 +1,3 @@
-// ReviewCard Component - Hidden by default, opens in modal on click
 const reviewCardSheet = new CSSStyleSheet();
 
 reviewCardSheet.replaceSync(`
@@ -7,78 +6,36 @@ reviewCardSheet.replaceSync(`
   font-family: 'Inter', sans-serif;
 }
 
-/* Tarjeta visible por defecto: solo muestra el poster, título y rating de la película */
 .review-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  background-color: var(--bg-color);
+  border-radius: 16px;
+  padding: 24px;
   width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
+  min-width: 280px;
   box-shadow: 0 4px 12px var(--shadow-color, rgba(0, 0, 0, 0.2));
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-sizing: border-box;
 }
 
-.review-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px var(--shadow-color, rgba(0, 0, 0, 0.3));
-}
-
-.movie-poster {
-  aspect-ratio: 260 / 320;
-  width: 100%;
-  object-fit: cover;
-  z-index: 1;
-  display: block;
-}
-
-.card-content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 16px;
-  box-sizing: border-box;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.movie-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.movie-info {
+.card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  margin-bottom: 15px;
 }
 
-.stars {
-  display: flex;
-  gap: 2px;
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
-.star-icon {
+.user-info h3 {
   font-size: 16px;
-  color: var(--yellow-100, #f5c518);
-}
-
-.movie-rating {
-  font-size: 13px;
-  color: var(--text-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
 }
 
 .icon {
@@ -91,14 +48,80 @@ reviewCardSheet.replaceSync(`
     'opsz' 24
 }
 
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star-icon {
+  font-size: 24px;
+  color: var(--yellow-100, #f5c518);
+}
+
 .close-icon {
-  font-size: 28px;
+  font-size: 32px;
   color: var(--text-secondary);
   transition: color 0.3s ease;
 }
 
 .close-icon:hover {
   color: var(--text-primary);
+}
+
+.icon-small {
+  font-size: 16px;
+  color: var(--primary-color);
+  vertical-align: middle;
+}
+
+.numeric-rating {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
+.review-text {
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.read-more-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s ease;
+  padding: 0;
+  font-family: inherit;
+  align-items: center;
+  gap: 4px;
+}
+
+.read-more-btn:hover {
+  border-color: var(--primary-color);
+}
+
+.read-more-btn .icon-arrow {
+  font-size: 20px;
+  transition: transform 0.3s ease;
+  color: var(--primary-color);
+}
+
+.read-more-btn:hover,
+.read-more-btn:hover .icon-arrow {
+  filter: brightness(1.2);
 }
 
 /* --- ESTILOS DEL MODAL --- */
@@ -108,7 +131,7 @@ reviewCardSheet.replaceSync(`
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -128,58 +151,18 @@ reviewCardSheet.replaceSync(`
 .modal-card {
   background-color: var(--bg-color);
   border-radius: 16px;
-  padding: 28px;
+  padding: 24px;
   width: 100%;
-  max-width: 550px;
+  max-width: 450px;
   position: relative;
   transform: translateY(20px);
   transition: transform 0.3s ease;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
-  max-height: 80vh;
-  overflow-y: auto;
 }
 
 .modal-overlay.active .modal-card {
   transform: translateY(0);
-}
-
-.modal-header {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border-color, #3a3f4c);
-}
-
-.modal-poster {
-  width: 80px;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-.modal-movie-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 8px 0;
-}
-
-.modal-rating {
-  font-size: 13px;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .close-modal {
@@ -189,214 +172,167 @@ reviewCardSheet.replaceSync(`
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 0;
+}
+
+.extra-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--border-color, #3a3f4c);
+  padding-bottom: 15px;
+}
+
+.tag {
   display: flex;
   align-items: center;
-  justify-content: center;
-}
-
-.review-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.user-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.user-info {
-  flex: 1;
-}
-
-.user-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.review-rating {
-  display: flex;
-  gap: 4px;
-}
-
-.review-rating .star-icon {
-  font-size: 14px;
-}
-
-.review-score {
+  gap: 6px;
+  background-color: transparent;
+  color: var(--primary-color);
   font-size: 12px;
-  color: var(--text-secondary);
-  margin-left: auto;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color, #3a3f4c);
 }
 
-.review-date {
-  font-size: 12px;
-  color: var(--text-secondary);
+.modal-card .review-text {
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  overflow: visible;
+  margin-bottom: 0;
 }
 
-.review-body {
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-@media (max-width: 600px) {
-  .modal-card {
-    padding: 20px;
-  }
-
-  .modal-header {
-    gap: 12px;
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-  }
-
-  .modal-poster {
-    width: 70px;
-    height: 105px;
-  }
-
-  .modal-title {
-    font-size: 16px;
+@media (max-width: 400px) {
+  .numeric-rating {
+    display: none;
   }
 }
 `);
-
 
 class ReviewCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.adoptedStyleSheets = [reviewCardSheet];
+
+    // Binding para que no se pierda el contexto en el event listener de 'resize'
+    this.checkTruncation = this.checkTruncation.bind(this);
   }
 
   connectedCallback() {
     this._render();
     this._setupListeners();
+
+    // Necesitamos un pequeño timeout para asegurar que el texto se haya renderizado antes de calcular su altura
+    setTimeout(this.checkTruncation, 50);
+    window.addEventListener('resize', this.checkTruncation);
   }
 
+  disconnectedCallback() {
+    window.removeEventListener('resize', this.checkTruncation);
+  }
+
+  // Si necesitamos que cambie dinámicamente si le cambian un atributo desde JS
   static get observedAttributes() {
-    return ['username', 'avatar-src', 'rating', 'review-text', 'movie-title', 'date', 'movie-poster', 'movie-rating'];
+    return ['username', 'avatar-src', 'rating', 'review-text', 'movie-title', 'date'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue !== newValue) {
       this._render();
+      setTimeout(this.checkTruncation, 50);
     }
   }
 
   _render() {
-    const username = this.getAttribute('username') || 'Anonymous';
+    // Obtenemos los atributos, con valores por defecto por si no se proveen
+    const username = this.getAttribute('username') || 'Anonymous User';
     const avatarSrc = this.getAttribute('avatar-src') || 'https://via.placeholder.com/50';
     const ratingValue = parseInt(this.getAttribute('rating')) || 5;
     const reviewText = this.getAttribute('review-text') || 'No review provided.';
     const movieTitle = this.getAttribute('movie-title') || 'Unknown Movie';
     const date = this.getAttribute('date') || 'Unknown Date';
-    const moviePoster = this.getAttribute('movie-poster') || 'https://via.placeholder.com/260x320?text=No+Image';
-    const movieRating = parseFloat(this.getAttribute('movie-rating')) || 0;
 
-    // Generar estrellas para la review del usuario
-    let userStarsHTML = '';
+    // Generamos las estrellas dinámicamente según el rating (1 a 5)
+    let starsHTML = '';
     for (let i = 1; i <= ratingValue; i++) {
-      userStarsHTML += `<span class="icon star-icon">star</span>`;
-    }
-
-    // Generar estrellas para el rating global de la película (basado en movieRating / 2 para escala de 5)
-    const movieStarCount = Math.round((movieRating / 10) * 5);
-    let movieStarsHTML = '';
-    for (let i = 1; i <= movieStarCount; i++) {
-      movieStarsHTML += `<span class="icon star-icon">star</span>`;
+      starsHTML += `<span class="icon star-icon">star</span>`;
     }
 
     this.shadowRoot.innerHTML = `
-      <div class="review-card" id="reviewCard">
-        <img src="${moviePoster}" alt="${movieTitle}" class="movie-poster">
-        <div class="card-content">
-          <h3 class="movie-title">${movieTitle}</h3>
-          <div class="movie-info">
-            <div class="stars">${movieStarsHTML}</div>
-            <span class="movie-rating">${movieRating.toFixed(1)}</span>
+      <div class="review-card">
+        <div class="card-header">
+          <img src="${avatarSrc}" alt="${username}" class="avatar">
+          <div class="user-info">
+            <h3>${username}</h3>
+            <div class="stars">${starsHTML}</div>
           </div>
+          <span class="numeric-rating">${ratingValue} / 5</span>
         </div>
+
+        <p class="review-text" id="reviewContent">${reviewText}</p>
+
+        <button class="read-more-btn" id="readMoreBtn">
+          Read full review <span class="icon icon-arrow">chevron_right</span>
+        </button>
       </div>
 
-      <!-- Modal -->
+      <!-- Modal oculto -->
       <div class="modal-overlay" id="modal">
         <div class="modal-card">
-          <button class="close-modal" id="closeModal">
-            <span class="icon close-icon">close</span>
-          </button>
+          <button class="close-modal" id="closeModal"><span class="icon close-icon">close</span></button>
 
-          <!-- Movie Header -->
-          <div class="modal-header">
-            <img src="${moviePoster}" alt="${movieTitle}" class="modal-poster">
-            <div class="modal-movie-info">
-              <h3 class="modal-title">${movieTitle}</h3>
-              <div class="modal-rating">
-                <div class="stars">${movieStarsHTML}</div>
-                <span>${movieRating.toFixed(1)}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Review Header (User Info) -->
-          <div class="review-header">
-            <img src="${avatarSrc}" alt="${username}" class="user-avatar">
+          <div class="card-header">
+            <img src="${avatarSrc}" alt="${username}" class="avatar">
             <div class="user-info">
-              <p class="user-name">${username}</p>
-              <div class="review-rating">
-                ${userStarsHTML}
-                <span class="review-score">${ratingValue} / 10</span>
-              </div>
+              <h3>${username}</h3>
+              <div class="stars">${starsHTML}</div>
             </div>
           </div>
 
-          <p class="review-date">${date}</p>
+          <div class="extra-info">
+            <span class="tag"><span class="icon icon-small">videocam</span> Movie: ${movieTitle}</span>
+            <span class="tag"><span class="icon icon-small">calendar_today</span> ${date}</span>
+          </div>
 
-          <!-- Review Body -->
-          <p class="review-body">${reviewText}</p>
+          <p class="review-text" id="modalReviewContent">${reviewText}</p>
         </div>
       </div>
     `;
 
-    this.modal = this.shadowRoot.getElementById('modal');
-    this.reviewCard = this.shadowRoot.getElementById('reviewCard');
-    this.closeModalBtn = this.shadowRoot.getElementById('closeModal');
+    // Reasignamos las referencias a los elementos tras el render
+    this.reviewTextEl = this.shadowRoot.getElementById("reviewContent");
+    this.readMoreBtn = this.shadowRoot.getElementById("readMoreBtn");
+    this.modal = this.shadowRoot.getElementById("modal");
+    this.closeModalBtn = this.shadowRoot.getElementById("closeModal");
   }
 
   _setupListeners() {
-    // Abrir modal al hacer click en la tarjeta
-    if (this.reviewCard) {
-      this.reviewCard.addEventListener('click', () => {
-        this.modal.classList.add('active');
-      });
-    }
+    this.readMoreBtn.addEventListener("click", () => {
+      this.modal.classList.add("active");
+    });
 
-    // Cerrar modal al hacer click en el botón de cerrar
-    if (this.closeModalBtn) {
-      this.closeModalBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.modal.classList.remove('active');
-      });
-    }
+    this.closeModalBtn.addEventListener("click", () => {
+      this.modal.classList.remove("active");
+    });
 
-    // Cerrar modal al hacer click fuera de él
-    if (this.modal) {
-      this.modal.addEventListener('click', (e) => {
-        if (e.target === this.modal) {
-          this.modal.classList.remove('active');
-        }
-      });
+    this.modal.addEventListener("click", (e) => {
+      if (e.target === this.modal) {
+        this.modal.classList.remove("active");
+      }
+    });
+  }
+
+  checkTruncation() {
+    if (!this.reviewTextEl || !this.readMoreBtn) return;
+
+    // Si la altura del texto oculto es mayor a la altura de la caja visible, mostramos el botón
+    if (this.reviewTextEl.scrollHeight > this.reviewTextEl.clientHeight) {
+      this.readMoreBtn.style.display = "flex";
+    } else {
+      this.readMoreBtn.style.display = "none";
     }
   }
 }
@@ -404,5 +340,3 @@ class ReviewCard extends HTMLElement {
 if (!customElements.get('review-card')) {
   customElements.define('review-card', ReviewCard);
 }
-
-export {};

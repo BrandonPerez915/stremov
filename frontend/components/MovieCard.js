@@ -1,6 +1,23 @@
 import { apiClient } from "../scripts/utils/apiClient.js";
 import './CustomToast.js';
 
+// ==========================================
+// CACHÉ GLOBAL DE FAVORITOS
+// Evita hacer 20 peticiones iguales al backend
+// ==========================================
+let favoritesCachePromise = null;
+
+function getFavoritesList(userId) {
+  if (!favoritesCachePromise) {
+    favoritesCachePromise = apiClient.get(`/lists/user/${userId}/favorites`)
+      .catch(err => {
+        favoritesCachePromise = null; // Si falla, permitimos reintentar después
+        throw err;
+      });
+  }
+  return favoritesCachePromise;
+}
+
 const movieCardSheet = new CSSStyleSheet();
 
 movieCardSheet.replaceSync(`
@@ -15,11 +32,7 @@ movieCardSheet.replaceSync(`
   .icon {
     color: var(--text-primary);
     font-family: 'Material Symbols Outlined';
-    font-variation-settings:
-      'FILL' 0,
-      'wght' 200,
-      'GRAD' 0,
-      'opsz' 24
+    font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
   }
 
   .movie-card {
@@ -39,6 +52,7 @@ movieCardSheet.replaceSync(`
     z-index: 1;
   }
 
+  /* --- BOTÓN FAVORITOS --- */
   .favorite-btn {
     position: absolute;
     top: 16px;
@@ -66,13 +80,20 @@ movieCardSheet.replaceSync(`
   #favorite-icon {
     color: white;
     font-size: 25px;
-    transition: color 0.3s ease;
+    transition: color 0.3s ease, font-variation-settings 0.3s ease;
   }
 
   .favorite-btn:hover #favorite-icon {
-    color: var(--red-100);
+    color: var(--red-100, #ef4444);
   }
 
+  /* ESTADO: CUANDO YA ES FAVORITO */
+  .favorite-btn.is-favorite #favorite-icon {
+    color: var(--red-100, #ef4444);
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  /* --- BOTÓN ADD TO LIST --- */
   .add-to-list-btn {
     position: absolute;
     top: 16px;
@@ -114,10 +135,8 @@ movieCardSheet.replaceSync(`
     left: 0;
     width: 100%;
     z-index: 2;
-
     padding: 12px;
     box-sizing: border-box;
-
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -125,7 +144,6 @@ movieCardSheet.replaceSync(`
     border-top: 1px solid rgba(255, 255, 255, 0.4);
     border-left: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-
     color: white;
     display: flex;
     flex-direction: column;
@@ -147,7 +165,6 @@ movieCardSheet.replaceSync(`
     font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: 0.5px;
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -160,7 +177,6 @@ movieCardSheet.replaceSync(`
     font-size: 0.6rem;
     font-weight: 300;
     letter-spacing: 0.3px;
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -199,40 +215,16 @@ movieCardSheet.replaceSync(`
   }
 
   @media (max-width: 750px) {
-    .card-title {
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    .card-rating {
-      font-size: 0.8rem;
-      font-weight: 400;
-    }
-
-    .card-content {
-      padding: 12px;
-    }
-
-    .tag {
-      font-size: 0.6rem;
-      padding: 4px 12px;
-    }
+    .card-title { font-size: 0.9rem; font-weight: 500; }
+    .card-rating { font-size: 0.8rem; font-weight: 400; }
+    .card-content { padding: 12px; }
+    .tag { font-size: 0.6rem; padding: 4px 12px; }
   }
 
   @media (max-width: 1000px) {
-    .star-icon {
-      font-size: 20px;
-    }
-
-    .card-title {
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    .card-rating {
-      font-size: 0.8rem;
-      font-weight: 400;
-    }
+    .star-icon { font-size: 20px; }
+    .card-title { font-size: 0.9rem; font-weight: 500; }
+    .card-rating { font-size: 0.8rem; font-weight: 400; }
   }
 `);
 
@@ -245,9 +237,11 @@ class MovieCard extends HTMLElement {
     this._mainTitle = 'Untitled';
     this._remainingTitle = '';
     this._matchedGenres = [];
-
     this._isRendered = false;
-    this._movieId  = '';
+    this._movieId = '';
+
+    this._isFavorite = false;
+    this._backendMovieId = null;
   }
 
   static get observedAttributes() {
@@ -257,20 +251,13 @@ class MovieCard extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
 
-    if (name === 'media-id') {
-      this._movieId = newValue;
-    }
-
-    if (name === 'type') {
-      this._type = newValue;
-    }
-
+    if (name === 'media-id') this._movieId = newValue;
+    if (name === 'type') this._type = newValue;
     if (name === 'title') {
       const { mainTitle, remainingTitle } = this._getTitleParts(newValue || '');
       this._mainTitle = mainTitle;
       this._remainingTitle = remainingTitle;
     }
-
     if (name === 'genres') {
       this._matchedGenres = this._matchGenres(newValue || '');
     }
@@ -287,69 +274,34 @@ class MovieCard extends HTMLElement {
     }
   }
 
-_getTitleParts(rawTitle) {
+  _getTitleParts(rawTitle) {
     if (!rawTitle) return { mainTitle: 'Untitled', remainingTitle: '' };
-
-    let cleanTitle = rawTitle.trim();
-
-    // Eliminar patrones iniciales ("The", "A", "An")
-    cleanTitle = cleanTitle.replace(/^(The|A|An)\s+/i, '');
-
-    // Buscar delimitadores explícitos (dos puntos o guiones)
+    let cleanTitle = rawTitle.trim().replace(/^(The|A|An)\s+/i, '');
     const regex = /[:\-]/;
-
     if (regex.test(cleanTitle)) {
       const partes = cleanTitle.split(regex);
-      return {
-        mainTitle: partes[0].trim(),
-        remainingTitle: partes.slice(1).join(':').trim()
-      };
+      return { mainTitle: partes[0].trim(), remainingTitle: partes.slice(1).join(':').trim() };
     }
-
-    // Si el texto viene plano como "avengers endgame", separamos la última palabra.
     const palabras = cleanTitle.split(' ');
-
     if (palabras.length > 1) {
       const remainingTitle = palabras.pop();
       const mainTitle = palabras.join(' ');
-
-      return {
-        mainTitle,
-        remainingTitle
-      };
+      return { mainTitle, remainingTitle };
     }
-
-    // Si es solo una palabra (Ej: "Inception")
-    return {
-      mainTitle: cleanTitle,
-      remainingTitle: ''
-    };
+    return { mainTitle: cleanTitle, remainingTitle: '' };
   }
 
   _matchGenres(genresStr) {
     if (!genresStr || genresStr.trim() === '') return [];
     return genresStr.split(',').map(genre => {
       switch (parseInt(genre.trim())) {
-        case 28: return 'Action';
-        case 12: return 'Adventure';
-        case 16: return 'Animation';
-        case 35: return 'Comedy';
-        case 80: return 'Crime';
-        case 99: return 'Documentary';
-        case 18: return 'Drama';
-        case 10751: return 'Family';
-        case 14: return 'Fantasy';
-        case 36: return 'History';
-        case 27: return 'Horror';
-        case 10402: return 'Music';
-        case 9648: return 'Mystery';
-        case 10749: return 'Romance';
-        case 878: return 'Science Fiction';
-        case 10770: return 'TV Movie';
-        case 53: return 'Thriller';
-        case 10752: return 'War';
-        case 37: return 'Western';
-        default: return '';
+        case 28: return 'Action'; case 12: return 'Adventure'; case 16: return 'Animation';
+        case 35: return 'Comedy'; case 80: return 'Crime'; case 99: return 'Documentary';
+        case 18: return 'Drama'; case 10751: return 'Family'; case 14: return 'Fantasy';
+        case 36: return 'History'; case 27: return 'Horror'; case 10402: return 'Music';
+        case 9648: return 'Mystery'; case 10749: return 'Romance'; case 878: return 'Science Fiction';
+        case 10770: return 'TV Movie'; case 53: return 'Thriller'; case 10752: return 'War';
+        case 37: return 'Western'; default: return '';
       }
     }).filter(Boolean);
   }
@@ -365,6 +317,37 @@ _getTitleParts(rawTitle) {
     } else if (name === 'genres') {
       this.shadowRoot.querySelector('.card-tags').innerHTML =
         this._matchedGenres.map((genre) => `<span class="tag">${genre}</span>`).join('');
+    }
+  }
+
+  // --- REVISIÓN OPTIMIZADA DEL ESTADO ---
+  async _checkFavoriteState() {
+    try {
+      const userRaw = localStorage.getItem('userData');
+      if (!userRaw) return;
+      const user = JSON.parse(userRaw);
+
+      // Usamos el caché global. ¡Solo la primera película hará la petición real!
+      const response = await getFavoritesList(user._id);
+
+      // Intentamos localizar el arreglo sin importar cómo lo anidó tu backend
+      const movies = response.data?.list?.movies || response.list?.movies || response.movies || [];
+
+      // Búsqueda a prueba de fallos (busca como String tanto en tmdbId como id)
+      const foundMovie = movies.find(m =>
+        String(m.tmdbId) === String(this._movieId) ||
+        String(m.id) === String(this._movieId)
+      );
+
+      if (foundMovie) {
+        this._isFavorite = true;
+        this._backendMovieId = foundMovie._id; // ID de tu base de datos
+
+        const btn = this.shadowRoot.querySelector('.favorite-btn');
+        if (btn) btn.classList.add('is-favorite');
+      }
+    } catch (error) {
+      console.warn(`Error al verificar favoritos para ${this._mainTitle}:`, error.message);
     }
   }
 
@@ -397,8 +380,11 @@ _getTitleParts(rawTitle) {
       </div>
     `;
 
+    // Disparamos la verificación justo después de pintar
+    this._checkFavoriteState();
+
     this.shadowRoot.querySelector('.movie-card').addEventListener('click', () => {
-      const event = new CustomEvent('movie-clicked', {
+      this.dispatchEvent(new CustomEvent('movie-clicked', {
         detail: {
           movieId: this._movieId,
           type: this._type || 'movies',
@@ -409,65 +395,68 @@ _getTitleParts(rawTitle) {
         },
         bubbles: true,
         composed: true
-      });
-      this.dispatchEvent(event);
+      }));
     });
 
+    // EVENTO DEL BOTÓN FAVORITO
     this.shadowRoot.querySelector('.favorite-btn').addEventListener('click', async (e) => {
       e.stopPropagation();
+      const btn = e.currentTarget;
+
       try {
-        // 1. Obtener el usuario
         const userRaw = localStorage.getItem('userData');
         const user = userRaw ? JSON.parse(userRaw) : null;
 
-        if (!user || !user._id) {
-          throw new Error("Usuario no encontrado en localStorage");
+        if (!user || !user.favoritesListId) throw new Error("No hay usuario o no tiene lista de favoritos");
+
+        const listId = user.favoritesListId;
+
+        if (this._isFavorite) {
+          // DELETE
+          if (!this._backendMovieId) {
+             console.warn("Falta _backendMovieId, buscando en backend...");
+             const movieData = await apiClient.get(`/tmdb/${this._type}/${this._movieId}`);
+             this._backendMovieId = movieData.movie._id;
+          }
+
+          await apiClient.delete(`/lists/${listId}/movies/${this._backendMovieId}`);
+
+          this._isFavorite = false;
+          btn.classList.remove('is-favorite');
+          window.toast({ type: 'success', title: 'Removed from favorites', duration: 2000 });
+
+          // Limpiar caché global para que en el próximo refresh la película ya no aparezca
+          favoritesCachePromise = null;
+
+        } else {
+          // POST
+          const movieData = await apiClient.get(`/tmdb/${this._type}/${this._movieId}`);
+          const isSeries = this._type === 'tv' || this._type === 'series';
+          const title = isSeries ? movieData.name : movieData.title;
+          const genreIds = movieData.genres ? movieData.genres.map(g => g.id) : [];
+
+          this._backendMovieId = movieData.movie._id;
+
+          await apiClient.post(`/lists/${listId}/movies/${this._backendMovieId}`, {
+            tmdbId: this._movieId,
+            type: this._type,
+            title: title,
+            poster: movieData.poster_path,
+            rating: movieData.vote_average,
+            genres: genreIds
+          });
+
+          this._isFavorite = true;
+          btn.classList.add('is-favorite');
+          window.toast({ type: 'success', title: 'Added to favorites!', duration: 2000 });
+
+          // Limpiar caché global para forzar la actualización al recargar
+          favoritesCachePromise = null;
         }
 
-        // 2. Obtener los detalles de la película
-        // (Asumiendo que apiClient devuelve el JSON directo, sin .data)
-        const movieData = await apiClient.get(`/tmdb/${this._type}/${this._movieId}`);
-        console.log("Detalles de la película obtenidos:", movieData);
-
-        // 3. Obtener el ID de la lista de favoritos del usuario (ruta real de tu router)
-        const favoriteList = await apiClient.get(`/lists/user/${user._id}/favorites`);
-        console.log("Lista de favoritos obtenida:", favoriteList);
-        const listId = favoriteList.list._id || favoriteList.id;
-
-        // 4. Mapear datos correctamente según si es serie o película
-        const isSeries = this._type === 'tv' || this._type === 'series';
-        const title = isSeries ? movieData.name : movieData.title;
-        // Extraer solo los IDs de los géneros del array de objetos que devuelve TMDB
-        const genreIds = movieData.genres ? movieData.genres.map(g => g.id) : [];
-
-        // 5. Guardar la película en la lista
-        await apiClient.post(`/lists/${listId}/movies/${movieData.movie._id}`, {
-          tmdbId: this._movieId,
-          type: this._type, // Usamos la variable en lugar de hardcodear 'movie'
-          title: title,
-          poster: movieData.poster_path,
-          rating: movieData.vote_average,
-          genres: genreIds
-        }, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('jwtToken')}`
-          }
-        });
-
-        // 6. Notificación de éxito
-        window.toast({
-          type: 'success',
-          title: 'Added to favorites!',
-          duration: 2000
-        });
-
       } catch (error) {
-        console.error("Error al agregar a favoritos:", error);
-        window.toast({
-          type: 'error',
-          title: 'Failed to add to favorites',
-          duration: 2000
-        });
+        console.error("Error toggling favorite:", error);
+        window.toast({ type: 'error', title: 'Failed to update favorites', duration: 2000 });
       }
     });
 
