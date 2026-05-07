@@ -3,7 +3,9 @@ import { handleError } from "../controllers/errorController.js"
 function errorHandler(err, req, res, next) {
   const error = handleError(err)
 
-  return res.status(error.statusCode).json({
+  const statusCode = error.statusCode || 500
+
+  return res.status(statusCode).json({
     status: 'error',
     error: error.name,
     message: error.message,

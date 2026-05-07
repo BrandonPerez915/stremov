@@ -35,10 +35,20 @@
 			{"name": "Brandon Perez", "imgSrc": "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D", "verified": true},
 			{"name": "Alex Juarez", "imgSrc": "https://images.unsplash.com/photo-1654110455429-cf322b40a906?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D", "verified": false},
 			{"name": "Carla Torres", "imgSrc": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&auto=format&fit=crop", "verified": true}
-		]'></custom-sidebar>
+		]'
+		active-page="lists"></custom-sidebar>
 
-  
+
 	<your-lists-view></your-lists-view>
-  
+</body>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', () => {
+			const theme = localStorage.getItem('appTheme') || 'dark';
+			const primaryColor = localStorage.getItem('appPrimaryColor') || 'blue';
+			document.documentElement.setAttribute('data-theme', theme);
+			document.documentElement.setAttribute('primary-color', primaryColor);
+		});
+	</script>
 
 </html>

@@ -207,12 +207,27 @@ class MovieModalReviews extends HTMLElement {
     if (!movieId) return;
 
     try {
-      // Cargar la reseña personal si existe (para modo de edición)
-      const myReviewData = await apiClient.get(`/reviews/movie/${movieId}/me`);
-      if (myReviewData && myReviewData.review) {
-        this.hasRated = true;
-        this.currentSelectedRating = myReviewData.review.score;
-        this._myReviewText = myReviewData.review.body;
+      const isLoggedIn = !!localStorage.getItem('jwtToken');
+
+      if (isLoggedIn) {
+        try {
+          // Cargar la reseña personal si existe (para modo de edición)
+          const myReviewData = await apiClient.get(`/reviews/movie/${movieId}/me`);
+          if (myReviewData && myReviewData.review) {
+            this.hasRated = true;
+            this.currentSelectedRating = myReviewData.review.score;
+            this._myReviewText = myReviewData.review.body;
+          } else {
+            this.hasRated = false;
+            this.currentSelectedRating = 0;
+            this._myReviewText = '';
+          }
+        } catch (err) {
+          console.warn("Personal review fetch err (might not exist):", err);
+          this.hasRated = false;
+          this.currentSelectedRating = 0;
+          this._myReviewText = '';
+        }
       } else {
         this.hasRated = false;
         this.currentSelectedRating = 0;
@@ -222,6 +237,7 @@ class MovieModalReviews extends HTMLElement {
       // Cargar reseñas globales
       const data = await apiClient.get(`/reviews/movie/${movieId}`);
       if (data && data.status === 'success') {
+        console.log(data)
         const remoteReviews = data.reviews.map(r => ({
           username: r.user.username,
           avatarSrc: r.user.avatarUrl || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
@@ -289,23 +305,39 @@ class MovieModalReviews extends HTMLElement {
 
           <rating-bars ratings="${barDistribution}"></rating-bars>
 
-          <div class="rate-product-section">
-            <button id="toggle-rate-btn" class="btn-primary">
-              Rate This <span class='rate-review-icon'>trending_up</span>
-            </button>
+          ${(() => {
+            const isLoggedIn = !!localStorage.getItem('jwtToken');
+            if (isLoggedIn) {
+              return `
+                <div class="rate-product-section">
+                  <button id="toggle-rate-btn" class="btn-primary">
+                    Rate This <span class='rate-review-icon'>trending_up</span>
+                  </button>
 
-            <div id="rate-form-container" class="form-hidden">
-              <stars-input id="interactive-stars" value="0"></stars-input>
+                  <div id="rate-form-container" class="form-hidden">
+                    <stars-input id="interactive-stars" value="0"></stars-input>
 
-              <custom-textarea
-                id="review-textarea"
-                label="Your Review"
-                placeholder="Input your review here...">
-              </custom-textarea>
+                    <custom-textarea
+                      id="review-textarea"
+                      label="Your Review"
+                      placeholder="Input your review here...">
+                    </custom-textarea>
 
-              <button id="submit-rate-btn" class="btn-secondary">Submit Review</button>
-            </div>
-          </div>
+                    <button id="submit-rate-btn" class="btn-secondary">Submit Review</button>
+                  </div>
+                </div>
+              `;
+            } else {
+              return `
+                <div class="rate-product-section">
+                  <p style="text-align: center; color: var(--text-secondary); margin-bottom: 10px; font-size: 14px;">Sign in to leave a review.</p>
+                  <button id="login-to-rate-btn" class="btn-primary">
+                    Login / Register
+                  </button>
+                </div>
+              `;
+            }
+          })()}
         </aside>
 
         <!-- LISTA DE RESEÑAS -->
@@ -319,6 +351,18 @@ class MovieModalReviews extends HTMLElement {
   }
 
   _setupListeners() {
+    const isLoggedIn = !!localStorage.getItem('jwtToken');
+
+    if (!isLoggedIn) {
+      const loginBtn = this.shadowRoot.getElementById('login-to-rate-btn');
+      if (loginBtn) {
+        loginBtn.addEventListener('click', () => {
+          window.location.href = '/login';
+        });
+      }
+      return;
+    }
+
     const toggleBtn = this.shadowRoot.getElementById('toggle-rate-btn');
     const formContainer = this.shadowRoot.getElementById('rate-form-container');
     const starsInput = this.shadowRoot.getElementById('interactive-stars');

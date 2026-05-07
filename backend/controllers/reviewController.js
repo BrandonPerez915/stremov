@@ -107,7 +107,7 @@ async function getMovieReviews(req, res, next) {
     // Calculamos el arreglo de distribución de barras [5 estrellas, 4 estrellas, ..., 1 estrella]
     const distribution = [0, 0, 0, 0, 0];
     reviews.forEach(r => {
-      const starIndex = Math.ceil(r.score / 2) - 1; // Transforma base de 10 a base de 5
+      const starIndex = r.score - 1; // Transforma base de 10 a base de 5
       if (starIndex >= 0 && starIndex < 5) {
         distribution[4 - starIndex]++;
       }

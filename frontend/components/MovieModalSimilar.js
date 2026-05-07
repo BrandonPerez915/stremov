@@ -120,12 +120,12 @@ class MovieModalSimilar extends HTMLElement {
         // Evitar items sin póster para no romper el diseño del grid
         if (!item.poster_path) return;
 
-        const card = document.createElement('media-card');
+        const card = document.createElement('movie-card');
 
         // Dependiendo si es película o serie la API devuelve title o name
         const cardTitle = type === 'series' ? item.name : item.title;
 
-        // Formatear géneros (máximo 2 para no sobresaturar la tarjeta)
+        // Formatear géneros
         let genres = 'Unknown';
         if (item.genre_ids && item.genre_ids.length > 0) {
           genres = item.genre_ids.slice(0, 2).join(',');
@@ -135,9 +135,8 @@ class MovieModalSimilar extends HTMLElement {
         card.setAttribute('poster', `https://image.tmdb.org/t/p/w500${item.poster_path}`);
         card.setAttribute('rating', Math.round(item.vote_average * 10) / 10);
         card.setAttribute('genres', genres);
-
-        // Data attribute crucial para que tu componente movie-card maneje el redireccionamiento al hacer clic
-        // card.dataset.imdbId = item.id;
+        card.setAttribute('media-id', item.id);
+        card.setAttribute('type', type);
 
         gridElement.appendChild(card);
       });

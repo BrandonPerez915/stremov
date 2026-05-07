@@ -1,3 +1,6 @@
+import { apiClient } from "../scripts/utils/apiClient.js";
+import './CustomToast.js';
+
 const movieCardSheet = new CSSStyleSheet();
 
 movieCardSheet.replaceSync(`
@@ -408,6 +411,68 @@ _getTitleParts(rawTitle) {
         composed: true
       });
       this.dispatchEvent(event);
+    });
+
+    this.shadowRoot.querySelector('.favorite-btn').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        // 1. Obtener el usuario
+        const userRaw = localStorage.getItem('userData');
+        const user = userRaw ? JSON.parse(userRaw) : null;
+
+        if (!user || !user._id) {
+          throw new Error("Usuario no encontrado en localStorage");
+        }
+
+        // 2. Obtener los detalles de la película
+        // (Asumiendo que apiClient devuelve el JSON directo, sin .data)
+        const movieData = await apiClient.get(`/tmdb/${this._type}/${this._movieId}`);
+        console.log("Detalles de la película obtenidos:", movieData);
+
+        // 3. Obtener el ID de la lista de favoritos del usuario (ruta real de tu router)
+        const favoriteList = await apiClient.get(`/lists/user/${user._id}/favorites`);
+        console.log("Lista de favoritos obtenida:", favoriteList);
+        const listId = favoriteList.list._id || favoriteList.id;
+
+        // 4. Mapear datos correctamente según si es serie o película
+        const isSeries = this._type === 'tv' || this._type === 'series';
+        const title = isSeries ? movieData.name : movieData.title;
+        // Extraer solo los IDs de los géneros del array de objetos que devuelve TMDB
+        const genreIds = movieData.genres ? movieData.genres.map(g => g.id) : [];
+
+        // 5. Guardar la película en la lista
+        await apiClient.post(`/lists/${listId}/movies/${movieData.movie._id}`, {
+          tmdbId: this._movieId,
+          type: this._type, // Usamos la variable en lugar de hardcodear 'movie'
+          title: title,
+          poster: movieData.poster_path,
+          rating: movieData.vote_average,
+          genres: genreIds
+        }, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwtToken')}`
+          }
+        });
+
+        // 6. Notificación de éxito
+        window.toast({
+          type: 'success',
+          title: 'Added to favorites!',
+          duration: 2000
+        });
+
+      } catch (error) {
+        console.error("Error al agregar a favoritos:", error);
+        window.toast({
+          type: 'error',
+          title: 'Failed to add to favorites',
+          duration: 2000
+        });
+      }
+    });
+
+    this.shadowRoot.querySelector('.add-to-list-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
     });
   }
 }

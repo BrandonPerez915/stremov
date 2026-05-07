@@ -70,6 +70,11 @@
   </body>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      const theme = localStorage.getItem('appTheme') || 'dark';
+      const primaryColor = localStorage.getItem('appPrimaryColor') || 'blue';
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('primary-color', primaryColor);
+
       const urlParams = new URLSearchParams(window.location.search);
       const query = urlParams.get('query');
 

@@ -46,9 +46,10 @@ async function loginUser(username, password) {
         const userProfile = await apiClient.get(`/users/${jwtPayload.username}`);
 
         localStorage.setItem('userData', JSON.stringify({
-          _id: jwtPayload.userId,
+          _id: userProfile.user._id,
           username: userProfile.user.username,
           email: userProfile.user.email,
+          favoritesListId: userProfile.user.lists.find(list => list.name === 'Favoritos')?._id || null,
           role: jwtPayload.role
         }));
 

@@ -142,16 +142,19 @@ class CustomSidebar extends HTMLElement {
     ];
 
     const navHTML = navItems.map(item => {
-      const isActive = currentPath === item.href || 
+      const isActive = currentPath === item.href ||
                       (item.href !== '#' && currentPath.startsWith(item.href));
-      return `<sidebar-item 
-        icon="${item.icon}" 
-        text="${item.text}" 
+      return `<sidebar-item
+        icon="${item.icon}"
+        text="${item.text}"
         href="${item.href}"
         ${isActive ? 'active' : ''}>
       </sidebar-item>`;
     }).join('');
 
+
+    // Check if user is logged in
+    const isLoggedIn = !!localStorage.getItem('jwtToken');
 
     this.shadowRoot.innerHTML = `
       <aside class="sidebar">
@@ -167,25 +170,34 @@ class CustomSidebar extends HTMLElement {
           </nav>
         </section>
 
-        <!--
-        <section class="menu-section">
-          <h3 class="section-title">Following</h3>
-          <div class="following-list">
-            ${
-              followingUsers.map(user => `
-                <sidebar-user
-                  name="${user.name}"
-                  img-src="${user.imgSrc}"
-                  ${user.verified ? 'verified' : ''}
-                ></sidebar-user>
-              `).join('')
-            }
-          </div>
-          <button class="load-more-btn">
-            See more
-          </button>
-        </section>
-        -->
+        ${isLoggedIn ? `
+          <!--
+          <section class="menu-section">
+            <h3 class="section-title">Following</h3>
+            <div class="following-list">
+              ${
+                followingUsers.map(user => `
+                  <sidebar-user
+                    name="${user.name}"
+                    img-src="${user.imgSrc}"
+                    ${user.verified ? 'verified' : ''}
+                  ></sidebar-user>
+                `).join('')
+              }
+            </div>
+            <button class="load-more-btn">
+              See more
+            </button>
+          </section>
+          -->
+        ` : `
+          <section class="menu-section">
+            <div style="padding: 20px 0; text-align: center; color: var(--text-secondary);">
+              <p style="margin-top: 0;">Sign in to access more features and follow your friends.</p>
+              <a href="/login" style="display: inline-block; padding: 10px 20px; background-color: var(--primary-color); color: #fff; text-decoration: none; border-radius: 8px; font-weight: 500;">Login / Register</a>
+            </div>
+          </section>
+        `}
       </aside>
     `;
   }
