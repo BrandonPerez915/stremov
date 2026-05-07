@@ -1,19 +1,8 @@
-import { getUser, getFavoriteList, getUserReviews } from './api.js';
-
-import '../components/MovieCard.js';
-import '../components/ReviewCard.js';
-import '../components/MovieModalHeader.js';
-import '../components/MovieModalDetails.js';
-import '../components/MovieModalReviews.js';
-import '../components/MovieModalSimilar.js';
-import '../components/MovieModal.js';
-import '../components/ReviewsFavoritesContainer.js';
+import { getUser } from './api.js';
 
 const container = document.getElementById('profile-content');
 
 let currentUser = null;
-let favorites = [];
-let reviews = [];
 let activeSocialModal = null;
 
 function decodeJwtUsername(token) {
@@ -124,67 +113,6 @@ function renderSocialModal() {
   `;
 }
 
-function formatReviewDate(dateValue) {
-  if (!dateValue) return '';
-
-  return new Date(dateValue).toLocaleDateString('es-ES', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
-}
-
-function formatReviewScore(score) {
-  const parsed = Number(score || 0);
-  if (!parsed) return 1;
-  return Math.max(1, Math.min(5, Math.round(parsed / 2)));
-}
-
-function renderFavoriteCards() {
-  if (!favorites.length) {
-    return '<p class="favorites-empty empty-state">Aún no tienes películas favoritas.</p>';
-  }
-
-  return `
-    <div class="favorites-grid">
-      ${favorites.map((movie) => `
-        <movie-card
-          poster="${escapeHtml(movie.posterUrl || movie.poster || '')}"
-          title="${escapeHtml(movie.title || '')}"
-          rating="${escapeHtml(movie.imdbScore || movie.rating || '')}"
-          media-id="${escapeHtml(movie.id || movie._id || '')}"
-          genres="${escapeHtml((movie.genres || []).join(','))}">
-        </movie-card>
-      `).join('')}
-    </div>
-  `;
-}
-
-function renderReviewCards() {
-  if (!reviews.length) {
-    return '<p class="reviews-empty empty-state">Todavía no has publicado reviews.</p>';
-  }
-
-  const avatarUrl = getAvatarUrl(currentUser);
-
-  return `
-    <div class="reviews-grid">
-      ${reviews.map((review) => `
-        <review-card
-          username="${escapeHtml(currentUser?.username || 'Usuario')}"
-          avatar-src="${escapeHtml(avatarUrl)}"
-          rating="${escapeHtml(formatReviewScore(review.score))}"
-          review-text="${escapeHtml(review.body || review.title || 'Sin comentario.') }"
-          movie-title="${escapeHtml(review.movie?.title || 'Película') }"
-          movie-poster="${escapeHtml(review.movie?.posterUrl || 'https://via.placeholder.com/300x450?text=No+Image')}"
-          movie-rating="${review.movie?.imdbScore || 0}"
-          date="${escapeHtml(formatReviewDate(review.createdAt))}">
-        </review-card>
-      `).join('')}
-    </div>
-  `;
-}
-
 function renderProfile() {
   const avatarUrl = getAvatarUrl(currentUser);
   const { followers, following } = getProfileStats();
@@ -223,8 +151,6 @@ function renderProfile() {
       </section>
     </div>
 
-    <reviews-favorites-container id="reviews-favorites"></reviews-favorites-container>
-
     ${renderSocialModal()}
   `;
 
@@ -250,23 +176,6 @@ function renderProfile() {
       renderProfile();
     }
   });
-
-  document.querySelectorAll('movie-card').forEach((card) => {
-    card.addEventListener('movie-clicked', (event) => {
-      document.dispatchEvent(new CustomEvent('movie-clicked', {
-        detail: event.detail,
-        bubbles: true,
-        composed: true
-      }));
-    });
-  });
-
-  // Pasar el userId al componente de pestañas para que cargue reviews y favoritos
-  const containerEl = document.getElementById('reviews-favorites');
-  if (containerEl) {
-    const userId = currentUser?._id || currentUser?.id;
-    containerEl.data = { userId, listId: userId };
-  }
 }
 
 function renderNoAuth() {
@@ -316,33 +225,12 @@ async function loadProfileData() {
     const { user } = await getUser(username);
     currentUser = user || JSON.parse(localStorage.getItem('userData') || '{}');
 
-    const userId = currentUser?._id || currentUser?.id;
-
-    const [favoritesResult, reviewsResult] = await Promise.allSettled([
-      userId ? getFavoriteList(userId) : Promise.resolve({ movies: [] }),
-      userId ? getUserReviews(userId) : Promise.resolve({ reviews: [] })
-    ]);
-
-    favorites = favoritesResult.status === 'fulfilled' ? (favoritesResult.value?.movies || []) : [];
-    reviews = reviewsResult.status === 'fulfilled' ? (reviewsResult.value?.reviews || []) : [];
-
     renderProfile();
   } catch (error) {
     console.warn('Error loading profile:', error);
     renderNoAuth();
   }
 }
-
-document.addEventListener('movie-clicked', (event) => {
-  const { movieId, type } = event.detail || {};
-  if (!movieId) return;
-
-  const modal = document.createElement('movie-modal');
-  const endpoint = type === 'series' ? 'series' : 'movies';
-  modal.setAttribute('api-url', `/tmdb/${endpoint}/${movieId}`);
-  modal.setAttribute('open', '');
-  document.body.appendChild(modal);
-});
 
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && activeSocialModal) {
