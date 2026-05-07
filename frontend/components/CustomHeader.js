@@ -415,7 +415,6 @@ class CustomHeader extends HTMLElement {
 
           <span id="close-icon" class="icon header-icon hidden-icon">close</span>
           <span id="search-icon" class="icon header-icon">search</span>
-          <span id="notifications-icon" class="icon header-icon">notifications ${notificationsHTML}</span>
 
           <div class="profile-wrapper">
             <img id="profile-pic" class="profile-pic" src="${imgSrc}" alt="Profile">

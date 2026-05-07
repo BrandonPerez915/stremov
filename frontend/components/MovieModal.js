@@ -191,13 +191,15 @@ movieModalSheet.replaceSync(`
     }
   }
 `);
-
 class MovieModal extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.adoptedStyleSheets = [movieModalSheet];
     this._currentMovieData = null;
+
+    // SOLUCIÓN ERROR 1: Bandera para saber si el DOM ya se creó
+    this._isRendered = false;
   }
 
   static get observedAttributes() {
@@ -206,7 +208,10 @@ class MovieModal extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'api-url' && oldValue !== newValue && newValue) {
-      this._fetchMainData();
+      // SOLUCIÓN ERROR 1: Solo hacemos fetch si el HTML ya existe
+      if (this._isRendered) {
+        this._fetchMainData();
+      }
     }
     if (name === 'open') {
       if (this.hasAttribute('open')) {
@@ -218,8 +223,13 @@ class MovieModal extends HTMLElement {
   }
 
   connectedCallback() {
-    this._render();
-    this._setupListeners();
+    // SOLUCIÓN ERROR 1: Garantizamos que el render solo ocurra una vez
+    if (!this._isRendered) {
+      this._render();
+      this._setupListeners();
+      this._isRendered = true;
+    }
+
     if (this.getAttribute('api-url')) {
       this._fetchMainData();
     }
@@ -249,17 +259,14 @@ class MovieModal extends HTMLElement {
         </div>
 
         <div class="tabs-content content-hidden" id="tabs-content">
-          <!-- PANEL DE INFORMACIÓN -->
           <div class="tab-pane active" id="tab-info">
             <movie-modal-details id="details-component"></movie-modal-details>
           </div>
 
-          <!-- PANEL DE RESEÑAS -->
           <div class="tab-pane" id="tab-reviews">
             <movie-modal-reviews id="reviews-component"></movie-modal-reviews>
           </div>
 
-          <!-- PANEL DE SIMILARES -->
           <div class="tab-pane" id="tab-similar">
             <movie-modal-similar id="similar-component"></movie-modal-similar>
           </div>
