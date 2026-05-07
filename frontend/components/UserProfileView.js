@@ -440,6 +440,7 @@ userProfileSheet.replaceSync(`
 `);
 
 import { getUser, updateUser, deleteUser, logout, getFavoriteList, getFollowers, getFollowing } from '../scripts/api.js';
+import '../components/ReviewsFavoritesContainer.js';
 
 class UserProfileView extends HTMLElement {
   constructor() {
@@ -466,6 +467,8 @@ class UserProfileView extends HTMLElement {
     this.favorites = [];
     this.followers = [];
     this.following = [];
+    this.userId = null;
+    this.userObjId = null;
   }
 
   _getUsernameFromToken() {
@@ -502,6 +505,7 @@ class UserProfileView extends HTMLElement {
         this.userData.email = user.email || this.userData.email;
         this.userData.avatar = user.avatarUrl || this.userData.avatar;
         this.originalUsername = user.username || this.originalUsername;
+        this.userObjId = user._id || user.id;
         localStorage.setItem('userData', JSON.stringify(this.userData));
         // Cargar lista de favoritos del usuario (si existe)
         try {
@@ -755,16 +759,7 @@ class UserProfileView extends HTMLElement {
         ${profileSection}
       </div>
 
-      <div class="favorites-section">
-        <h2>Favoritos</h2>
-        ${this.favorites && this.favorites.length ? `
-          <div class="favorites-grid">
-            ${this.favorites.map((m) => `
-              <movie-card poster="${m.posterUrl || m.poster || ''}" title="${(m.title||'').replace(/"/g,'&quot;')}" rating="${m.imdbScore || m.rating || ''}" media-id="${m.id || ''}" genres="${(m.genres || []).join(',')}"></movie-card>
-            `).join('')}
-          </div>
-        ` : `<p class="favorites-empty">Aún no tienes favoritos.</p>`}
-      </div>
+      <reviews-favorites-container id="reviews-favorites-container"></reviews-favorites-container>
 
       <div id="logout-modal" class="modal-backdrop ${this.showLogoutModal ? '' : 'hidden'}">
         <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="logout-title">
@@ -825,6 +820,15 @@ class UserProfileView extends HTMLElement {
         document.dispatchEvent(new CustomEvent('movie-clicked', { detail: e.detail, bubbles: true, composed: true }));
       });
     });
+
+    // Pasar datos al componente ReviewsFavoritesContainer
+    const container = this.shadowRoot.getElementById('reviews-favorites-container');
+    if (container && this.userObjId) {
+      container.data = {
+        userId: this.userObjId,
+        listId: this.userObjId
+      };
+    }
   }
 }
 
