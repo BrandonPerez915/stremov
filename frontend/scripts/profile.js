@@ -1,4 +1,5 @@
-import { getUser } from './api.js';
+import { getUser, getFavoriteList } from './api.js';
+import '../components/ReviewsFavoritesContainer.js';
 
 const container = document.getElementById('profile-content');
 
@@ -149,6 +150,8 @@ function renderProfile() {
 
         <div class="profile-divider"></div>
       </section>
+
+      <reviews-favorites-container id="reviews-favorites-container"></reviews-favorites-container>
     </div>
 
     ${renderSocialModal()}
@@ -226,6 +229,22 @@ async function loadProfileData() {
     currentUser = user || JSON.parse(localStorage.getItem('userData') || '{}');
 
     renderProfile();
+
+    // Actualizar el componente ReviewsFavoritesContainer con los datos del usuario
+    const userId = user?._id || user?.id || null;
+    if (userId) {
+      // Esperar a que el elemento esté disponible en el DOM
+      const checkElement = setInterval(() => {
+        const container = document.getElementById('reviews-favorites-container');
+        if (container) {
+          clearInterval(checkElement);
+          container.data = { userId: userId, listId: userId };
+        }
+      }, 10);
+      
+      // Timeout de seguridad
+      setTimeout(() => clearInterval(checkElement), 5000);
+    }
   } catch (error) {
     console.warn('Error loading profile:', error);
     renderNoAuth();

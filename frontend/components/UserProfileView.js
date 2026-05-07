@@ -1,5 +1,4 @@
 import { getUser, updateUser, deleteUser, logout, getFavoriteList, getFollowers, getFollowing } from '../scripts/api.js';
-import '../components/ReviewsFavoritesContainer.js';
 
 const userProfileSheet = new CSSStyleSheet();
 
@@ -165,14 +164,6 @@ class UserProfileView extends HTMLElement {
       await this._loadUserData();
       // 3. Volver a llenar el perfil con datos reales del servidor, SIN destruir el DOM maestro.
       this._updateProfileDOM();
-
-      // Actualizar contenedor de favoritos si ya tenemos la ID del servidor.
-      const container = this.shadowRoot.getElementById('reviews-favorites-container');
-      if (container && this.userObjId) {
-        container.setAttribute('user-id', this.userObjId);
-        container.setAttribute('list-id', this.userObjId);
-        container.data = { userId: this.userObjId, listId: this.userObjId };
-      }
     }
   }
 
@@ -217,18 +208,8 @@ class UserProfileView extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <div id="profile-section-root"></div>
 
-      <reviews-favorites-container id="reviews-favorites-container"></reviews-favorites-container>
-
       <div id="modals-root"></div>
     `;
-
-    // Capturar clics de las películas hijas de forma permanente
-    const container = this.shadowRoot.getElementById('reviews-favorites-container');
-    if (container) {
-      container.addEventListener('movie-clicked', (e) => {
-        document.dispatchEvent(new CustomEvent('movie-clicked', { detail: e.detail, bubbles: true, composed: true }));
-      });
-    }
   }
 
   // Actualiza estrictamente la tarjeta del perfil
