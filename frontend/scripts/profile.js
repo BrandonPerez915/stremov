@@ -13,6 +13,7 @@ const container = document.getElementById('profile-content');
 let currentUser = null;
 let favorites = [];
 let reviews = [];
+let activeSocialModal = null;
 
 function decodeJwtUsername(token) {
   if (!token) return '';
@@ -49,6 +50,77 @@ function getProfileStats() {
     followers: Array.isArray(currentUser?.followers) ? currentUser.followers.length : 0,
     following: Array.isArray(currentUser?.following) ? currentUser.following.length : 0
   };
+}
+
+function getSocialUsers(type) {
+  if (type === 'following') {
+    return Array.isArray(currentUser?.following) ? currentUser.following : [];
+  }
+
+  return Array.isArray(currentUser?.followers) ? currentUser.followers : [];
+}
+
+function getSocialCopy(type) {
+  return type === 'following'
+    ? {
+        title: 'Seguidos',
+        subtitle: 'Usuarios que este perfil sigue actualmente.',
+        empty: 'Aún no sigues a nadie.'
+      }
+    : {
+        title: 'Seguidores',
+        subtitle: 'Usuarios que siguen este perfil.',
+        empty: 'Todavía nadie sigue a este usuario.'
+      };
+}
+
+function renderSocialList(type) {
+  const users = getSocialUsers(type);
+  const copy = getSocialCopy(type);
+
+  if (!users.length) {
+    return `<p class="social-empty">${copy.empty}</p>`;
+  }
+
+  return `
+    <div class="social-users-list">
+      ${users.map((user) => `
+        <article class="social-user-item">
+          <img
+            src="${escapeHtml(getAvatarUrl(user))}"
+            alt="Avatar de ${escapeHtml(user?.username || 'Usuario')}"
+            class="social-user-avatar">
+          <div class="social-user-meta">
+            <strong class="social-user-name">${escapeHtml(user?.username || 'Usuario')}</strong>
+            <span class="social-user-handle">@${escapeHtml(user?.username || 'usuario')}</span>
+          </div>
+        </article>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderSocialModal() {
+  if (!activeSocialModal) return '';
+
+  const copy = getSocialCopy(activeSocialModal);
+
+  return `
+    <div class="social-modal-backdrop" id="social-modal-backdrop">
+      <section class="social-modal" role="dialog" aria-modal="true" aria-labelledby="social-modal-title">
+        <div class="social-modal-header">
+          <div>
+            <h2 id="social-modal-title">${copy.title}</h2>
+            <p>${copy.subtitle}</p>
+          </div>
+          <button class="social-modal-close" id="social-modal-close" type="button" aria-label="Cerrar modal">
+            <span class="icon">close</span>
+          </button>
+        </div>
+        ${renderSocialList(activeSocialModal)}
+      </section>
+    </div>
+  `;
 }
 
 function formatReviewDate(dateValue) {
@@ -124,14 +196,14 @@ function renderProfile() {
               <h1 class="profile-name">${escapeHtml(currentUser?.username || 'Usuario')}</h1>
               <p class="profile-email">${escapeHtml(currentUser?.email || '')}</p>
               <div class="profile-stats">
-                <div class="profile-stat">
+                <button class="profile-stat profile-stat-button" type="button" data-social-type="following">
                   <strong>${following}</strong>
                   <span>Seguidos</span>
-                </div>
-                <div class="profile-stat">
+                </button>
+                <button class="profile-stat profile-stat-button" type="button" data-social-type="followers">
                   <strong>${followers}</strong>
                   <span>Seguidores</span>
-                </div>
+                </button>
               </div>
             </div>
           </div>
@@ -165,10 +237,31 @@ function renderProfile() {
         </div>
       </section>
     </div>
+
+    ${renderSocialModal()}
   `;
 
   document.getElementById('edit-profile-btn')?.addEventListener('click', () => {
     window.location.href = '/profileConfig';
+  });
+
+  document.querySelectorAll('[data-social-type]').forEach((button) => {
+    button.addEventListener('click', () => {
+      activeSocialModal = button.getAttribute('data-social-type');
+      renderProfile();
+    });
+  });
+
+  document.getElementById('social-modal-close')?.addEventListener('click', () => {
+    activeSocialModal = null;
+    renderProfile();
+  });
+
+  document.getElementById('social-modal-backdrop')?.addEventListener('click', (event) => {
+    if (event.target === event.currentTarget) {
+      activeSocialModal = null;
+      renderProfile();
+    }
   });
 
   document.querySelectorAll('movie-card').forEach((card) => {
@@ -255,6 +348,13 @@ document.addEventListener('movie-clicked', (event) => {
   modal.setAttribute('api-url', `/tmdb/${endpoint}/${movieId}`);
   modal.setAttribute('open', '');
   document.body.appendChild(modal);
+});
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && activeSocialModal) {
+    activeSocialModal = null;
+    renderProfile();
+  }
 });
 
 loadProfileData();

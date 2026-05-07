@@ -82,6 +82,59 @@ userProfileSheet.replaceSync(`
     gap: 8px;
   }
 
+  .profile-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 6px;
+  }
+
+  .profile-stat {
+    min-width: 132px;
+    padding: 12px 16px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .profile-stat-button {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    text-align: left;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    appearance: none;
+  }
+
+  .profile-stat-button:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.16);
+    transform: translateY(-2px);
+  }
+
+  .profile-stat-button:focus-visible,
+  .social-modal-close:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  .profile-stat strong {
+    display: block;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .profile-stat span {
+    display: block;
+    margin-top: 6px;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
   .user-info-brief h1 {
     margin: 0;
     font-size: 30px;
@@ -242,6 +295,113 @@ userProfileSheet.replaceSync(`
 
   .hidden { display: none; }
 
+  .social-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.58);
+    backdrop-filter: blur(8px);
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    z-index: 12000;
+  }
+
+  .social-modal {
+    width: min(560px, 100%);
+    max-height: min(78vh, 760px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.35);
+  }
+
+  .social-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .social-modal-header h2 {
+    margin: 0;
+    font-size: 22px;
+  }
+
+  .social-modal-header p {
+    margin: 8px 0 0;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .social-modal-close {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background: rgba(255,255,255,0.05);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .social-users-list {
+    overflow: auto;
+    display: grid;
+    gap: 12px;
+    padding-right: 4px;
+  }
+
+  .social-user-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .social-user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .social-user-meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .social-user-name {
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  .social-user-handle,
+  .social-empty {
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  .social-empty {
+    margin: 4px 0 0;
+    padding: 18px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.12);
+  }
+
   .favorites-section {
     margin-top: 20px;
     max-width: 100%;
@@ -279,7 +439,7 @@ userProfileSheet.replaceSync(`
   }
 `);
 
-import { getUser, updateUser, deleteUser, logout, getFavoriteList } from '../scripts/api.js';
+import { getUser, updateUser, deleteUser, logout, getFavoriteList, getFollowers, getFollowing } from '../scripts/api.js';
 
 class UserProfileView extends HTMLElement {
   constructor() {
@@ -289,6 +449,7 @@ class UserProfileView extends HTMLElement {
     this.isEditing = false;
     this.showLogoutModal = false;
     this.showDeleteModal = false;
+    this.socialModalType = null;
     this.hasAuth = !!localStorage.getItem('jwtToken');
 
     const storedUser = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -303,6 +464,8 @@ class UserProfileView extends HTMLElement {
       accountStatus: ''
     };
     this.favorites = [];
+    this.followers = [];
+    this.following = [];
   }
 
   _getUsernameFromToken() {
@@ -347,10 +510,87 @@ class UserProfileView extends HTMLElement {
         } catch (err) {
           this.favorites = [];
         }
+
+        const socialResults = await Promise.allSettled([
+          getFollowers(user.username),
+          getFollowing(user.username)
+        ]);
+
+        this.followers = socialResults[0].status === 'fulfilled'
+          ? (socialResults[0].value?.followers || [])
+          : (Array.isArray(user.followers) ? user.followers : []);
+        this.following = socialResults[1].status === 'fulfilled'
+          ? (socialResults[1].value?.following || [])
+          : (Array.isArray(user.following) ? user.following : []);
       }
     } catch (err) {
       console.warn('Could not load profile data', err);
     }
+  }
+
+  _getSocialUsers(type) {
+    return type === 'following' ? this.following : this.followers;
+  }
+
+  _getSocialCopy(type) {
+    return type === 'following'
+      ? {
+          title: 'Seguidos',
+          subtitle: 'Usuarios que este perfil sigue actualmente.',
+          empty: 'Aún no sigues a nadie.'
+        }
+      : {
+          title: 'Seguidores',
+          subtitle: 'Usuarios que siguen este perfil.',
+          empty: 'Todavía nadie sigue a este usuario.'
+        };
+  }
+
+  _openSocialModal(type) {
+    this.socialModalType = type;
+    this._render();
+  }
+
+  _closeSocialModal() {
+    this.socialModalType = null;
+    this._render();
+  }
+
+  _renderSocialModal() {
+    if (!this.socialModalType) return '';
+
+    const copy = this._getSocialCopy(this.socialModalType);
+    const users = this._getSocialUsers(this.socialModalType);
+    const usersMarkup = users.length
+      ? users.map((user) => `
+        <article class="social-user-item">
+          <img src="${user.avatarUrl || user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'User')}`}" class="social-user-avatar" alt="Avatar de ${user.username || 'Usuario'}">
+          <div class="social-user-meta">
+            <strong class="social-user-name">${user.username || 'Usuario'}</strong>
+            <span class="social-user-handle">@${user.username || 'usuario'}</span>
+          </div>
+        </article>
+      `).join('')
+      : `<p class="social-empty">${copy.empty}</p>`;
+
+    return `
+      <div class="social-modal-backdrop" id="social-modal-backdrop">
+        <section class="social-modal" role="dialog" aria-modal="true" aria-labelledby="social-modal-title">
+          <div class="social-modal-header">
+            <div>
+              <h2 id="social-modal-title">${copy.title}</h2>
+              <p>${copy.subtitle}</p>
+            </div>
+            <button class="social-modal-close" id="social-modal-close" type="button" aria-label="Cerrar modal">
+              <span class="icon">close</span>
+            </button>
+          </div>
+          <div class="social-users-list">
+            ${usersMarkup}
+          </div>
+        </section>
+      </div>
+    `;
   }
 
   // --- Backend logic ---
@@ -448,6 +688,16 @@ class UserProfileView extends HTMLElement {
               </div>
               <p class="user-email-sub">${this.userData.email}</p>
               ${this.userData.accountStatus ? `<span class="status-pill">${this.userData.accountStatus}</span>` : ''}
+              <div class="profile-stats">
+                <button type="button" class="profile-stat profile-stat-button" id="following-stat-btn">
+                  <strong>${Array.isArray(this.following) ? this.following.length : 0}</strong>
+                  <span>Seguidos</span>
+                </button>
+                <button type="button" class="profile-stat profile-stat-button" id="followers-stat-btn">
+                  <strong>${Array.isArray(this.followers) ? this.followers.length : 0}</strong>
+                  <span>Seguidores</span>
+                </button>
+              </div>
             </div>
           </div>
         </aside>
@@ -537,6 +787,8 @@ class UserProfileView extends HTMLElement {
           </div>
         </div>
       </div>
+
+      ${this._renderSocialModal()}
     `;
     this._setupListeners();
   }
@@ -547,6 +799,8 @@ class UserProfileView extends HTMLElement {
     this.shadowRoot.getElementById('save-btn')?.addEventListener('click', () => this._handleSave());
     this.shadowRoot.getElementById('logout-btn')?.addEventListener('click', () => this._openLogoutModal());
     this.shadowRoot.getElementById('delete-btn')?.addEventListener('click', () => this._openDeleteModal());
+    this.shadowRoot.getElementById('followers-stat-btn')?.addEventListener('click', () => this._openSocialModal('followers'));
+    this.shadowRoot.getElementById('following-stat-btn')?.addEventListener('click', () => this._openSocialModal('following'));
     this.shadowRoot.getElementById('avatar-edit-btn')?.addEventListener('click', () => this.shadowRoot.getElementById('avatar-input')?.click());
     this.shadowRoot.getElementById('avatar-input')?.addEventListener('change', (event) => this._handleAvatarChange(event));
     this.shadowRoot.getElementById('login-btn')?.addEventListener('click', () => this._handleLogin());
@@ -557,6 +811,13 @@ class UserProfileView extends HTMLElement {
 
     this.shadowRoot.getElementById('delete-cancel')?.addEventListener('click', () => this._closeDeleteModal());
     this.shadowRoot.getElementById('delete-confirm')?.addEventListener('click', () => this._handleDeleteAccount());
+
+    this.shadowRoot.getElementById('social-modal-close')?.addEventListener('click', () => this._closeSocialModal());
+    this.shadowRoot.getElementById('social-modal-backdrop')?.addEventListener('click', (event) => {
+      if (event.target === event.currentTarget) {
+        this._closeSocialModal();
+      }
+    });
 
     // Re-emitir el evento movie-clicked al documento para que las vistas manejen el modal
     this.shadowRoot.querySelectorAll('movie-card').forEach((card) => {
