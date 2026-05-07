@@ -39,11 +39,11 @@ class ListCard extends HTMLElement {
 						<div>
 							<h3>${list.name || 'Untitled list'}</h3>
 						</div>
-						${!isFavoritesList ? `
+						
 						<button class="list-card__menu" type="button" aria-label="List options">
 							<span class="icon">more_vert</span>
 						</button>
-						` : ''}
+		
 					</div>
 					<p class="list-card__description">${list.description || 'No description provided yet.'}</p>
 					<div class="list-card__footer">

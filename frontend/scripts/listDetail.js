@@ -85,6 +85,10 @@ document.addEventListener('DOMContentLoaded', () => {
     moviesCountElement.textContent = `${state.list.movies.length} movies`;
     nameInput.value                = state.list.name;
     descriptionInput.value         = state.list.description || '';
+
+    //para no modificar favs
+    const isFavorites = ['favoritos', 'favorites'].includes((state.list.name || '').toLowerCase());
+    if (editListButton) editListButton.style.display = isFavorites ? 'none' : '';
   }
 
   function createMovieCard(movie) {
