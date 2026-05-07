@@ -7,6 +7,7 @@ import '../components/MovieModalDetails.js';
 import '../components/MovieModalReviews.js';
 import '../components/MovieModalSimilar.js';
 import '../components/MovieModal.js';
+import '../components/ReviewsFavoritesContainer.js';
 
 const container = document.getElementById('profile-content');
 
@@ -217,26 +218,10 @@ function renderProfile() {
         </div>
 
         <div class="profile-divider"></div>
-
-        <div class="profile-content-grid">
-          <section class="profile-section">
-            <h2 class="section-title">
-              <span class="icon">favorite</span>
-              Películas favoritas
-            </h2>
-            ${renderFavoriteCards()}
-          </section>
-
-          <section class="profile-section">
-            <h2 class="section-title">
-              <span class="icon">rate_review</span>
-              Reviews propias
-            </h2>
-            ${renderReviewCards()}
-          </section>
-        </div>
       </section>
     </div>
+
+    <reviews-favorites-container id="reviews-favorites"></reviews-favorites-container>
 
     ${renderSocialModal()}
   `;
@@ -273,6 +258,13 @@ function renderProfile() {
       }));
     });
   });
+
+  // Pasar el userId al componente de pestañas para que cargue reviews y favoritos
+  const containerEl = document.getElementById('reviews-favorites');
+  if (containerEl) {
+    const userId = currentUser?._id || currentUser?.id;
+    containerEl.data = { userId, listId: userId };
+  }
 }
 
 function renderNoAuth() {

@@ -125,6 +125,7 @@ reviewsFavoritesSheet.replaceSync(`
 
 import { getUserReviews, getFavoriteList } from '../scripts/api.js';
 import '../components/ReviewCard.js';
+import '../components/UserReviewCard.js';
 import '../components/MovieCard.js';
 
 class ReviewsFavoritesContainer extends HTMLElement {
@@ -210,14 +211,12 @@ class ReviewsFavoritesContainer extends HTMLElement {
     return `
       <div class="reviews-grid">
         ${this.reviews.map((review) => `
-          <review-card
-            username="${this._escapeHtml(review.user?.username || 'Usuario')}"
-            avatar-src="${this._escapeHtml(this._getAvatarUrl(review.user))}"
+          <user-review-card
             rating="${this._escapeHtml(this._formatReviewScore(review.score))}"
             review-text="${this._escapeHtml(review.body || review.title || 'Sin comentario.')}"
             movie-title="${this._escapeHtml(review.movie?.title || 'Película')}"
             date="${this._escapeHtml(this._formatReviewDate(review.createdAt))}">
-          </review-card>
+          </user-review-card>
         `).join('')}
       </div>
     `;
