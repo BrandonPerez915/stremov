@@ -37,11 +37,7 @@ customHeaderSheet.replaceSync(`
 .icon {
   color: var(--text-primary);
   font-family: 'Material Symbols Outlined';
-  font-variation-settings:
-    'FILL' 0,
-    'wght' 200,
-    'GRAD' 0,
-    'opsz' 24
+  font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
 }
 
 .header-icon {
@@ -54,13 +50,8 @@ customHeaderSheet.replaceSync(`
   transition: opacity 0.3s ease, color 0.3s ease;
 }
 
-.header-icon:hover .notification-badge {
-  background-color: var(--red-75);
-}
-
-.header-icon:hover {
-  color: var(--text-secondary);
-}
+.header-icon:hover .notification-badge { background-color: var(--red-75); }
+.header-icon:hover { color: var(--text-secondary); }
 
 .notification-badge {
   position: absolute;
@@ -108,7 +99,6 @@ customHeaderSheet.replaceSync(`
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
   z-index: 9000;
   overflow: hidden;
-
   opacity: 0;
   transform: translateY(-8px) scale(0.97);
   pointer-events: none;
@@ -122,7 +112,6 @@ customHeaderSheet.replaceSync(`
   pointer-events: auto;
 }
 
-/* User summary at top of dropdown */
 .dropdown-user-info {
   display: flex;
   align-items: center;
@@ -163,10 +152,7 @@ customHeaderSheet.replaceSync(`
   text-overflow: ellipsis;
 }
 
-/* Dropdown items */
-.dropdown-section {
-  padding: 8px;
-}
+.dropdown-section { padding: 8px; }
 
 .dropdown-item {
   display: flex;
@@ -205,15 +191,89 @@ customHeaderSheet.replaceSync(`
   margin: 4px 8px;
 }
 
-/* Danger item */
-.dropdown-item.danger {
-  color: var(--red-100);
-}
-.dropdown-item.danger .item-icon {
-  color: var(--red-100);
-}
+.dropdown-item.danger { color: var(--red-100); }
+.dropdown-item.danger .item-icon { color: var(--red-100); }
 .dropdown-item.danger:hover {
   background-color: color-mix(in srgb, var(--red-100) 10%, transparent);
+}
+
+/* Modal de confirmación de logout */
+.logout-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.logout-modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.logout-modal {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 28px;
+  width: min(400px, 90vw);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  transform: translateY(8px) scale(0.98);
+  transition: transform 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.logout-modal-overlay.open .logout-modal {
+  transform: translateY(0) scale(1);
+}
+
+.logout-modal h3 {
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  margin: 0 0 10px 0;
+}
+
+.logout-modal p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.logout-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.logout-modal-actions button {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.2s ease;
+}
+
+.logout-modal-actions button:hover { opacity: 0.85; }
+
+.btn-cancel {
+  background: transparent;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary);
+}
+
+.btn-confirm-logout {
+  background: var(--red-100);
+  color: white;
 }
 
 custom-input {
@@ -223,9 +283,7 @@ custom-input {
   transition: width 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
 }
 
-label {
-  display: none;
-}
+label { display: none; }
 
 .hidden-icon {
   width: 0 !important;
@@ -239,11 +297,7 @@ label {
   position: absolute;
 }
 
-#close-icon,
-#search-icon,
-#menu-icon {
-  display: none;
-}
+#close-icon, #search-icon, #menu-icon { display: none; }
 
 @media(max-width: 900px) {
   #header-right-side {
@@ -275,10 +329,7 @@ label {
     z-index: 10;
   }
 
-  #search-icon,
-  #menu-icon {
-    display: block;
-  }
+  #search-icon, #menu-icon { display: block; }
 }
 `);
 
@@ -305,7 +356,31 @@ class CustomHeader extends HTMLElement {
     return !!localStorage.getItem('jwtToken');
   }
 
-  // Call this after login to refresh the header state
+  _getStoredUser() {
+    try {
+      const raw = localStorage.getItem('userData');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  _getAvatarUrl() {
+    // Prioridad: atributo img-src → avatarUrl en localStorage → ui-avatars con username → guest
+    const attrSrc = this.getAttribute('img-src');
+    if (attrSrc) return attrSrc;
+
+    const storedAvatar = localStorage.getItem('avatarUrl');
+    if (storedAvatar) return storedAvatar;
+
+    const user = this._getStoredUser();
+    if (user?.username) {
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=3a3f4c&color=fff&size=100`;
+    }
+
+    return 'https://ui-avatars.com/api/?name=Guest&background=3a3f4c&color=888&size=100';
+  }
+
   refresh() {
     this._render();
     this._setupListeners();
@@ -316,15 +391,10 @@ class CustomHeader extends HTMLElement {
     const onSearchCallback = this.getAttribute('on-search') || null;
     const hasNotifications = this.hasAttribute('has-notifications');
     const isLoggedIn = this._isLoggedIn();
+    const imgSrc = this._getAvatarUrl();
 
     this.onSearch = onSearchCallback ? new Function('searchTerm', onSearchCallback) : null;
     const notificationsHTML = hasNotifications ? `<span class="notification-badge"></span>` : '';
-
-    // Default avatar when not logged in
-    const defaultAvatar = 'https://ui-avatars.com/api/?name=Guest&background=3a3f4c&color=888&size=100';
-    const imgSrc = this.getAttribute('img-src') || defaultAvatar;
-
-    // Dropdown content differs based on auth state
     const dropdownContent = isLoggedIn
       ? this._renderAuthDropdown(imgSrc)
       : this._renderGuestDropdown();
@@ -354,11 +424,22 @@ class CustomHeader extends HTMLElement {
           </div>
         </div>
       </header>
+
+      <!-- Modal de confirmación de logout -->
+      <div class="logout-modal-overlay" id="logout-modal-overlay">
+        <div class="logout-modal">
+          <h3>Sign out</h3>
+          <p>Are you sure you want to sign out of your account?</p>
+          <div class="logout-modal-actions">
+            <button class="btn-cancel" id="logout-cancel">Cancel</button>
+            <button class="btn-confirm-logout" id="logout-confirm">Sign out</button>
+          </div>
+        </div>
+      </div>
     `;
   }
 
   _renderAuthDropdown(imgSrc) {
-    // Try to read stored user info
     const storedUser = this._getStoredUser();
     const name = storedUser?.username || this.getAttribute('username') || 'My Account';
     const email = storedUser?.email || this.getAttribute('email') || '';
@@ -375,10 +456,6 @@ class CustomHeader extends HTMLElement {
         <button class="dropdown-item" id="dd-profile">
           <span class="item-icon">manage_accounts</span>
           Profile Settings
-        </button>
-        <button class="dropdown-item" id="dd-settings">
-          <span class="item-icon">settings</span>
-          Settings
         </button>
       </div>
       <div class="dropdown-divider"></div>
@@ -398,21 +475,8 @@ class CustomHeader extends HTMLElement {
           <span class="item-icon">login</span>
           Sign In
         </button>
-        <button class="dropdown-item" id="dd-register">
-          <span class="item-icon">person_add</span>
-          Create Account
-        </button>
       </div>
     `;
-  }
-
-  _getStoredUser() {
-    try {
-      const raw = localStorage.getItem('userData');
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
   }
 
   _toggleDropdown() {
@@ -427,23 +491,38 @@ class CustomHeader extends HTMLElement {
     dropdown?.classList.remove('open');
   }
 
-  _setupListeners() {
-    const menuIcon = this.shadowRoot.querySelector('#menu-icon');
-    const searchIcon = this.shadowRoot.querySelector('#search-icon');
-    const notificationsIcon = this.shadowRoot.querySelector('#notifications-icon');
-    const closeIcon = this.shadowRoot.querySelector('#close-icon');
-    const searchInput = this.shadowRoot.querySelector('#search-input');
-    const profilePic = this.shadowRoot.getElementById('profile-pic');
-    const sidebar = document.querySelector('custom-sidebar');
-    const backdrop = document.querySelector('.backdrop');
+  _openLogoutModal() {
+    const overlay = this.shadowRoot.getElementById('logout-modal-overlay');
+    overlay?.classList.add('open');
+  }
 
-    // Mostrar el sidebar en móvil
-    menuIcon.addEventListener('click', () => {
-      if (sidebar && backdrop) {
-        sidebar.classList.add('open');
-        sidebar.classList.remove('closed');
-        backdrop.classList.remove('hidden');
-      }
+  _closeLogoutModal() {
+    const overlay = this.shadowRoot.getElementById('logout-modal-overlay');
+    overlay?.classList.remove('open');
+  }
+
+  _doLogout() {
+    localStorage.removeItem('jwtToken');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('avatarUrl');
+    window.location.href = '/home';
+  }
+
+  _setupListeners() {
+    const menuIcon        = this.shadowRoot.querySelector('#menu-icon');
+    const searchIcon      = this.shadowRoot.querySelector('#search-icon');
+    const notificationsIcon = this.shadowRoot.querySelector('#notifications-icon');
+    const closeIcon       = this.shadowRoot.querySelector('#close-icon');
+    const searchInput     = this.shadowRoot.querySelector('#search-input');
+    const profilePic      = this.shadowRoot.getElementById('profile-pic');
+    const sidebar         = document.querySelector('custom-sidebar');
+    const backdrop        = document.querySelector('.backdrop');
+
+    // Sidebar toggle en móvil
+    menuIcon?.addEventListener('click', () => {
+      sidebar?.classList.add('open');
+      sidebar?.classList.remove('closed');
+      backdrop?.classList.remove('hidden');
     });
 
     // Search toggle
@@ -454,8 +533,7 @@ class CustomHeader extends HTMLElement {
       closeIcon?.classList.toggle('hidden-icon');
     };
 
-    // Mostrar la barra de búsqueda en móvil
-    searchIcon.addEventListener('click', () => {
+    searchIcon?.addEventListener('click', () => {
       toggleIcons();
       searchInput?.classList.add('visible');
       setTimeout(() => {
@@ -464,76 +542,75 @@ class CustomHeader extends HTMLElement {
       }, 50);
     });
 
-    // Ocultar la barra de búsqueda en móvil
-    closeIcon.addEventListener('click', () => {
+    closeIcon?.addEventListener('click', () => {
       toggleIcons();
       searchInput?.classList.remove('visible');
       if (typeof searchInput?._updateValue === 'function') {
         searchInput._updateValue('');
       }
-
-      this._dispatchSearch();
     });
 
-    // Búsqueda al presionar "Enter"
-    searchInput.addEventListener('keydown', (event) => {
+    searchInput?.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
         event.preventDefault();
-        this._dispatchSearch();
+        const innerInput = searchInput?.shadowRoot?.querySelector('input');
+        const query = innerInput?.value.trim();
+        if (query && typeof this.onSearch === 'function') {
+          this.onSearch(query);
+        }
+        this.dispatchEvent(new CustomEvent('header-search', {
+          detail: { query: query || '' },
+          bubbles: true,
+          composed: true
+        }));
       }
     });
-  }
 
-  // Lógica centralizada para lanzar el evento de búsqueda
-  _dispatchSearch() {
-    const searchInput = this.shadowRoot.querySelector('#search-input');
-    const value = searchInput.value ? searchInput.value.trim() : '';
-
-    const searchEvent = new CustomEvent('header-search', {
-      detail: { query: value },
-      bubbles: true,
-      composed: true
-    });
-
-    this.dispatchEvent(searchEvent);
-    // toggle del dropdown del perfil
+    // Dropdown de perfil
     profilePic?.addEventListener('click', (e) => {
       e.stopPropagation();
       this._toggleDropdown();
     });
 
-    //listeners de elementos del dropdown
+    // Listeners del dropdown según estado de auth
     const isLoggedIn = this._isLoggedIn();
 
     if (isLoggedIn) {
       this.shadowRoot.getElementById('dd-profile')?.addEventListener('click', () => {
         this._closeDropdown();
-        window.location.href = '/profile';
-      });
-
-      this.shadowRoot.getElementById('dd-settings')?.addEventListener('click', () => {
-        this._closeDropdown();
-        window.location.href = '/profile';
+        window.location.href = '/profileConfig';
       });
 
       this.shadowRoot.getElementById('dd-logout')?.addEventListener('click', () => {
         this._closeDropdown();
-        // Dispatch event — main.js / profile page handles the modal
-        this.dispatchEvent(new CustomEvent('header-logout-request', {
-          bubbles: true,
-          composed: true
-        }));
+        this._openLogoutModal();
       });
     } else {
       this.shadowRoot.getElementById('dd-login')?.addEventListener('click', () => {
-        window.location.href = '/auth';
+        window.location.href = '/login';
       });
       this.shadowRoot.getElementById('dd-register')?.addEventListener('click', () => {
-        window.location.href = '/auth';
+        window.location.href = '/register';
       });
     }
 
-    // Close dropdown when clicking outside
+    // Modal de logout
+    this.shadowRoot.getElementById('logout-cancel')?.addEventListener('click', () => {
+      this._closeLogoutModal();
+    });
+
+    this.shadowRoot.getElementById('logout-confirm')?.addEventListener('click', () => {
+      this._doLogout();
+    });
+
+    // Cerrar logout modal al hacer click en el overlay
+    this.shadowRoot.getElementById('logout-modal-overlay')?.addEventListener('click', (e) => {
+      if (e.target === this.shadowRoot.getElementById('logout-modal-overlay')) {
+        this._closeLogoutModal();
+      }
+    });
+
+    // Cerrar dropdown al hacer click fuera
     document.removeEventListener('click', this._boundCloseDropdown);
     document.addEventListener('click', this._boundCloseDropdown);
   }

@@ -26,6 +26,11 @@ class YourListsView extends HTMLElement {
     document.removeEventListener('keydown', this._handleKeydown);
   }
 
+	_isLoggedIn() {
+		return !!localStorage.getItem('jwtToken');
+		//!! para convertir a booleano ya que getItem puede devolver null o el string
+	}
+
   _render() {
     this.innerHTML = `
       <main class="lists-page">
@@ -38,10 +43,12 @@ class YourListsView extends HTMLElement {
             </p>
           </div>
 
-          <button class="create-list-btn" id="open-create-list-modal" type="button">
-            <span class="icon">add</span>
-            Create List
-          </button>
+          ${this._isLoggedIn() ? `
+						<button class="create-list-btn" id="open-create-list-modal" type="button">
+							<span class="icon">add</span>
+							Create List
+						</button>
+					` : ''}
         </section>
 
         <section class="lists-grid-section">
@@ -96,7 +103,7 @@ class YourListsView extends HTMLElement {
     }
 
     if (!this._listCreatedHandler) {
-      // CreateListModal emite { list: { name, description, ... } }
+      //createListModal emite { list: { name, description, ... } }
       this._listCreatedHandler = async (event) => {
         const listData = event.detail?.list || event.detail || {};
         const name = listData.name;
@@ -140,7 +147,7 @@ class YourListsView extends HTMLElement {
       };
     }
 
-    // Limpiar antes de volver a añadir — evita listeners duplicados
+    //limpiar antes de volver a añadir — evita listeners duplicados
     this.openModalBtn?.removeEventListener('click', this._openModalHandler);
     this.modal?.removeEventListener('list-created', this._listCreatedHandler);
     this.listsGrid?.removeEventListener('list-clicked', this._listClickedHandler);
@@ -209,7 +216,6 @@ class YourListsView extends HTMLElement {
       <article class="empty-state empty-state--error">
         <h3>Something went wrong</h3>
         <p>${message}</p>
-        <button class="btn-retry" id="retry-btn">Try again</button>
       </article>
     `;
     this.listsGrid.querySelector('#retry-btn')?.addEventListener('click', () => {
