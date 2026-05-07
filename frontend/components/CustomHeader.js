@@ -578,7 +578,7 @@ class CustomHeader extends HTMLElement {
     if (isLoggedIn) {
       this.shadowRoot.getElementById('dd-profile')?.addEventListener('click', () => {
         this._closeDropdown();
-        window.location.href = '/profileConfig';
+        window.location.href = '/profile';
       });
 
       this.shadowRoot.getElementById('dd-logout')?.addEventListener('click', () => {

@@ -242,6 +242,30 @@ userProfileSheet.replaceSync(`
 
   .hidden { display: none; }
 
+  .favorites-section {
+    margin-top: 20px;
+    max-width: 100%;
+  }
+
+  .favorites-section h2 {
+    margin: 6px 0 12px;
+    color: var(--text-primary);
+    font-size: 18px;
+  }
+
+  .favorites-grid {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    padding: 8px 6px;
+    align-items: flex-start;
+  }
+
+  .favorites-empty {
+    color: var(--text-secondary);
+    margin: 6px 0 0;
+  }
+
   .icon { font-family: 'Material Symbols Outlined'; font-size: 20px; }
 
   @media (max-width: 720px) {
@@ -255,7 +279,7 @@ userProfileSheet.replaceSync(`
   }
 `);
 
-import { getUser, updateUser, deleteUser, logout } from '../scripts/api.js';
+import { getUser, updateUser, deleteUser, logout, getFavoriteList } from '../scripts/api.js';
 
 class UserProfileView extends HTMLElement {
   constructor() {
@@ -278,6 +302,7 @@ class UserProfileView extends HTMLElement {
       avatar: storedUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(initialUsername)}`,
       accountStatus: ''
     };
+    this.favorites = [];
   }
 
   _getUsernameFromToken() {
@@ -315,6 +340,13 @@ class UserProfileView extends HTMLElement {
         this.userData.avatar = user.avatarUrl || this.userData.avatar;
         this.originalUsername = user.username || this.originalUsername;
         localStorage.setItem('userData', JSON.stringify(this.userData));
+        // Cargar lista de favoritos del usuario (si existe)
+        try {
+          const favRes = await getFavoriteList(user._id || user.id);
+          this.favorites = favRes?.movies || [];
+        } catch (err) {
+          this.favorites = [];
+        }
       }
     } catch (err) {
       console.warn('Could not load profile data', err);
@@ -473,6 +505,17 @@ class UserProfileView extends HTMLElement {
         ${profileSection}
       </div>
 
+      <div class="favorites-section">
+        <h2>Favoritos</h2>
+        ${this.favorites && this.favorites.length ? `
+          <div class="favorites-grid">
+            ${this.favorites.map((m) => `
+              <movie-card poster="${m.posterUrl || m.poster || ''}" title="${(m.title||'').replace(/"/g,'&quot;')}" rating="${m.imdbScore || m.rating || ''}" media-id="${m.id || ''}" genres="${(m.genres || []).join(',')}"></movie-card>
+            `).join('')}
+          </div>
+        ` : `<p class="favorites-empty">Aún no tienes favoritos.</p>`}
+      </div>
+
       <div id="logout-modal" class="modal-backdrop ${this.showLogoutModal ? '' : 'hidden'}">
         <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="logout-title">
           <h2 id="logout-title">Logout</h2>
@@ -514,6 +557,13 @@ class UserProfileView extends HTMLElement {
 
     this.shadowRoot.getElementById('delete-cancel')?.addEventListener('click', () => this._closeDeleteModal());
     this.shadowRoot.getElementById('delete-confirm')?.addEventListener('click', () => this._handleDeleteAccount());
+
+    // Re-emitir el evento movie-clicked al documento para que las vistas manejen el modal
+    this.shadowRoot.querySelectorAll('movie-card').forEach((card) => {
+      card.addEventListener('movie-clicked', (e) => {
+        document.dispatchEvent(new CustomEvent('movie-clicked', { detail: e.detail, bubbles: true, composed: true }));
+      });
+    });
   }
 }
 
