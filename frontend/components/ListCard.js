@@ -30,6 +30,7 @@ class ListCard extends HTMLElement {
 			</span>
 		`).join('');
 
+		const isFavoritesList = ['favoritos', 'favorites'].includes((list.name || '').toLowerCase());
 		this.innerHTML = `
 			<article class="list-card" tabindex="0" role="link" aria-label="Open list ${list.name || 'Untitled list'}">
 				<div class="list-card__cover" style="background-image: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.55)), url('${image}')"></div>
@@ -38,9 +39,11 @@ class ListCard extends HTMLElement {
 						<div>
 							<h3>${list.name || 'Untitled list'}</h3>
 						</div>
+						${!isFavoritesList ? `
 						<button class="list-card__menu" type="button" aria-label="List options">
 							<span class="icon">more_vert</span>
 						</button>
+						` : ''}
 					</div>
 					<p class="list-card__description">${list.description || 'No description provided yet.'}</p>
 					<div class="list-card__footer">

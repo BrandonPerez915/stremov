@@ -96,7 +96,9 @@ async function getUserLists(req, res, next) {
       throw new AppError('Usuario no encontrado', StatusCodes.NOT_FOUND, 'UserNotFound');
     }
 
-    const lists = await List.find({ owner: userId }).select('name movies');
+    const lists = await List.find({ owner: userId })
+      .select('name description movies')
+      .populate('movies', 'title posterUrl tmdbId');
 
     return res.status(StatusCodes.OK).json({
       status: 'success',
