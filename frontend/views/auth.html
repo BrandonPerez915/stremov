@@ -125,6 +125,13 @@
 
 <script src="../scripts/auth.js" type="module"></script>
 <script>
+  document.addEventListener('DOMContentLoaded', () => {
+      const theme = localStorage.getItem('appTheme') || 'dark';
+      const primaryColor = localStorage.getItem('appPrimaryColor') || 'blue';
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('primary-color', primaryColor);
+  });
+
   const registerForm = document.getElementById('register-section');
   const loginForm = document.getElementById('login-section');
   function toggleForms() {
