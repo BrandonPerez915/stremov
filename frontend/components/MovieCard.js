@@ -480,3 +480,5 @@ _getTitleParts(rawTitle) {
 if (!customElements.get('movie-card')) {
   customElements.define('movie-card', MovieCard);
 }
+
+export {};

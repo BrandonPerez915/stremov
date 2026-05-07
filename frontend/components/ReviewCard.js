@@ -404,3 +404,5 @@ class ReviewCard extends HTMLElement {
 if (!customElements.get('review-card')) {
   customElements.define('review-card', ReviewCard);
 }
+
+export {};
