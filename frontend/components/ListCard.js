@@ -23,7 +23,7 @@ class ListCard extends HTMLElement {
 		const list = this._data || {};
 		const listId = list._id || list.id || '';
 		const movies = Array.isArray(list.movies) ? list.movies : [];
-		const image = list.image || (movies.length ? movies[0].posterUrl : 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/3Qud19bBUrrJAzy0Ilm8gRJlJXP.jpg');
+		const image = list.image || (movies.length ? movies[0].posterUrl : '/assets/img/defaultListImage.jpg');
 		const previews = movies.slice(0, 3).map(movie => `
 			<span class="movie-chip" title="${movie.title}">
 				<img src="${movie.posterUrl}" alt="${movie.title}">

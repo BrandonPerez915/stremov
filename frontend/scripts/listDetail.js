@@ -1,6 +1,6 @@
 import { getList, updateList, deleteList } from './api.js';
 
-const FALLBACK_POSTER = 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/3Qud19bBUrrJAzy0Ilm8gRJlJXP.jpg';
+const FALLBACK_POSTER = '../assets/img/defaultListImage.jpg';
 
 function getListIdFromLocation() {
   const pathnameMatch = window.location.pathname.match(/\/list(?:s)?\/([^/]+)/i);
@@ -32,12 +32,6 @@ function normalizeList(list) {
     owner: list.owner || null,
     movies: normalizedMovies,
   };
-}
-
-function formatOwner(owner) {
-  if (!owner) return 'Unknown owner';
-  if (typeof owner === 'string') return owner;
-  return owner.username || owner.name || 'Unknown owner';
 }
 
 function getMovieApiUrl(tmdbId) {
