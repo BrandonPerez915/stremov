@@ -66,7 +66,7 @@ async function getUser(req, res, next) {
 
   try {
     const user = await User.findOne({ username: name })
-      .select(' -password -email -createdAt -updatedAt -__v')
+      .select(' -password -createdAt -updatedAt -__v')
       .populate('lists')
       .populate('following', 'username avatarUrl')
       .populate('followers', 'username avatarUrl');

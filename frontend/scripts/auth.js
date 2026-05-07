@@ -41,12 +41,20 @@ async function loginUser(username, password) {
     //guardamos datos del usuario para usarlos en el frontend sin llamadas extra
     if (data.token) {
       try {
-        const payload = JSON.parse(atob(data.token.split('.')[1]));
+        const jwtPayload = JSON.parse(atob(data.token.split('.')[1]));
+
+        const userProfile = await apiClient.get(`/users/${jwtPayload.username}`);
+
         localStorage.setItem('userData', JSON.stringify({
-          _id: payload.userId,
-          username: payload.username,
-          role: payload.role
+          _id: jwtPayload.userId,
+          username: userProfile.user.username,
+          email: userProfile.user.email,
+          role: jwtPayload.role
         }));
+
+        if (userProfile.user.avatarUrl) {
+          localStorage.setItem('avatarUrl', userProfile.user.avatarUrl);
+        }
       } catch {}
     }
 

@@ -126,7 +126,7 @@ customHeaderSheet.replaceSync(`
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-  border: 2px solid var(--primary-color);
+
 }
 
 .dropdown-user-info .user-text {
@@ -137,7 +137,7 @@ customHeaderSheet.replaceSync(`
 
 .dropdown-user-info .user-name {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -192,6 +192,7 @@ customHeaderSheet.replaceSync(`
 }
 
 .dropdown-item.danger { color: var(--red-100); }
+.dropdown-item.danger:hover { font-weight: 800; }
 .dropdown-item.danger .item-icon { color: var(--red-100); }
 .dropdown-item.danger:hover {
   background-color: color-mix(in srgb, var(--red-100) 10%, transparent);
@@ -366,7 +367,7 @@ class CustomHeader extends HTMLElement {
   }
 
   _getAvatarUrl() {
-    // Prioridad: atributo img-src → avatarUrl en localStorage → ui-avatars con username → guest
+    //primero atributo img-src, luego avatarUrl en localStorage, después ui-avatars con username y al final guest
     const attrSrc = this.getAttribute('img-src');
     if (attrSrc) return attrSrc;
 
@@ -449,7 +450,7 @@ class CustomHeader extends HTMLElement {
         <img src="${imgSrc}" alt="${name}">
         <div class="user-text">
           <span class="user-name">${name}</span>
-          ${email ? `<span class="user-email">${email}</span>` : ''}
+          ${email ? `<span class="user-email">${email}</span>` : 'No email'}
         </div>
       </div>
       <div class="dropdown-section">
