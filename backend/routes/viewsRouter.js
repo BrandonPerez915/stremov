@@ -64,4 +64,12 @@ viewsRouter.get('/profileConfig', (req, res) => {
   res.sendFile('/views/profileConfig.html', { root: './frontend' })
 })
 
+/**
+ * @route GET /profile
+ * @summary Sirve la vista del perfil del usuario autenticado.
+ */
+viewsRouter.get('/profile', (req, res) => {
+  res.sendFile('/views/profile.html', { root: './frontend' })
+})
+
 export default viewsRouter
