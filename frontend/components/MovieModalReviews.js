@@ -174,6 +174,8 @@ class MovieModalReviews extends HTMLElement {
   static get observedAttributes() {
     return [
       'movie-title',
+      'movie-poster',
+      'movie-rating',
       'overall-rating',
       'total-ratings',
       'total-reviews',
@@ -241,6 +243,8 @@ class MovieModalReviews extends HTMLElement {
 
   _render() {
     const movieTitle = this.getAttribute('movie-title') || 'Unknown Title';
+    const moviePoster = this.getAttribute('movie-poster') || 'https://via.placeholder.com/260x320?text=No+Image';
+    const movieRating = this.getAttribute('movie-rating') || '0';
     const overallRating = this.getAttribute('overall-rating') || '0.0';
     const totalRatings = this.getAttribute('total-ratings') || '0';
     const totalReviews = this.getAttribute('total-reviews') || '0';
@@ -265,6 +269,8 @@ class MovieModalReviews extends HTMLElement {
         rating="${review.rating}"
         date="${review.date}"
         movie-title="${movieTitle}"
+        movie-poster="${moviePoster}"
+        movie-rating="${movieRating}"
         review-text="${review.text.replace(/"/g, '&quot;')}">
       </review-card>
     `).join('');

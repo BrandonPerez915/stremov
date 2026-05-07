@@ -176,6 +176,8 @@ function renderReviewCards() {
           rating="${escapeHtml(formatReviewScore(review.score))}"
           review-text="${escapeHtml(review.body || review.title || 'Sin comentario.') }"
           movie-title="${escapeHtml(review.movie?.title || 'Película') }"
+          movie-poster="${escapeHtml(review.movie?.posterUrl || 'https://via.placeholder.com/300x450?text=No+Image')}"
+          movie-rating="${review.movie?.imdbScore || 0}"
           date="${escapeHtml(formatReviewDate(review.createdAt))}">
         </review-card>
       `).join('')}

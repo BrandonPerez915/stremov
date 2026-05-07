@@ -446,6 +446,8 @@ class MovieModal extends HTMLElement {
 
       // Asignar títulos al componente de reviews
       reviewsComponent.setAttribute('movie-title', title);
+      reviewsComponent.setAttribute('movie-poster', posterSrc);
+      reviewsComponent.setAttribute('movie-rating', rating);
 
       // Asignamos una property (data setter) o la URL al componente para que pueda ir a traer las reviews.
       if (this._currentBackendMovieId) {
