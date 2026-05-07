@@ -1,4 +1,5 @@
 import { getList, updateList, deleteList } from './api.js';
+import '../components/AddToListModal.js';
 
 const FALLBACK_POSTER = '../assets/img/defaultListImage.jpg';
 
@@ -224,6 +225,21 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && editModal && !editModal.classList.contains('hidden')) {
       closeEditModal();
+    }
+  });
+
+  document.addEventListener('list-membership-changed', (event) => {
+    const { listId, movieId, action } = event.detail || {};
+    if (action !== 'removed' || listId !== state.listId) return;
+
+    const index = state.list.movies.findIndex((movie) =>
+      String(movie._id) === String(movieId) || String(movie.tmdbId) === String(movieId)
+    );
+
+    if (index !== -1) {
+      state.list.movies.splice(index, 1);
+      renderDetails();
+      renderMovies();
     }
   });
 

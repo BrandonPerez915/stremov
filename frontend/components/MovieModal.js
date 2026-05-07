@@ -1,4 +1,5 @@
 import { apiClient } from '../scripts/utils/apiClient.js';
+import './AddToListModal.js';
 
 const movieModalSheet = new CSSStyleSheet();
 
@@ -196,6 +197,7 @@ class MovieModal extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.adoptedStyleSheets = [movieModalSheet];
+    this._currentMovieData = null;
   }
 
   static get observedAttributes() {
@@ -307,6 +309,10 @@ class MovieModal extends HTMLElement {
           reviewsBtn.click();
         }
       });
+
+      detailsComponent.addEventListener('action-watchlist', () => {
+        this._openAddToListModal();
+      });
     }
 
     // Escuchar el evento de reseña enviada para guardarla
@@ -357,6 +363,20 @@ class MovieModal extends HTMLElement {
     }
   }
 
+  _openAddToListModal() {
+    if (!this._currentMovieData?.tmdbId) return;
+
+    const modalId = 'global-add-to-list-modal';
+    let modal = document.getElementById(modalId);
+    if (!modal) {
+      modal = document.createElement('add-to-list-modal');
+      modal.id = modalId;
+      document.body.appendChild(modal);
+    }
+
+    modal.open(this._currentMovieData);
+  }
+
   // Utilidad para convertir minutos a formato "3h 12m"
   _formatRuntime(minutes) {
     if (!minutes) return 'N/A';
@@ -400,6 +420,15 @@ class MovieModal extends HTMLElement {
       const rawRating = data.imdbScore || data.vote_average;
       const rating = rawRating ? (Math.round(rawRating * 10) / 10).toString() : 'N/A';
       const duration = data.runtimeFormatted || this._formatRuntime(data.runtime || data.episode_run_time?.[0]);
+      const apiUrl = this.getAttribute('api-url') || '';
+      const tmdbId = apiUrl.split('/').pop();
+      const type = apiUrl.includes('/tmdb/series/') ? 'series' : 'movies';
+      this._currentMovieData = {
+        tmdbId,
+        mongoId: data._id,
+        title,
+        type
+      };
 
       let country = 'N/A';
       if (data.originCountry && data.originCountry.length > 0) country = data.originCountry.join(', ');

@@ -1,5 +1,6 @@
 import { apiClient } from "../scripts/utils/apiClient.js";
 import './CustomToast.js';
+import './AddToListModal.js';
 
 // ==========================================
 // CACHÉ GLOBAL DE FAVORITOS
@@ -244,6 +245,23 @@ class MovieCard extends HTMLElement {
     this._backendMovieId = null;
   }
 
+  _openAddToListModal() {
+    const modalId = 'global-add-to-list-modal';
+    let modal = document.getElementById(modalId);
+    if (!modal) {
+      modal = document.createElement('add-to-list-modal');
+      modal.id = modalId;
+      document.body.appendChild(modal);
+    }
+
+    modal.open({
+      tmdbId: this._movieId,
+      mongoId: this._backendMovieId,
+      title: this._mainTitle,
+      type: this._type || 'movies'
+    });
+  }
+
   static get observedAttributes() {
     return ['type', 'poster', 'title', 'rating', 'genres', 'media-id'];
   }
@@ -462,6 +480,7 @@ class MovieCard extends HTMLElement {
 
     this.shadowRoot.querySelector('.add-to-list-btn').addEventListener('click', (e) => {
       e.stopPropagation();
+      this._openAddToListModal();
     });
   }
 }
