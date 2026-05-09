@@ -14,7 +14,7 @@ import { findOrCreateMovie, findOrCreateSeries, findOrCreatePerson, tmdbFetch } 
  */
 async function searchMovies(req, res, next) {
   const { q, page = 1 } = req.query;
-  if (!q) return next(new AppError('El nombre es obligatorio', StatusCodes.BAD_REQUEST, 'ValidationError'));
+  if (!q) return next(new AppError('The “name” field must be provide', StatusCodes.BAD_REQUEST, 'ValidationError'));
 
   try {
     const data = await tmdbFetch(`/search/movie?query=${encodeURIComponent(q)}&page=${page}`);
@@ -184,7 +184,7 @@ async function getTopRatedSeries(req, res, next) {
  */
 async function searchSeries(req, res, next) {
   const { q, page = 1 } = req.query;
-  if (!q) return next(new AppError('El nombre es obligatorio', StatusCodes.BAD_REQUEST, 'ValidationError'));
+  if (!q) return next(new AppError('The “name” field must be provide', StatusCodes.BAD_REQUEST, 'ValidationError'));
 
   try {
     const data = await tmdbFetch(`/search/tv?query=${encodeURIComponent(q)}&page=${page}`);
@@ -240,7 +240,7 @@ async function getPopularPersons(req, res, next) {
  */
 async function searchPersons(req, res, next) {
   const { q, page = 1 } = req.query;
-  if (!q) return next(new AppError('El nombre es obligatorio', StatusCodes.BAD_REQUEST, 'ValidationError'));
+  if (!q) return next(new AppError('The “name” field must be provide', StatusCodes.BAD_REQUEST, 'ValidationError'));
 
   try {
     const data = await tmdbFetch(`/search/person?query=${encodeURIComponent(q)}&page=${page}`);

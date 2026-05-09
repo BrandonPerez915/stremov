@@ -33,7 +33,8 @@ async function postUser(req, res, next) {
 
     const favoriteList = await List.create({
       _id: listId,
-      name: 'Favoritos',
+      name: 'Favorites',
+      description: 'Your favorite movies and series in one place',
       owner: user._id
     });
 
@@ -72,7 +73,7 @@ async function getUser(req, res, next) {
       .populate('followers', 'username avatarUrl');
 
     if (!user) {
-      const error = new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
+      const error = new AppError(`No user with the name ‘${name}’ was found'`, StatusCodes.NOT_FOUND, 'UserNotFound');
       return next(error);
     }
     return res.status(StatusCodes.OK).json({ user });
@@ -94,7 +95,7 @@ async function patchUser(req, res, next) {
   const { username, password, email, avatarUrl } = req.body;
 
   if (!username && !password && !email && !avatarUrl) {
-    const error = new AppError('Al menos un campo debe ser proporcionado para actualizar', StatusCodes.BAD_REQUEST, 'ValidationError');
+    const error = new AppError('To update, you must fill in at least one field', StatusCodes.BAD_REQUEST, 'ValidationError');
     return next(error);
   }
 
@@ -102,12 +103,12 @@ async function patchUser(req, res, next) {
     const user = await User.findOne({ username: name })
 
     if (!user) {
-      const error = new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
+      const error = new AppError(`No user with the name ‘${name}’ was found'`, StatusCodes.NOT_FOUND, 'UserNotFound');
       return next(error);
     }
 
     if (user._id.toString() !== req.userId.toString()) {
-      throw new AppError('No tienes permiso para editar esta cuenta', StatusCodes.UNAUTHORIZED, 'UnauthorizedError');
+      throw new AppError('You do not have permission to edit this account', StatusCodes.UNAUTHORIZED, 'UnauthorizedError');
     }
 
     if (username) user.username = username;
@@ -147,12 +148,12 @@ async function deleteUser(req, res, next) {
     const user = await User.findOne({ username: name });
 
     if (!user) {
-      const error = new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
+      const error = new AppError(`No user with the name ‘${name}’ was found'`, StatusCodes.NOT_FOUND, 'UserNotFound');
       return next(error);
     }
 
     if (user._id.toString() !== req.userId.toString()) {
-      throw new AppError('No tienes permiso para editar esta cuenta', StatusCodes.UNAUTHORIZED, 'UnauthorizedError');
+      throw new AppError('You do not have permission to edit this account', StatusCodes.UNAUTHORIZED, 'UnauthorizedError');
     }
 
     await user.deleteOne();
@@ -189,16 +190,16 @@ async function followUser(req, res, next) {
   try {
     const targetUser = await User.findOne({ username: name });
     if (!targetUser) {
-      throw new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
+      throw new AppError(`No user with the name ‘${name}’ was found'`, StatusCodes.NOT_FOUND, 'UserNotFound');
     }
 
     if (targetUser._id.toString() === userId.toString()) {
-      throw new AppError('No puedes seguirte a ti mismo', StatusCodes.BAD_REQUEST, 'ValidationError');
+      throw new AppError('You cannot follow yourself', StatusCodes.BAD_REQUEST, 'ValidationError');
     }
 
     const alreadyFollowing = targetUser.followers.some(id => id.toString() === userId.toString());
     if (alreadyFollowing) {
-      throw new AppError('Ya sigues a este usuario', StatusCodes.CONFLICT, 'AlreadyFollowing');
+      throw new AppError('You already follow this user', StatusCodes.CONFLICT, 'AlreadyFollowing');
     }
 
     await Promise.all([
@@ -230,12 +231,12 @@ async function unfollowUser(req, res, next) {
   try {
     const targetUser = await User.findOne({ username: name });
     if (!targetUser) {
-      throw new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
+      throw new AppError(`No user with the name ‘${name}’ was found'`, StatusCodes.NOT_FOUND, 'UserNotFound');
     }
 
     const isFollowing = targetUser.followers.some(id => id.toString() === userId.toString());
     if (!isFollowing) {
-      throw new AppError('No sigues a este usuario', StatusCodes.BAD_REQUEST, 'ValidationError');
+      throw new AppError('You do not follow this user', StatusCodes.BAD_REQUEST, 'ValidationError');
     }
 
     await Promise.all([
@@ -269,7 +270,7 @@ async function getFollowers(req, res, next) {
       .populate('followers', 'username avatarUrl');
 
     if (!user) {
-      throw new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
+      throw new AppError(`No user with the name ‘${name}’ was found'`, StatusCodes.NOT_FOUND, 'UserNotFound');
     }
 
     return res.status(StatusCodes.OK).json({
@@ -299,7 +300,7 @@ async function getFollowing(req, res, next) {
       .populate('following', 'username avatarUrl');
 
     if (!user) {
-      throw new AppError(`No se encontró un usuario con el nombre '${name}'`, StatusCodes.NOT_FOUND, 'UserNotFound');
+      throw new AppError(`No user with the name ‘${name}’ was found'`, StatusCodes.NOT_FOUND, 'UserNotFound');
     }
 
     return res.status(StatusCodes.OK).json({

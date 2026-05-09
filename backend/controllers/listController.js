@@ -22,7 +22,7 @@ async function postList(req, res, next) {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      throw new AppError('Usuario no encontrado', StatusCodes.NOT_FOUND, 'UserNotFound');
+      throw new AppError('User not found', StatusCodes.NOT_FOUND, 'UserNotFound');
     }
 
     const list = await List.create({
@@ -67,7 +67,7 @@ async function getList(req, res, next) {
       .populate('movies', 'title posterUrl tmdbId imdbScore genres overview releaseDate runtime runtimeFormatted rated');
 
     if (!list) {
-      throw new AppError('Lista no encontrada', StatusCodes.NOT_FOUND, 'ListNotFound');
+      throw new AppError('List not found', StatusCodes.NOT_FOUND, 'ListNotFound');
     }
 
     return res.status(StatusCodes.OK).json({
@@ -93,7 +93,7 @@ async function getUserLists(req, res, next) {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      throw new AppError('Usuario no encontrado', StatusCodes.NOT_FOUND, 'UserNotFound');
+      throw new AppError('User not found', StatusCodes.NOT_FOUND, 'UserNotFound');
     }
 
     const lists = await List.find({ owner: userId })
@@ -124,14 +124,17 @@ async function getFavoriteList(req, res, next) {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      throw new AppError('Usuario no encontrado', StatusCodes.NOT_FOUND, 'UserNotFound');
+      throw new AppError('User not found', StatusCodes.NOT_FOUND, 'UserNotFound');
     }
 
-    const list = await List.findOne({ owner: userId, name: 'Favoritos' })
-      .populate('movies', 'title posterUrl');
+    const list = await List.findOne({
+      owner: userId,
+      name: { $in: ['Favoritos', 'Favorites'] }
+    })
+      .populate('movies', 'title posterUrl tmdbId imdbScore genres');
 
     if (!list) {
-      throw new AppError('Lista de favoritos no encontrada', StatusCodes.NOT_FOUND, 'ListNotFound');
+      throw new AppError('Favorites list not found', StatusCodes.NOT_FOUND, 'ListNotFound');
     }
 
     return res.status(StatusCodes.OK).json({
@@ -157,14 +160,14 @@ async function patchList(req, res, next) {
   const { name, description, movies } = req.body;
 
   if (!name && !movies && !description) {
-    return next(new AppError('Al menos un campo (name, description, movies) debe ser proporcionado para actualizar', StatusCodes.BAD_REQUEST, 'ValidationError'));
+    return next(new AppError('To update, you must fill in at least one field (name, description, movies)', StatusCodes.BAD_REQUEST, 'ValidationError'));
   }
 
   try {
     const list = await List.findOne({ _id: id, owner: userId });
 
     if (!list) {
-      throw new AppError('Lista no encontrada', StatusCodes.NOT_FOUND, 'ListNotFound');
+      throw new AppError('List not found', StatusCodes.NOT_FOUND, 'ListNotFound');
     }
 
     if (name) list.name = name;
@@ -204,7 +207,7 @@ async function deleteList(req, res, next) {
     const list = await List.findOneAndDelete({ _id: id, owner: userId });
 
     if (!list) {
-      throw new AppError('Lista no encontrada', StatusCodes.NOT_FOUND, 'ListNotFound');
+      throw new AppError('List not found', StatusCodes.NOT_FOUND, 'ListNotFound');
     }
 
     await User.findByIdAndUpdate(userId, { $pull: { lists: list._id } });
@@ -237,12 +240,12 @@ async function addMovieToList(req, res, next) {
   try {
     const list = await List.findOne({ _id: id, owner: userId });
     if (!list) {
-      throw new AppError('Lista no encontrada', StatusCodes.NOT_FOUND, 'ListNotFound');
+      throw new AppError('List not found', StatusCodes.NOT_FOUND, 'ListNotFound');
     }
 
     const movie = await Movie.findById(movieId);
     if (!movie) {
-      throw new AppError('Película no encontrada', StatusCodes.NOT_FOUND, 'MovieNotFound');
+      throw new AppError('Movie not found', StatusCodes.NOT_FOUND, 'MovieNotFound');
     }
 
     await List.findByIdAndUpdate(id, { $addToSet: { movies: movieId } });
@@ -271,7 +274,7 @@ async function removeMovieFromList(req, res, next) {
   try {
     const list = await List.findOne({ _id: id, owner: userId });
     if (!list) {
-      throw new AppError('Lista no encontrada', StatusCodes.NOT_FOUND, 'ListNotFound');
+      throw new AppError('List not found', StatusCodes.NOT_FOUND, 'ListNotFound');
     }
 
     await List.findByIdAndUpdate(id, { $pull: { movies: movieId } });

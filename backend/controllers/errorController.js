@@ -59,7 +59,7 @@ const handleCastError = (error) => {
  * @returns {AppError} Instancia de AppError con estatus 401 (Unauthorized).
  */
 const handleJWTError = () => {
-  return new AppError('Token inválido. Por favor, inicia sesión nuevamente.', StatusCodes.UNAUTHORIZED, 'JWTError');
+  return new AppError('Invalid token. Please log in again.', StatusCodes.UNAUTHORIZED, 'JWTError');
 }
 
 /**
@@ -67,7 +67,7 @@ const handleJWTError = () => {
  * @returns {AppError} Instancia de AppError con estatus 401 (Unauthorized).
  */
 const handleJWTExpiredError = () => {
-  return new AppError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', StatusCodes.UNAUTHORIZED, 'JWTExpiredError');
+  return new AppError('Invalid token. Please log in again.', StatusCodes.UNAUTHORIZED, 'JWTExpiredError');
 }
 
 /**
@@ -79,7 +79,7 @@ const handleJWTExpiredError = () => {
 const handleUnknownError = (error) => {
   return error;
   console.error("Error no controlado:", error.stack || error.message);
-  return new AppError('Ocurrió un error inesperado. Por favor, intenta nuevamente más tarde.', StatusCodes.INTERNAL_SERVER_ERROR);
+  return new AppError('An unexpected error occurred. Please try again later.', StatusCodes.INTERNAL_SERVER_ERROR);
 }
 
 /**

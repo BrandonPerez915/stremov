@@ -65,7 +65,7 @@ async function getMovie(req, res, next) {
     const movie = await findOrCreateMovie(id);
 
     if (!movie) {
-      return next(new AppError('No se pudo recuperar la película', StatusCodes.NOT_FOUND));
+      return next(new AppError('The film could not be recovered', StatusCodes.NOT_FOUND));
     }
 
     return res.status(StatusCodes.OK).json({
@@ -93,7 +93,7 @@ async function getMovieByTmdbId(req, res, next) {
     const movie = await Movie.findOne({ tmdbId });
 
     if (!movie) {
-      throw new AppError('Película no encontrada', StatusCodes.NOT_FOUND, 'MovieNotFound');
+      throw new AppError('Movie not found', StatusCodes.NOT_FOUND, 'MovieNotFound');
     }
 
     return res.status(StatusCodes.OK).json({
@@ -125,14 +125,14 @@ async function patchMovie(req, res, next) {
    if (!title && !overview && !releaseDate && !releaseYear && !runtime && !runtimeFormatted &&
       !rated && !genres && !originCountry && !languages && !posterUrl && !backdropUrl &&
       !imdbScore && !awards && !directors && !actors) {
-    return next(new AppError('Al menos un campo debe ser proporcionado para actualizar', StatusCodes.BAD_REQUEST, 'ValidationError'));
+    return next(new AppError('At least one field must be provided to update', StatusCodes.BAD_REQUEST, 'ValidationError'));
   }
 
   try {
     const movie = await Movie.findById(movieId);
 
     if (!movie) {
-      const error = new AppError('Película no encontrada', StatusCodes.NOT_FOUND, 'MovieNotFound');
+      const error = new AppError('Movie not found', StatusCodes.NOT_FOUND, 'MovieNotFound');
       return next(error);
     }
 
@@ -180,7 +180,7 @@ async function deleteMovie(req, res, next) {
     const movie = await Movie.findByIdAndDelete(movieId);
 
     if (!movie) {
-      const error = new AppError('Película no encontrada', StatusCodes.NOT_FOUND, 'MovieNotFound');
+      const error = new AppError('Movie not found', StatusCodes.NOT_FOUND, 'MovieNotFound');
       return next(error);
     }
 

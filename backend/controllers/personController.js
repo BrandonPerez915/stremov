@@ -42,7 +42,7 @@ async function getPerson(req, res, next) {
     const person = await Person.findById(id);
 
     if (!person) {
-      throw new AppError('Persona no encontrada', StatusCodes.NOT_FOUND, 'PersonNotFound');
+      throw new AppError('Person not found', StatusCodes.NOT_FOUND, 'PersonNotFound');
     }
 
     return res.status(StatusCodes.OK).json({
@@ -95,7 +95,7 @@ async function patchPerson(req, res, next) {
   const { name } = req.body;
 
   if (!name) {
-    const error = new AppError('El campo name debe ser proporcionado para actualizar', StatusCodes.BAD_REQUEST, 'ValidationError');
+    const error = new AppError('The “name” field must be provided in order to update', StatusCodes.BAD_REQUEST, 'ValidationError');
     return next(error);
   }
 
@@ -103,7 +103,7 @@ async function patchPerson(req, res, next) {
     const person = await Person.findById(id);
 
     if (!person) {
-      throw new AppError('Persona no encontrada', StatusCodes.NOT_FOUND, 'PersonNotFound');
+      throw new AppError('Person not found', StatusCodes.NOT_FOUND, 'PersonNotFound');
     }
 
     person.name = name;
@@ -134,7 +134,7 @@ async function deletePerson(req, res, next) {
     const person = await Person.findByIdAndDelete(id);
 
     if (!person) {
-      throw new AppError('Persona no encontrada', StatusCodes.NOT_FOUND, 'PersonNotFound');
+      throw new AppError('Person not found', StatusCodes.NOT_FOUND, 'PersonNotFound');
     }
 
     return res.status(StatusCodes.OK).json({

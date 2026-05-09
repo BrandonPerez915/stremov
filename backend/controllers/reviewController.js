@@ -20,12 +20,12 @@ async function postReview(req, res, next) {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      throw new AppError('Usuario no encontrado', StatusCodes.NOT_FOUND, 'UserNotFound');
+      throw new AppError('User not found', StatusCodes.NOT_FOUND, 'UserNotFound');
     }
 
     const movie = await Movie.findById(movieId);
     if (!movie) {
-      throw new AppError('Película no encontrada', StatusCodes.NOT_FOUND, 'MovieNotFound');
+      throw new AppError('Movie not found', StatusCodes.NOT_FOUND, 'MovieNotFound');
     }
 
     const review = await Review.create({
@@ -63,7 +63,7 @@ async function getReview(req, res, next) {
       .populate('movie', 'title posterUrl');
 
     if (!review) {
-      throw new AppError('Reseña no encontrada', StatusCodes.NOT_FOUND, 'ReviewNotFound');
+      throw new AppError('Review not found', StatusCodes.NOT_FOUND, 'ReviewNotFound');
     }
 
     return res.status(StatusCodes.OK).json({
@@ -93,7 +93,7 @@ async function getMovieReviews(req, res, next) {
   try {
     const movie = await Movie.findById(movieId);
     if (!movie) {
-      throw new AppError('Película no encontrada', StatusCodes.NOT_FOUND, 'MovieNotFound');
+      throw new AppError('Movie not found', StatusCodes.NOT_FOUND, 'MovieNotFound');
     }
 
     const reviews = await Review.find({ movie: movieId })
@@ -138,7 +138,7 @@ async function getUserReviews(req, res, next) {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      throw new AppError('Usuario no encontrado', StatusCodes.NOT_FOUND, 'UserNotFound');
+      throw new AppError('User not found', StatusCodes.NOT_FOUND, 'UserNotFound');
     }
 
     const reviews = await Review.find({ user: userId })
@@ -169,7 +169,7 @@ async function patchReview(req, res, next) {
   const { score, title, body } = req.body;
 
   if (!score && !title && !body) {
-    const error = new AppError('Al menos un campo (score, title, body) debe ser proporcionado para actualizar', StatusCodes.BAD_REQUEST, 'ValidationError');
+    const error = new AppError('To update, you must fill in at least one field (score, title, text).', StatusCodes.BAD_REQUEST, 'ValidationError');
     return next(error);
   }
 
@@ -177,7 +177,7 @@ async function patchReview(req, res, next) {
     const review = await Review.findOne({ user: userId, movie: movieId });
 
     if (!review) {
-      throw new AppError('Reseña no encontrada', StatusCodes.NOT_FOUND, 'ReviewNotFound');
+      throw new AppError('Review not found', StatusCodes.NOT_FOUND, 'ReviewNotFound');
     }
 
     if (score) review.score = score;
@@ -211,7 +211,7 @@ async function deleteReview(req, res, next) {
     const review = await Review.findOneAndDelete({ user: userId, movie: movieId });
 
     if (!review) {
-      throw new AppError('Reseña no encontrada', StatusCodes.NOT_FOUND, 'ReviewNotFound');
+      throw new AppError('Review not found', StatusCodes.NOT_FOUND, 'ReviewNotFound');
     }
 
     return res.status(StatusCodes.OK).json({
