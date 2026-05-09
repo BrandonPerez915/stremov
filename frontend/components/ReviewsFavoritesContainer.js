@@ -331,6 +331,17 @@ class ReviewsFavoritesContainer extends HTMLElement {
     this.shadowRoot.getElementById('reviews-tab')?.addEventListener('click', () => this._switchTab('reviews'));
     this.shadowRoot.getElementById('favorites-tab')?.addEventListener('click', () => this._switchTab('favorites'));
 
+    //event listeners de actualización/eliminación de reviews
+    this.shadowRoot.addEventListener('review-updated', () => {
+      console.log('[ReviewsFavoritesContainer] Review updated, reloading...');
+      this._loadData();
+    });
+
+    this.shadowRoot.addEventListener('review-deleted', () => {
+      console.log('[ReviewsFavoritesContainer] Review deleted, reloading...');
+      this._loadData();
+    });
+
     // Propagar eventos de movie-card
     this.shadowRoot.querySelectorAll('movie-card').forEach((card) => {
       card.addEventListener('movie-clicked', (e) => {
