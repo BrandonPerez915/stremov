@@ -341,23 +341,24 @@ class MovieCard extends HTMLElement {
       const userRaw = localStorage.getItem('userData');
       if (!userRaw) return;
       const user = JSON.parse(userRaw);
+      if (!user?._id) return;
 
-      // Usamos el caché global. ¡Solo la primera película hará la petición real!
       const response = await getFavoritesList(user._id);
 
-      // Intentamos localizar el arreglo sin importar cómo lo anidó tu backend
-      const movies = response.data?.list?.movies || response.list?.movies || response.movies || [];
+      // El backend devuelve { status, list: { movies: [...] } }
+      const movies = response?.list?.movies || [];
 
-      // Búsqueda a prueba de fallos (busca como String tanto en tmdbId como id)
-      const foundMovie = movies.find(m =>
-        String(m.tmdbId) === String(this._movieId) ||
-        String(m.id) === String(this._movieId)
-      );
+      // Buscar por tmdbId — las series se guardan con ID negativo en la BD
+      const foundMovie = movies.find(m => {
+        const mId = String(m.tmdbId);
+        const cardId = String(this._movieId);
+        // Match directo o match negativo para series
+        return mId === cardId || mId === `-${cardId}` || `-${mId}` === cardId;
+      });
 
       if (foundMovie) {
         this._isFavorite = true;
-        this._backendMovieId = foundMovie._id; // ID de tu base de datos
-
+        this._backendMovieId = foundMovie._id;
         const btn = this.shadowRoot.querySelector('.favorite-btn');
         if (btn) btn.classList.add('is-favorite');
       }
@@ -419,59 +420,59 @@ class MovieCard extends HTMLElement {
       const btn = e.currentTarget;
 
       try {
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+          window.toast({ type: 'error', title: 'Sign in to save favorites', duration: 2000 });
+          return;
+        }
+
         const userRaw = localStorage.getItem('userData');
         const user = userRaw ? JSON.parse(userRaw) : null;
+        if (!user?._id) throw new Error('No user session found');
 
-        if (!user || !user.favoritesListId) throw new Error("No hay usuario o no tiene lista de favoritos");
+        // Resolver favoritesListId — puede no estar si la sesión es antigua
+        let listId = user.favoritesListId;
+        if (!listId) {
+          const listsRes = await apiClient.get(`/lists/user/${user._id}/favorites`);
+          listId = listsRes?.list?._id || null;
+          if (!listId) throw new Error('Favorites list not found');
 
-        const listId = user.favoritesListId;
+          // Guardar para no volver a buscarlo
+          localStorage.setItem('userData', JSON.stringify({ ...user, favoritesListId: listId }));
+        }
+
+        // Asegurar que tenemos el _id de MongoDB de la película
+        if (!this._backendMovieId) {
+          const endpoint = this._type === 'series' ? 'series' : 'movies';
+          const movieData = await apiClient.get(`/tmdb/${endpoint}/${this._movieId}`);
+          this._backendMovieId = movieData?.movie?._id || null;
+          if (!this._backendMovieId) throw new Error('Could not resolve movie ID');
+        }
 
         if (this._isFavorite) {
           // DELETE
-          if (!this._backendMovieId) {
-             console.warn("Falta _backendMovieId, buscando en backend...");
-             const movieData = await apiClient.get(`/tmdb/${this._type}/${this._movieId}`);
-             this._backendMovieId = movieData.movie._id;
-          }
-
           await apiClient.delete(`/lists/${listId}/movies/${this._backendMovieId}`);
-
           this._isFavorite = false;
           btn.classList.remove('is-favorite');
           window.toast({ type: 'success', title: 'Removed from favorites', duration: 2000 });
-
-          // Limpiar caché global para que en el próximo refresh la película ya no aparezca
-          favoritesCachePromise = null;
-
         } else {
-          // POST
-          const movieData = await apiClient.get(`/tmdb/${this._type}/${this._movieId}`);
-          const isSeries = this._type === 'tv' || this._type === 'series';
-          const title = isSeries ? movieData.name : movieData.title;
-          const genreIds = movieData.genres ? movieData.genres.map(g => g.id) : [];
-
-          this._backendMovieId = movieData.movie._id;
-
-          await apiClient.post(`/lists/${listId}/movies/${this._backendMovieId}`, {
-            tmdbId: this._movieId,
-            type: this._type,
-            title: title,
-            poster: movieData.poster_path,
-            rating: movieData.vote_average,
-            genres: genreIds
-          });
-
+          // POST — el backend solo necesita los IDs en la URL, sin body
+          await apiClient.post(`/lists/${listId}/movies/${this._backendMovieId}`);
           this._isFavorite = true;
           btn.classList.add('is-favorite');
           window.toast({ type: 'success', title: 'Added to favorites!', duration: 2000 });
-
-          // Limpiar caché global para forzar la actualización al recargar
-          favoritesCachePromise = null;
         }
 
+        favoritesCachePromise = null;
+
+        //notificar a otros componentes q la lista de favs cambió
+        document.dispatchEvent(new CustomEvent('favorites-changed', {
+          detail: { movieId: this._backendMovieId, action: this._isFavorite ? 'added' : 'removed' }
+        }));
+
       } catch (error) {
-        console.error("Error toggling favorite:", error);
-        window.toast({ type: 'error', title: 'Failed to update favorites', duration: 2000 });
+        console.error('Error toggling favorite:', error);
+        window.toast({ type: 'error', title: 'Failed to update favorites', message: error.message, duration: 3000 });
       }
     });
 

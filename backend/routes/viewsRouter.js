@@ -72,4 +72,9 @@ viewsRouter.get('/profile', (req, res) => {
   res.sendFile('/views/profile.html', { root: './frontend' })
 })
 
+//para perfil público de otro usuario
+viewsRouter.get('/user/:username', (req, res) => {
+  res.sendFile('/views/publicProfile.html', { root: './frontend' });
+});
+
 export default viewsRouter

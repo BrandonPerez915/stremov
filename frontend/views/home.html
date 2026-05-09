@@ -4,6 +4,15 @@
 <head>
   <link rel="stylesheet" href="../assets/css/home.css">
 
+  <script>
+		(function() {
+			var theme = localStorage.getItem('appTheme') || 'dark';
+			var color = localStorage.getItem('appPrimaryColor') || 'blue';
+			document.documentElement.setAttribute('data-theme', theme);
+			document.documentElement.setAttribute('primary-color', color);
+		})();
+	</script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home - stremov</title>

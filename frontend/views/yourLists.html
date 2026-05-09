@@ -5,6 +5,15 @@
 	<link rel="stylesheet" href="../assets/css/home.css">
 	<link rel="stylesheet" href="../assets/css/yourLists.css">
 
+	<script>
+		(function() {
+			var theme = localStorage.getItem('appTheme') || 'dark';
+			var color = localStorage.getItem('appPrimaryColor') || 'blue';
+			document.documentElement.setAttribute('data-theme', theme);
+			document.documentElement.setAttribute('primary-color', color);
+		})();
+	</script>
+
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Your Lists - stremov</title>
@@ -25,10 +34,7 @@
 <body>
 	<div class="backdrop hidden"></div>
 
-	<custom-header
-		placeholder="Search lists..."
-		on-search="console.log('Buscando listas:', searchTerm)"
-		has-notifications></custom-header>
+	<custom-header hide-search has-notifications></custom-header>
 
 	<custom-sidebar
 		following-users-info='[

@@ -265,7 +265,7 @@ class AddToListModal extends HTMLElement {
       const listsRes = await fetch(`/api/lists/user/${userId}`, { headers });
       const listsData = await listsRes.json();
 
-      this._lists = (listsData.lists || []).filter(l => l.name !== 'Favoritos');
+      this._lists = (listsData.lists || []).filter(l => l.name !== 'Favorites');
 
       // 3. Detectar en cuáles listas ya está
       this._inListIds = new Set();

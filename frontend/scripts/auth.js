@@ -49,7 +49,7 @@ async function loginUser(username, password) {
           _id: userProfile.user._id,
           username: userProfile.user.username,
           email: userProfile.user.email,
-          favoritesListId: userProfile.user.lists.find(list => list.name === 'Favoritos')?._id || null,
+          favoritesListId: userProfile.user.lists.find(list => list.name === 'Favorites')?._id || null,
           role: jwtPayload.role
         }));
 

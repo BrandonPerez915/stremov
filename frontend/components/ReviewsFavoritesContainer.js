@@ -138,13 +138,43 @@ class ReviewsFavoritesContainer extends HTMLElement {
     this.favorites = [];
     this.userId = null;
     this.listId = null;
+    this.isOwnProfile = true;
   }
 
-  set data({ userId, listId }) {
+  set data({ userId, listId, isOwnProfile = true }) {
     this.userId = userId;
     this.listId = listId;
-    console.log('ReviewsFavoritesContainer data set:', { userId, listId });
+    this.isOwnProfile = isOwnProfile;
     this._loadData();
+    this._listenToFavoritesChanges();
+  }
+
+  _listenToFavoritesChanges() {
+    //evitar registrar el listener más de una vez
+    if (this._favoritesChangeHandler) return;
+
+    this._favoritesChangeHandler = () => {
+      //recargar solo los datos de favoritos, sin tocar reviews
+      const userId = this.listId; // listId = userId para buscar favoritos
+      if (!userId) return;
+      getFavoriteList(userId)
+        .then(res => {
+          this.favorites = res?.list?.movies || [];
+          //re-renderizar si el tab activo es favorites, si no solo actualizar datos
+          if (this.activeTab === 'favorites') {
+            this._render();
+          }
+        })
+        .catch(() => {});
+    };
+
+    document.addEventListener('favorites-changed', this._favoritesChangeHandler);
+  }
+
+  disconnectedCallback() {
+    if (this._favoritesChangeHandler) {
+      document.removeEventListener('favorites-changed', this._favoritesChangeHandler);
+    }
   }
 
   async _loadData() {
@@ -211,7 +241,7 @@ class ReviewsFavoritesContainer extends HTMLElement {
       return `
         <div class="empty-state">
           <div class="empty-state-icon">rate_review</div>
-          <p>Todavía no has publicado reviews.</p>
+          <p>${this.isOwnProfile ? 'Todavía no has publicado reviews.' : 'Este usuario aún no ha publicado reviews.'}</p>
         </div>
       `;
     }
@@ -235,7 +265,7 @@ class ReviewsFavoritesContainer extends HTMLElement {
       return `
         <div class="empty-state">
           <div class="empty-state-icon">favorite</div>
-          <p>Aún no tienes películas favoritas.</p>
+          <p>${this.isOwnProfile ? 'Aún no tienes películas favoritas.' : 'Este usuario aún no tiene películas favoritas.'}</p>
         </div>
       `;
     }
@@ -246,9 +276,10 @@ class ReviewsFavoritesContainer extends HTMLElement {
           <movie-card
             poster="${this._escapeHtml(movie.posterUrl || movie.poster || '')}"
             title="${this._escapeHtml(movie.title || 'Película')}"
-            rating="${this._escapeHtml(movie.imdbScore || movie.rating || '')}"
-            media-id="${this._escapeHtml(movie.id || '')}"
-            genres="${this._escapeHtml((movie.genres || []).join(','))}">
+            rating="${this._escapeHtml(String(movie.imdbScore || movie.rating || ''))}"
+            media-id="${this._escapeHtml(String(movie.tmdbId || movie.id || ''))}"
+            genres="${this._escapeHtml((movie.genres || []).join(','))}"
+            type="movies">
           </movie-card>
         `).join('')}
       </div>
@@ -266,11 +297,11 @@ class ReviewsFavoritesContainer extends HTMLElement {
         <div class="tabs-header">
           <button class="tab-button ${this.activeTab === 'reviews' ? 'active' : ''}" id="reviews-tab">
             <span class="icon">rate_review</span>
-            Calificaciones
+            Reviews
           </button>
           <button class="tab-button ${this.activeTab === 'favorites' ? 'active' : ''}" id="favorites-tab">
             <span class="icon">favorite</span>
-            Favoritos
+            Favorites
           </button>
         </div>
 

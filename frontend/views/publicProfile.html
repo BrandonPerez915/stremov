@@ -4,17 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Perfil - stremov</title>
-
-  <script>
-		(function() {
-			var theme = localStorage.getItem('appTheme') || 'dark';
-			var color = localStorage.getItem('appPrimaryColor') || 'blue';
-			document.documentElement.setAttribute('data-theme', theme);
-			document.documentElement.setAttribute('primary-color', color);
-		})();
-	</script>
-  
+  <title>Profile - stremov</title>
   <link rel="stylesheet" href="../assets/css/home.css">
   <link rel="stylesheet" href="../assets/css/profile.css">
 
@@ -29,20 +19,10 @@
   <script src="../components/CustomSidebar.js" defer></script>
   <script src="../components/ReviewCard.js" defer></script>
   <script src="../components/UserReviewCard.js" defer></script>
-  <script src="../components/StarsInput.js" defer></script>
-  <script src="../components/RatingBars.js" defer></script>
-  <script src="../components/PersonProfileCard.js" defer></script>
-  <script type="module" src="../components/PersonCarousel.js"></script>
-  <script src="../components/MovieModalHeader.js" defer></script>
-  <script type="module" src="../components/MovieModalDetails.js"></script>
-  <script type="module" src="../components/MovieModalReviews.js"></script>
-  <script type="module" src="../components/MovieModalSimilar.js"></script>
-  <script type="module" src="../components/MovieModal.js"></script>
   <script type="module" src="../components/MovieCard.js"></script>
   <script type="module" src="../components/AddToListModal.js"></script>
   <script type="module" src="../components/ReviewsFavoritesContainer.js"></script>
-  <script type="module" src="../components/UserProfileCard.js"></script> 
-  <!--Alm son muchos-->
+  <script type="module" src="../components/UserProfileCard.js"></script>
 </head>
 
 <body>
@@ -58,9 +38,10 @@
   <main>
     <div id="profile-content" class="profile-container">
       <section class="profile-shell">
+        <!-- detecta si es perfil propio o ajeno -->
         <user-profile-card id="profile-card"></user-profile-card>
       </section>
- 
+
       <reviews-favorites-container id="reviews-favorites-container"></reviews-favorites-container>
     </div>
   </main>
@@ -73,40 +54,53 @@
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.setAttribute('primary-color', primaryColor);
 
-    //username del token
+    //Leer el username de la URL: /user/johndoe  o  /profile (perfil propio)
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    //Si la ruta es /user/:username usamos ese username
+    //Si es /profile usamos el del token
     let username = '';
-    try {
-      const token = localStorage.getItem('jwtToken');
-      if (token) {
-        const payload = token.split('.')[1];
-        const padded = payload.padEnd(payload.length + (4 - payload.length % 4) % 4, '=');
-        const decoded = atob(padded.replace(/-/g, '+').replace(/_/g, '/'));
-        username = JSON.parse(decodeURIComponent(
-          Array.from(decoded, c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
-        )).username || '';
-      }
-    } catch {}
 
-    if (!username) {
-      window.location.href = '/login';
-      return;
+    if (pathParts[0] === 'user' && pathParts[1]) {
+      username = pathParts[1];
+    } else {
+      //Perfil propio — leer del token
+      try {
+        const token = localStorage.getItem('jwtToken');
+        if (token) {
+          const payload = token.split('.')[1];
+          const padded = payload.padEnd(payload.length + (4 - payload.length % 4) % 4, '=');
+          const decoded = atob(padded.replace(/-/g, '+').replace(/_/g, '/'));
+          username = JSON.parse(decodeURIComponent(
+            Array.from(decoded, c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+          )).username || '';
+        }
+      } catch {}
     }
 
-    const profileCard = document.getElementById('profile-card');
-    profileCard.setAttribute('username', username);
+    if (username) {
+      document.title = `${username} - stremov`;
+      const profileCard = document.getElementById('profile-card');
+      profileCard.setAttribute('username', username);
 
-    const tryLoadContainer = setInterval(() => {
-      if (profileCard._profileUser) {
-        clearInterval(tryLoadContainer);
-        const userId = profileCard._profileUser._id;
-        if (userId) {
-          const container = document.getElementById('reviews-favorites-container');
-          if (container) container.data = { userId, listId: userId, isOwnProfile: true };
+      //Una vez que el componente carga el usuario, alimentar el container de reviews/favorites
+      const tryLoadContainer = setInterval(() => {
+        if (profileCard._profileUser) {
+          clearInterval(tryLoadContainer);
+          const userId = profileCard._profileUser._id;
+          if (userId) {
+            const container = document.getElementById('reviews-favorites-container');
+            if (container) {
+              container.data = { userId, listId: userId };
+            }
+          }
         }
-      }
-    }, 200);
+      }, 200);
+    } else {
+      //Sin username redirigir a login
+      window.location.href = '/login';
+    }
 
-    //header
+    //Header con datos del usuario autenticado
     const header = document.querySelector('custom-header');
     try {
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -114,6 +108,13 @@
       const avatarUrl = localStorage.getItem('avatarUrl');
       if (avatarUrl) header?.setAttribute('img-src', avatarUrl);
     } catch {}
+
+    document.addEventListener('header-logout-request', () => {
+      localStorage.removeItem('jwtToken');
+      localStorage.removeItem('userData');
+      localStorage.removeItem('avatarUrl');
+      window.location.href = '/home';
+    });
 
     document.addEventListener('movie-clicked', (e) => {
       const { movieId, type } = e.detail;

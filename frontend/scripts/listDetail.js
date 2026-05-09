@@ -82,13 +82,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!state.list) return;
     titleElement.textContent       = state.list.name;
     descriptionElement.textContent = state.list.description || '';
-    moviesCountElement.textContent = `${state.list.movies.length} movies`;
+    moviesCountElement.textContent = `${state.list.movies.length} ${state.list.movies.length === 1 ? 'movie' : 'movies'}`;
     nameInput.value                = state.list.name;
     descriptionInput.value         = state.list.description || '';
 
     //para no modificar favs
     const isFavorites = ['favoritos', 'favorites'].includes((state.list.name || '').toLowerCase());
-    if (editListButton) editListButton.style.display = isFavorites ? 'none' : '';
+    if (editListButton) editListButton.style.display = isFavorites ? 'none' : 'block';
   }
 
   function createMovieCard(movie) {
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
       moviesGrid.innerHTML = `
         <div class="empty-state-container" style="grid-column: 1 / -1; width: 100%;">
           <article class="empty-state">
-            <h3>No movies in this list</h3>
+            <h3>Nothing in this list</h3>
             <p>Add some titles from the catalog to start filling it up.</p>
           </article>
         </div>

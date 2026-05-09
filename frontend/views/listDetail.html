@@ -4,6 +4,15 @@
 <head>
 	<link rel="stylesheet" href="../assets/css/listDetail.css">
 
+	<script>
+		(function() {
+			var theme = localStorage.getItem('appTheme') || 'dark';
+			var color = localStorage.getItem('appPrimaryColor') || 'blue';
+			document.documentElement.setAttribute('data-theme', theme);
+			document.documentElement.setAttribute('primary-color', color);
+		})();
+	</script>
+
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>List Detail - stremov</title>
@@ -35,10 +44,7 @@
 <body>
 	<div class="backdrop hidden"></div>
 
-	<custom-header
-		placeholder="Search something..."
-		has-notifications>
-	</custom-header>
+	<custom-header hide-search has-notifications></custom-header>
 
 	<custom-sidebar
 		following-users-info='[]'>
@@ -57,7 +63,7 @@
 			</div>
 
 			<div class="detail-hero__actions">
-				<button class="primary-action edit-panel__button" id="edit-list-btn" type="button">
+				<button class="primary-action edit-panel__button" id="edit-list-btn" type="button" style="display:none">
 					<span class="icon">edit</span>
 					Edit List
 				</button>
@@ -105,8 +111,8 @@
 		<section class="movies-section">
 			<div class="section-header">
 				<div>
-					<h2>Movies in this list</h2>
-					<p>Click on a movie card to open the movie details.</p>
+					<h2>Movies and series in this list</h2>
+					<p>Click on a movie or series to see its details.</p>
 				</div>
 			</div>
 

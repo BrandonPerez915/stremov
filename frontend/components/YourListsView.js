@@ -1,8 +1,3 @@
-/**
- * YourListsView.js
- * Ruta: frontend/components/YourListsView.js
- */
-
 import { listService } from '../scripts/services/listService.js';
 
 class YourListsView extends HTMLElement {
@@ -214,7 +209,7 @@ class YourListsView extends HTMLElement {
     if (!this.listsGrid) return;
     this.listsGrid.innerHTML = `
       <article class="empty-state empty-state--error">
-        <h3>Something went wrong</h3>
+        <h3>There are no lists</h3>
         <p>${message}</p>
       </article>
     `;

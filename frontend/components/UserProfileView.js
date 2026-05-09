@@ -62,7 +62,18 @@ userProfileSheet.replaceSync(`
   .detail-value, .detail-value strong { font-weight: 600; color: var(--text-primary); text-align: right; }
   .password-dots { letter-spacing: 0.22em; }
 
-  input[type='text'], input[type='email'] { width: 100%; max-width: 360px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 12px; border-radius: 14px; font-family: inherit; font-size: 15px; min-height: 42px; }
+  input[type='text'], input[type='email'] { 
+    width: 100%; 
+    max-width: 360px; 
+    background: rgba(255,255,255,0.04); 
+    border: 1px solid var(--border-color); 
+    color: var(--text-primary); 
+    padding: 10px 12px; 
+    border-radius: 14px; 
+    font-family: inherit; 
+    font-size: 15px; 
+    min-height: 42px; 
+  }
 
   /* Botones Generales */
   .actions { display: flex; gap: 12px; margin-top: 22px; justify-content: center; flex-wrap: wrap; }
@@ -71,6 +82,7 @@ userProfileSheet.replaceSync(`
   .btn-secondary { background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: var(--text-primary); }
   .btn-danger { background: rgba(214,69,69,0.12); border: 1px solid #d64545; color: var(--text-primary); }
   .btn:hover { opacity: 0.95; transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
   /* Estructura de Modales (Reusables) */
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: grid; place-items: center; padding: 24px; z-index: 10000; backdrop-filter: blur(4px); }
@@ -119,10 +131,12 @@ class UserProfileView extends HTMLElement {
 
     // Estados UI
     this.isEditing = false;
+    this.isSaving = false;
     this.showLogoutModal = false;
     this.showDeleteModal = false;
     this.socialModalType = null;
     this.hasAuth = !!localStorage.getItem('jwtToken');
+    this._saveError = '';
 
     // Estados Data
     const storedUser = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -133,7 +147,7 @@ class UserProfileView extends HTMLElement {
     this.userData = {
       username: initialUsername,
       email: storedUser.email || '',
-      avatar: storedUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(initialUsername)}`,
+      avatarUrl: localStorage.getItem('avatarUrl') || storedUser.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(initialUsername)}`,
       accountStatus: ''
     };
     this.favorites = [];
@@ -176,23 +190,36 @@ class UserProfileView extends HTMLElement {
       if (user) {
         this.userData.username = user.username || this.userData.username;
         this.userData.email = user.email || this.userData.email;
-        this.userData.avatar = user.avatarUrl || this.userData.avatar;
+        this.userData.avatarUrl = user.avatarUrl || this.userData.avatarUrl;         this.originalUsername = user.username || this.originalUsername;
         this.originalUsername = user.username || this.originalUsername;
         this.userObjId = user._id || user.id;
 
-        localStorage.setItem('userData', JSON.stringify(this.userData));
+        //actualizamos el localStorage para que se sincronice con datos del servidor
+        //lo que faltaba y la razón del por qué fallaba cuando hacíamos edit profile y después no se encontraban listas
+        localStorage.setItem('avatarUrl', this.userData.avatarUrl);
+        const storedData = JSON.parse(localStorage.getItem('userData') || '{}');
+        localStorage.setItem('userData', JSON.stringify({
+          ...storedData,
+          username: this.userData.username,
+          email: this.userData.email,
+          avatarUrl: this.userData.avatarUrl,
+        }));
 
         try {
           const favRes = await getFavoriteList(this.userObjId);
-          this.favorites = favRes?.movies || [];
+          this.favorites = favRes?.list?.movies || favRes?.movies || [];
         } catch (err) { this.favorites = []; }
 
         const socialResults = await Promise.allSettled([
           getFollowers(user.username), getFollowing(user.username)
         ]);
 
-        this.followers = socialResults[0].status === 'fulfilled' ? (socialResults[0].value?.followers || []) : (Array.isArray(user.followers) ? user.followers : []);
-        this.following = socialResults[1].status === 'fulfilled' ? (socialResults[1].value?.following || []) : (Array.isArray(user.following) ? user.following : []);
+        this.followers = socialResults[0].status === 'fulfilled' 
+          ? (socialResults[0].value?.followers || []) 
+          : (Array.isArray(user.followers) ? user.followers : []);
+        this.following = socialResults[1].status === 'fulfilled' 
+          ? (socialResults[1].value?.following || []) 
+          : (Array.isArray(user.following) ? user.following : []);
       }
     } catch (err) {
       console.warn('Could not load profile data', err);
@@ -222,14 +249,14 @@ class UserProfileView extends HTMLElement {
         <div class="profile-card">
           <div class="profile-header">
             <div class="avatar-container">
-              <img src="${this.userData.avatar}" class="profile-pic" alt="Guest">
+              <img src="${this.userData.avatarUrl}" class="profile-pic" alt="Guest">
             </div>
             <div class="user-info-brief">
               <h1>Welcome</h1>
               <p class="user-email-sub">Sign in or register to access your profile.</p>
             </div>
           </div>
-          <div class="details-card no-auth-card">
+          <div class="details-card">
             <h2>No active session</h2>
             <p>To edit your profile, log out, or delete your account, you must first log in.</p>
           </div>
@@ -246,7 +273,7 @@ class UserProfileView extends HTMLElement {
             <aside class="profile-summary">
               <div class="profile-header">
                 <div class="avatar-container">
-                  <img src="${this.userData.avatar}" class="profile-pic" alt="Avatar of ${this.userData.username}">
+                  <img src="${this.userData.avatarUrl}" class="profile-pic" alt="Avatar of ${this.userData.username}">
                   ${this.isEditing ? `<button class="edit-avatar-btn" id="avatar-edit-btn"><span class="icon">edit</span></button>` : ''}
                   <input id="avatar-input" type="file" accept="image/*" style="display:none;">
                 </div>
@@ -272,11 +299,15 @@ class UserProfileView extends HTMLElement {
               <h2>Personal details</h2>
               <div class="detail-row">
                 <span class="detail-label">Username</span>
-                ${this.isEditing ? `<input type="text" id="edit-name" value="${this.userData.username}">` : `<strong class="detail-value">${this.userData.username}</strong>`}
+                ${this.isEditing
+                  ? `<input type="text" id="edit-name" value="${this.userData.username}">`
+                  : `<strong class="detail-value">${this.userData.username}</strong>`}
               </div>
               <div class="detail-row">
                 <span class="detail-label">Email</span>
-                ${this.isEditing ? `<input type="email" id="edit-email" value="${this.userData.email}">` : `<strong class="detail-value">${this.userData.email}</strong>`}
+                ${this.isEditing
+                  ? `<input type="email" id="edit-email" value="${this.userData.email}">`
+                  : `<strong class="detail-value">${this.userData.email}</strong>`}
               </div>
               <div class="detail-row">
                 <span class="detail-label">Password</span>
@@ -288,12 +319,15 @@ class UserProfileView extends HTMLElement {
           <div class="actions">
             ${this.isEditing
               ? `<button class="btn btn-secondary" id="cancel-btn">Cancel</button>
-                 <button class="btn btn-primary" id="save-btn">Save</button>`
+                 <button class="btn btn-primary" id="save-btn" ${this.isSaving ? 'disabled' : ''}>
+                   ${this.isSaving ? 'Saving...' : 'Save'}
+                 </button>`
               : `<button class="btn btn-primary" id="edit-btn">Edit profile</button>`
             }
             <button class="btn btn-secondary" id="logout-btn">Logout</button>
             <button class="btn btn-danger" id="delete-btn">Delete account</button>
           </div>
+          ${this._saveError ? `<p class="error-msg">${this._saveError}</p>` : ''}
         </div>
       `;
     }
@@ -313,7 +347,7 @@ class UserProfileView extends HTMLElement {
         <div class="modal-backdrop" id="logout-backdrop">
           <div class="modal-card confirm" role="dialog" aria-modal="true">
             <h2>Logout</h2>
-            <p>Are you sure you want to log out? You will be redirected to the home page.</p>
+            <p>Are you sure you want to log out?</p>
             <div class="modal-actions">
               <button class="btn btn-secondary" id="logout-cancel">Cancel</button>
               <button class="btn btn-primary" id="logout-confirm">Confirm</button>
@@ -328,7 +362,7 @@ class UserProfileView extends HTMLElement {
         <div class="modal-backdrop" id="delete-backdrop">
           <div class="modal-card confirm" role="dialog" aria-modal="true">
             <h2>Delete account</h2>
-            <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+            <p>Are you sure? This action cannot be undone.</p>
             <div class="modal-actions">
               <button class="btn btn-secondary" id="delete-cancel">Cancel</button>
               <button class="btn btn-danger" id="delete-confirm">Confirm</button>
@@ -348,7 +382,7 @@ class UserProfileView extends HTMLElement {
       const usersMarkup = users.length
         ? users.map((user) => `
           <article class="social-user-item">
-            <img src="${user.avatarUrl || user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'User')}`}" class="social-user-avatar" alt="Avatar">
+            <img src="${user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'User')}`}" class="social-user-avatar" alt="Avatar">
             <div class="social-user-meta">
               <strong class="social-user-name">${user.username || 'Usuario'}</strong>
               <span class="social-user-handle">@${user.username || 'usuario'}</span>
@@ -385,20 +419,28 @@ class UserProfileView extends HTMLElement {
   // GESTIÓN DE EVENTOS
   // ==========================================
 
-  _attachProfileListeners() {
-    this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', () => { this.isEditing = true; this._updateProfileDOM(); });
-    this.shadowRoot.getElementById('cancel-btn')?.addEventListener('click', () => { this.isEditing = false; this._updateProfileDOM(); });
+_attachProfileListeners() {
+    this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', () => {
+      this.isEditing = true;
+      this._saveError = '';
+      this._updateProfileDOM();
+    });
+    this.shadowRoot.getElementById('cancel-btn')?.addEventListener('click', () => {
+      this.isEditing = false;
+      this._saveError = '';
+      this._updateProfileDOM();
+    });
     this.shadowRoot.getElementById('save-btn')?.addEventListener('click', () => this._handleSave());
-
+ 
     this.shadowRoot.getElementById('logout-btn')?.addEventListener('click', () => { this.showLogoutModal = true; this._updateModalsDOM(); });
     this.shadowRoot.getElementById('delete-btn')?.addEventListener('click', () => { this.showDeleteModal = true; this._updateModalsDOM(); });
-
+ 
     this.shadowRoot.getElementById('followers-stat-btn')?.addEventListener('click', () => { this.socialModalType = 'followers'; this._updateModalsDOM(); });
     this.shadowRoot.getElementById('following-stat-btn')?.addEventListener('click', () => { this.socialModalType = 'following'; this._updateModalsDOM(); });
-
+ 
     this.shadowRoot.getElementById('avatar-edit-btn')?.addEventListener('click', () => this.shadowRoot.getElementById('avatar-input')?.click());
     this.shadowRoot.getElementById('avatar-input')?.addEventListener('change', (e) => this._handleAvatarChange(e));
-
+ 
     this.shadowRoot.getElementById('login-btn')?.addEventListener('click', () => window.location.href = '/login');
     this.shadowRoot.getElementById('register-btn')?.addEventListener('click', () => window.location.href = '/register');
   }
@@ -411,7 +453,7 @@ class UserProfileView extends HTMLElement {
     // Escuchadores de Delete Modal
     this.shadowRoot.getElementById('delete-cancel')?.addEventListener('click', () => { this.showDeleteModal = false; this._updateModalsDOM(); });
     this.shadowRoot.getElementById('delete-confirm')?.addEventListener('click', async () => {
-      try { await deleteUser(this.userData.username); logout(); } catch (err) { alert("Deletion failed: " + err.message); }
+      try { await deleteUser(this.userData.username); logout(); } catch (err) { alert('Deletion failed: ' + err.message); }
     });
 
     // Escuchadores de Social Modal
@@ -439,16 +481,48 @@ class UserProfileView extends HTMLElement {
     const newName = this.shadowRoot.querySelector('#edit-name').value.trim();
     const newEmail = this.shadowRoot.querySelector('#edit-email').value.trim();
 
+    if (!newName || !newEmail) {
+      this._saveError = 'Username and email are required.';
+      this._updateProfileDOM();
+      return;
+    }
+ 
+    this.isSaving = true;
+    this._saveError = '';
+    this._updateProfileDOM();
+
     try {
-      await updateUser({ username: this.originalUsername, data: { username: newName, email: newEmail, avatar: this.userData.avatar } });
+      await updateUser({ username: this.originalUsername, data: { username: newName, email: newEmail, avatarUrl: this.userData.avatarUrl } });
       this.userData.username = newName;
       this.userData.email = newEmail;
       this.originalUsername = newName;
-      localStorage.setItem('userData', JSON.stringify(this.userData));
+
+      //sincronizar localStorage
+      const storedData = JSON.parse(localStorage.getItem('userData') || '{}');
+      
+      localStorage.setItem('userData', JSON.stringify({
+        ...storedData,
+        username: newName,
+        email: newEmail,
+        avatarUrl: this.userData.avatarUrl,
+      }));
+ 
+      //actualizar el header
+      const header = document.querySelector('custom-header');
+      if (header && typeof header.refresh === 'function') header.refresh();
+ 
       this.isEditing = false;
-      this._updateProfileDOM(); // Solo recarga la tarjeta
+      window.toast?.({
+        type: 'success',
+        title: 'Profile updated',
+        message: 'Your changes have been saved.',
+        duration: 3000
+      });
     } catch (err) {
       alert("Update failed: " + err.message);
+    } finally { //para que siempre se ejecute, haya error o no
+      this.isSaving = false;
+      this._updateProfileDOM();
     }
   }
 
@@ -457,10 +531,16 @@ class UserProfileView extends HTMLElement {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = () => {
-      this.userData.avatar = reader.result;
-      localStorage.setItem('userData', JSON.stringify(this.userData));
-      this._updateProfileDOM(); // Actualiza solo la imagen/tarjeta
+    reader.onload = async () => {
+      const dataUrl = reader.result;
+      this.userData.avatarUrl = dataUrl;
+      
+      //actualizar UI
+      localStorage.setItem('avatarUrl', dataUrl);
+      const storedData = JSON.parse(localStorage.getItem('userData') || '{}');
+      localStorage.setItem('userData', JSON.stringify({ ...storedData, avatarUrl: dataUrl }));
+ 
+      this._updateProfileDOM();
     };
     reader.readAsDataURL(file);
   }
