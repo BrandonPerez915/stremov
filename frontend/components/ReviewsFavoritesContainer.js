@@ -139,6 +139,24 @@ class ReviewsFavoritesContainer extends HTMLElement {
     this.userId = null;
     this.listId = null;
     this.isOwnProfile = true;
+    
+    // Bind handlers para poder removerlos después
+    this._handleReviewUpdated = this._handleReviewUpdated.bind(this);
+    this._handleReviewDeleted = this._handleReviewDeleted.bind(this);
+  }
+
+  connectedCallback() {
+    // Registrar listeners de reviews UNA sola vez
+    this.shadowRoot.addEventListener('review-updated', this._handleReviewUpdated);
+    this.shadowRoot.addEventListener('review-deleted', this._handleReviewDeleted);
+  }
+
+  _handleReviewUpdated() {
+    this._loadData();
+  }
+
+  _handleReviewDeleted() {
+    this._loadData();
   }
 
   set data({ userId, listId, isOwnProfile = true }) {
@@ -175,14 +193,22 @@ class ReviewsFavoritesContainer extends HTMLElement {
     if (this._favoritesChangeHandler) {
       document.removeEventListener('favorites-changed', this._favoritesChangeHandler);
     }
+    //remover listeners de reviews
+    this.shadowRoot.removeEventListener('review-updated', this._handleReviewUpdated);
+    this.shadowRoot.removeEventListener('review-deleted', this._handleReviewDeleted);
   }
 
   async _loadData() {
     try {
+      console.log('Loading reviews and favorites for:', { userId: this.userId, listId: this.listId });
+      
       const [reviewsResult, favoritesResult] = await Promise.allSettled([
         this.userId ? getUserReviews(this.userId) : Promise.resolve({ reviews: [] }),
         this.listId ? getFavoriteList(this.listId) : Promise.resolve({ list: { movies: [] } })
       ]);
+
+      console.log('Reviews result:', reviewsResult);
+      console.log('Favorites result:', favoritesResult);
 
       this.reviews = reviewsResult.status === 'fulfilled' 
         ? (reviewsResult.value?.reviews || []) 
@@ -286,9 +312,9 @@ class ReviewsFavoritesContainer extends HTMLElement {
   }
 
   _switchTab(tab) {
-    this.activeTab = tab;
-    this._render();
-  }
+  this.activeTab = tab;
+  this._render();
+}
 
   _render() {
     this.shadowRoot.innerHTML = `
@@ -324,15 +350,6 @@ class ReviewsFavoritesContainer extends HTMLElement {
   _setupListeners() {
     this.shadowRoot.getElementById('reviews-tab')?.addEventListener('click', () => this._switchTab('reviews'));
     this.shadowRoot.getElementById('favorites-tab')?.addEventListener('click', () => this._switchTab('favorites'));
-
-    //event listeners de actualización/eliminación de reviews
-    this.shadowRoot.addEventListener('review-updated', () => {
-      this._loadData();
-    });
-
-    this.shadowRoot.addEventListener('review-deleted', () => {
-      this._loadData();
-    });
 
     // Propagar eventos de movie-card
     this.shadowRoot.querySelectorAll('movie-card').forEach((card) => {
