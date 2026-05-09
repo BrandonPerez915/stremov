@@ -1,4 +1,6 @@
 import { apiClient } from '../scripts/utils/apiClient.js';
+import './PersonProfileCard.js';
+import './PersonCarousel.js';
 
 const movieModalDetailsSheet = new CSSStyleSheet();
 

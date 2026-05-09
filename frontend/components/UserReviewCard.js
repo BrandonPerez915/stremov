@@ -1,488 +1,558 @@
-import { getUser, updateUser, deleteUser, logout, getFavoriteList, getFollowers, getFollowing } from '../scripts/api.js';
-import '../components/ReviewsFavoritesContainer.js';
+import { updateReview, deleteReview } from '../scripts/api.js';
 
-const userProfileSheet = new CSSStyleSheet();
+const userReviewCardSheet = new CSSStyleSheet();
 
-userProfileSheet.replaceSync(`
+userReviewCardSheet.replaceSync(`
   :host {
     display: block;
     font-family: 'Inter', sans-serif;
-    color: var(--text-primary);
-    padding: 24px;
-    max-width: 760px;
-    margin: 0 auto;
-    box-sizing: border-box;
   }
 
-  /* Tarjeta de Perfil */
-  .profile-card {
-    width: 100%;
-    display: grid;
-    gap: 24px;
+  /* ── Card ─────────────────────────────── */
+  .review-card {
+    display: flex;
+    gap: 16px;
     background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border-color);
-    border-radius: 28px;
+    border: 1px solid var(--border-color, #3a3f4c);
+    border-radius: 18px;
+    padding: 16px;
+    transition: border-color 0.2s ease;
+    cursor: pointer;
+  }
+
+  .review-card:hover { border-color: rgba(255,255,255,0.18); }
+
+  /* ── Poster ───────────────────────────── */
+  .movie-poster {
+    flex-shrink: 0;
+    width: 64px;
+    height: 96px;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  }
+
+  /* ── Body ─────────────────────────────── */
+  .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .movie-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary, #fff);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Stars ────────────────────────────── */
+  .stars-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stars {
+    display: flex;
+    gap: 2px;
+  }
+
+  .star {
+    font-family: 'Material Symbols Outlined';
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    font-size: 16px;
+    color: #f5c518;
+  }
+
+  .score-label {
+    font-size: 12px;
+    color: var(--text-secondary, #888);
+  }
+
+  /* ── Review text ──────────────────────── */
+  .review-text {
+    font-size: 13px;
+    color: var(--text-secondary, #8b8e98);
+    line-height: 1.5;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .review-date {
+    font-size: 11px;
+    color: var(--text-secondary, #888);
+    opacity: 0.7;
+    margin-top: auto;
+  }
+
+  /* ── Actions (own profile) ────────────── */
+  .card-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .action-btn {
+    background: none;
+    border: 1px solid var(--border-color, #3a3f4c);
+    border-radius: 8px;
+    color: var(--text-secondary, #888);
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    font-family: 'Material Symbols Outlined';
+    font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+    font-size: 18px;
+  }
+
+  .action-btn:hover { color: var(--text-primary, #fff); border-color: rgba(255,255,255,0.3); }
+  .action-btn.danger:hover { color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,0.08); }
+
+  /* ── Edit modal overlay ───────────────── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(6px);
+    z-index: 9999;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal-panel {
+    background: var(--bg-color, #1f2128);
+    border: 1px solid var(--border-color, #3a3f4c);
+    border-radius: 20px;
     padding: 28px;
-    box-shadow: 0 24px 55px rgba(0,0,0,0.25);
-    margin-bottom: 24px;
+    width: min(460px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    transform: translateY(8px);
+    transition: transform 0.2s ease;
   }
 
-  .profile-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
-  .profile-summary { display: flex; flex-direction: column; gap: 20px; }
-  .profile-header { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; margin-bottom: 0; text-align: left; }
+  .modal-overlay.open .modal-panel { transform: translateY(0); }
 
-  .avatar-container { position: relative; width: 140px; height: 140px; }
-  .profile-pic { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-color); box-shadow: 0 20px 40px rgba(0,0,0,0.18); }
-
-  .edit-avatar-btn {
-    position: absolute; bottom: 0; right: 0; background: var(--primary-color); border: none; border-radius: 50%;
-    width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  .user-info-brief { display: flex; flex-direction: column; gap: 8px; }
-  .user-info-brief h1 { margin: 0; font-size: 30px; font-weight: 700; }
-  .user-email-sub { color: var(--text-secondary); font-size: 15px; margin: 0; }
+  .modal-header h3 { margin: 0; font-size: 18px; color: var(--text-primary, #fff); }
 
-  .status-pill { display: inline-flex; align-items: center; justify-content: center; padding: 6px 14px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary); font-size: 13px; margin-top: 0; }
+  .modal-close {
+    background: none;
+    border: 1px solid var(--border-color, #3a3f4c);
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary, #888);
+    font-family: 'Material Symbols Outlined';
+    font-size: 18px;
+  }
 
-  /* Estadísticas Sociales */
-  .profile-stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
-  .profile-stat { min-width: 132px; padding: 12px 16px; border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
-  .profile-stat-button { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0; text-align: left; cursor: pointer; color: inherit; font: inherit; transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease; appearance: none; }
-  .profile-stat-button:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.16); transform: translateY(-2px); }
-  .profile-stat-button:focus-visible, .social-modal-close:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
-  .profile-stat strong { display: block; font-size: 22px; line-height: 1; }
-  .profile-stat span { display: block; margin-top: 6px; color: var(--text-secondary); font-size: 13px; }
+  .modal-close:hover { color: var(--text-primary, #fff); }
 
-  /* Detalles de Perfil */
-  .details-card { background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: 22px; padding: 24px; }
-  .details-card h2 { font-size: 18px; margin-bottom: 22px; color: var(--text-primary); }
-  .detail-row { display: grid; grid-template-columns: 140px 1fr; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
-  .detail-row:last-child { border-bottom: none; }
-  .detail-label { color: var(--text-secondary); font-size: 14px; }
-  .detail-value, .detail-value strong { font-weight: 600; color: var(--text-primary); text-align: right; }
-  .password-dots { letter-spacing: 0.22em; }
+  /* Interactive stars in modal */
+  .star-row-interactive {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 4px 0;
+  }
 
-  input[type='text'], input[type='email'] { width: 100%; max-width: 360px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 12px; border-radius: 14px; font-family: inherit; font-size: 15px; min-height: 42px; }
+  .star-interactive {
+    font-family: 'Material Symbols Outlined';
+    font-size: 32px;
+    cursor: pointer;
+    color: var(--border-color, #3a3f4c);
+    font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+    transition: color 0.15s ease, transform 0.1s ease;
+    user-select: none;
+  }
 
-  /* Botones Generales */
-  .actions { display: flex; gap: 12px; margin-top: 22px; justify-content: center; flex-wrap: wrap; }
-  .btn { padding: 12px 24px; border-radius: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; border: none; }
-  .btn-primary { background: var(--primary-color); color: white; }
-  .btn-secondary { background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: var(--text-primary); }
-  .btn-danger { background: rgba(214,69,69,0.12); border: 1px solid #d64545; color: var(--text-primary); }
-  .btn:hover { opacity: 0.95; transform: translateY(-1px); }
+  .star-interactive:hover { transform: scale(1.15); }
+  .star-interactive.filled {
+    color: #f5c518;
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
 
-  /* Estructura de Modales (Reusables) */
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: grid; place-items: center; padding: 24px; z-index: 10000; backdrop-filter: blur(4px); }
-  .modal-backdrop.social { background: rgba(0,0,0,0.58); backdrop-filter: blur(8px); z-index: 12000; }
+  /* Textarea */
+  .review-textarea {
+    width: 100%;
+    min-height: 100px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-color, #3a3f4c);
+    border-radius: 12px;
+    color: var(--text-primary, #fff);
+    padding: 12px 14px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+  }
 
-  .modal-card { background: var(--bg-color, #1f2128); border: 1px solid var(--border-color); border-radius: 24px; padding: 28px; box-shadow: 0 18px 45px rgba(0,0,0,0.35); }
-  .modal-card.confirm { width: min(500px, 100%); }
-  .modal-card.social { width: min(560px, 100%); max-height: min(78vh, 760px); display: flex; flex-direction: column; gap: 18px; padding: 24px; overflow: hidden; }
+  .review-textarea:focus { border-color: var(--primary-color, #3e5eff); }
+  .review-textarea::placeholder { color: var(--text-secondary, #888); }
 
-  .confirm-modal h2 { margin: 0 0 12px; font-size: 22px; }
-  .confirm-modal p { color: var(--text-secondary); margin: 0 0 24px; line-height: 1.7; }
-  .modal-actions { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
+  /* Modal buttons */
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
 
-  /* Modal Social Específica */
-  .social-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-  .social-modal-header h2 { margin: 0; font-size: 22px; }
-  .social-modal-header p { margin: 8px 0 0; color: var(--text-secondary); line-height: 1.5; }
+  .btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+  }
 
-  .social-modal-close { flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: var(--text-primary); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
-  .social-users-list { overflow: auto; display: grid; gap: 12px; padding-right: 4px; }
+  .btn:hover:not(:disabled) { opacity: 0.85; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .social-user-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
-  .social-user-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-  .social-user-meta { display: flex; flex-direction: column; min-width: 0; }
-  .social-user-name { font-size: 15px; line-height: 1.3; }
-  .social-user-handle, .social-empty { color: var(--text-secondary); font-size: 14px; }
-  .social-empty { margin: 4px 0 0; padding: 18px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.12); }
+  .btn-primary { background: var(--primary-color, #3e5eff); color: white; }
+  .btn-secondary { background: transparent; border: 1px solid var(--border-color, #3a3f4c); color: var(--text-primary, #fff); }
+  .btn-danger { background: rgba(239,68,68,0.12); border: 1px solid #ef4444; color: #ef4444; }
 
-  .icon { font-family: 'Material Symbols Outlined'; font-size: 20px; }
-
-  @media (max-width: 720px) {
-    :host { padding: 16px; }
-    .profile-card { padding: 20px; }
-    .avatar-container { width: 120px; height: 120px; }
-    .details-card { padding: 20px; }
-    .detail-row { grid-template-columns: 1fr; text-align: left; }
-    .detail-value { text-align: left; }
+  /* Confirm delete modal */
+  .confirm-text {
+    color: var(--text-secondary, #888);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
   }
 `);
 
-class UserProfileView extends HTMLElement {
+class UserReviewCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-    this.shadowRoot.adoptedStyleSheets = [userProfileSheet];
+    this.shadowRoot.adoptedStyleSheets = [userReviewCardSheet];
 
-    // Estados UI
-    this.isEditing = false;
-    this.showLogoutModal = false;
-    this.showDeleteModal = false;
-    this.socialModalType = null;
-    this.hasAuth = !!localStorage.getItem('jwtToken');
-
-    // Estados Data
-    const storedUser = JSON.parse(localStorage.getItem('userData') || '{}');
-    const tokenUsername = this._getUsernameFromToken();
-    const initialUsername = storedUser.username || tokenUsername || 'User';
-
-    this.originalUsername = initialUsername;
-    this.userData = {
-      username: initialUsername,
-      email: storedUser.email || '',
-      avatar: storedUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(initialUsername)}`,
-      accountStatus: ''
-    };
-    this.favorites = [];
-    this.followers = [];
-    this.following = [];
-    this.userObjId = null;
+    this._editOpen    = false;
+    this._deleteOpen  = false;
+    this._editScore   = 0;
+    this._saving      = false;
+    this._deleting    = false;
   }
 
-  _getUsernameFromToken() {
-    const token = localStorage.getItem('jwtToken');
-    if (!token) return '';
-    try {
-      const payload = token.split('.')[1];
-      const padded = payload.padEnd(payload.length + (4 - (payload.length % 4)) % 4, '=');
-      const decoded = atob(padded.replace(/-/g, '+').replace(/_/g, '/'));
-      return JSON.parse(decodeURIComponent(Array.from(decoded, c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))).username || '';
-    } catch { return ''; }
+  static get observedAttributes() {
+    return ['rating', 'review-text', 'movie-title', 'movie-poster',
+            'movie-tmdb-id', 'movie-type', 'date', 'own-profile', 'review-id'];
   }
 
-  async connectedCallback() {
-    // 1. Construir la estructura maestra UNA SOLA VEZ.
-    this._renderBaseStructure();
+  attributeChangedCallback() { if (this.isConnected) this._render(); }
+  connectedCallback() { this._render(); }
 
-    // 2. Llenar el perfil de inmediato con datos locales (Skeleton/Cache).
-    this._updateProfileDOM();
+  // ── Helpers ──────────────────────────────────────────────────────
+  _attr(name, fallback = '') { return this.getAttribute(name) ?? fallback; }
 
-    if (this.hasAuth) {
-      await this._loadUserData();
-      // 3. Volver a llenar el perfil con datos reales del servidor, SIN destruir el DOM maestro.
-      this._updateProfileDOM();
-
-      // Actualizar contenedor de favoritos si ya tenemos la ID del servidor.
-      const container = this.shadowRoot.getElementById('reviews-favorites-container');
-      if (container && this.userObjId) {
-        container.setAttribute('user-id', this.userObjId);
-        container.setAttribute('list-id', this.userObjId);
-        container.data = { userId: this.userObjId, listId: this.userObjId };
-      }
-    }
+  _starsHTML(score, max = 10) {
+    // Convertir score 1-10 a 5 estrellas para display
+    const filled = Math.round((score / max) * 5);
+    return Array.from({ length: 5 }, (_, i) =>
+      `<span class="star" style="${i >= filled ? 'color:var(--border-color,#3a3f4c);font-variation-settings:"FILL" 0' : ''}">star</span>`
+    ).join('');
   }
 
-  async _loadUserData() {
-    const tokenUsername = this._getUsernameFromToken();
-    if (!tokenUsername) return;
+  // Convierte estrellas (1-5) a score (1-10)
+  _starsToScore(stars) { return stars * 2; }
 
-    try {
-      const { user } = await getUser(tokenUsername);
-      if (user) {
-        this.userData.username = user.username || this.userData.username;
-        this.userData.email = user.email || this.userData.email;
-        this.userData.avatar = user.avatarUrl || this.userData.avatar;
-        this.originalUsername = user.username || this.originalUsername;
-        this.userObjId = user._id || user.id;
+  // Convierte score (1-10) a estrellas (1-5)
+  _scoreToStars(score) { return Math.round(score / 2); }
 
-        localStorage.setItem('userData', JSON.stringify(this.userData));
+  // ── Render ───────────────────────────────────────────────────────
+  _render() {
+    const rating     = parseInt(this._attr('rating', '0'));
+    const text       = this._attr('review-text');
+    const title      = this._attr('movie-title', 'Unknown movie');
+    const poster     = this._attr('movie-poster', '');
+    const date       = this._attr('date');
+    const isOwn      = this.hasAttribute('own-profile');
 
-        try {
-          const favRes = await getFavoriteList(this.userObjId);
-          this.favorites = favRes?.movies || [];
-        } catch (err) { this.favorites = []; }
-
-        const socialResults = await Promise.allSettled([
-          getFollowers(user.username), getFollowing(user.username)
-        ]);
-
-        this.followers = socialResults[0].status === 'fulfilled' ? (socialResults[0].value?.followers || []) : (Array.isArray(user.followers) ? user.followers : []);
-        this.following = socialResults[1].status === 'fulfilled' ? (socialResults[1].value?.following || []) : (Array.isArray(user.following) ? user.following : []);
-      }
-    } catch (err) {
-      console.warn('Could not load profile data', err);
-    }
-  }
-
-  // ==========================================
-  // LÓGICA DE RENDERIZADO POR SECCIONES
-  // ==========================================
-
-  // Crea el "cascarón" de la vista para evitar problemas de destrucción del DOM.
-  _renderBaseStructure() {
     this.shadowRoot.innerHTML = `
-      <div id="profile-section-root"></div>
+      <div class="review-card" id="card">
+        <img class="movie-poster" src="${poster}" alt="${title}">
 
-      <reviews-favorites-container id="reviews-favorites-container"></reviews-favorites-container>
+        <div class="card-body">
+          <div class="card-top">
+            <h3 class="movie-title" title="${title}">${title}</h3>
+            ${isOwn ? `
+              <div class="card-actions">
+                <button class="action-btn" id="edit-btn" title="Edit review">edit</button>
+                <button class="action-btn danger" id="delete-btn" title="Delete review">delete</button>
+              </div>
+            ` : ''}
+          </div>
 
-      <div id="modals-root"></div>
+          <div class="stars-row">
+            <div class="stars">${this._starsHTML(rating)}</div>
+            <span class="score-label">${rating}/10</span>
+          </div>
+
+          ${text ? `<p class="review-text">${text}</p>` : ''}
+          ${date ? `<span class="review-date">${date}</span>` : ''}
+        </div>
+      </div>
+
+      <!-- Edit modal -->
+      ${this._editOpen ? this._editModalHTML(rating, text) : ''}
+
+      <!-- Delete confirm modal -->
+      ${this._deleteOpen ? this._deleteModalHTML(title) : ''}
     `;
 
-    // Capturar clics de las películas hijas de forma permanente
-    const container = this.shadowRoot.getElementById('reviews-favorites-container');
-    if (container) {
-      container.addEventListener('movie-clicked', (e) => {
-        document.dispatchEvent(new CustomEvent('movie-clicked', { detail: e.detail, bubbles: true, composed: true }));
-      });
-    }
+    this._bindEvents();
   }
 
-  // Actualiza estrictamente la tarjeta del perfil
-  _updateProfileDOM() {
-    const root = this.shadowRoot.getElementById('profile-section-root');
-    if (!root) return;
+  _editModalHTML(currentRating, currentText) {
+    // Convertir score 1-10 a estrellas 1-5 para el editor
+    this._editScore = this._editScore || this._scoreToStars(currentRating);
+    const stars = Array.from({ length: 5 }, (_, i) => {
+      const val = i + 1;
+      const filled = val <= this._editScore;
+      return `<span class="star-interactive${filled ? ' filled' : ''}" data-value="${val}">star</span>`;
+    }).join('');
 
-    if (!this.hasAuth) {
-      root.innerHTML = `
-        <div class="profile-card">
-          <div class="profile-header">
-            <div class="avatar-container">
-              <img src="${this.userData.avatar}" class="profile-pic" alt="Guest">
-            </div>
-            <div class="user-info-brief">
-              <h1>Welcome</h1>
-              <p class="user-email-sub">Sign in or register to access your profile.</p>
-            </div>
+    return `
+      <div class="modal-overlay open" id="edit-overlay">
+        <div class="modal-panel">
+          <div class="modal-header">
+            <h3>Edit review</h3>
+            <button class="modal-close" id="edit-close">close</button>
           </div>
-          <div class="details-card no-auth-card">
-            <h2>No active session</h2>
-            <p>To edit your profile, log out, or delete your account, you must first log in.</p>
-          </div>
-          <div class="actions">
-            <button class="btn btn-primary" id="login-btn">Login</button>
-            <button class="btn btn-secondary" id="register-btn">Register</button>
+
+          <div class="star-row-interactive" id="star-row">${stars}</div>
+
+          <textarea
+            class="review-textarea"
+            id="edit-textarea"
+            placeholder="Write your thoughts... (optional)"
+          >${currentText || ''}</textarea>
+
+          <div class="modal-actions">
+            <button class="btn btn-secondary" id="edit-cancel">Cancel</button>
+            <button class="btn btn-primary" id="edit-save" ${this._saving ? 'disabled' : ''}>
+              ${this._saving ? 'Saving...' : 'Save changes'}
+            </button>
           </div>
         </div>
-      `;
-    } else {
-      root.innerHTML = `
-        <div class="profile-card">
-          <div class="profile-grid">
-            <aside class="profile-summary">
-              <div class="profile-header">
-                <div class="avatar-container">
-                  <img src="${this.userData.avatar}" class="profile-pic" alt="Avatar of ${this.userData.username}">
-                  ${this.isEditing ? `<button class="edit-avatar-btn" id="avatar-edit-btn"><span class="icon">edit</span></button>` : ''}
-                  <input id="avatar-input" type="file" accept="image/*" style="display:none;">
-                </div>
-                <div class="user-info-brief">
-                  <h1>${this.userData.username}</h1>
-                  <p class="user-email-sub">${this.userData.email}</p>
-                  ${this.userData.accountStatus ? `<span class="status-pill">${this.userData.accountStatus}</span>` : ''}
-                  <div class="profile-stats">
-                    <button type="button" class="profile-stat profile-stat-button" id="following-stat-btn">
-                      <strong>${Array.isArray(this.following) ? this.following.length : 0}</strong>
-                      <span>Seguidos</span>
-                    </button>
-                    <button type="button" class="profile-stat profile-stat-button" id="followers-stat-btn">
-                      <strong>${Array.isArray(this.followers) ? this.followers.length : 0}</strong>
-                      <span>Seguidores</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </aside>
-
-            <section class="details-card">
-              <h2>Personal details</h2>
-              <div class="detail-row">
-                <span class="detail-label">Username</span>
-                ${this.isEditing ? `<input type="text" id="edit-name" value="${this.userData.username}">` : `<strong class="detail-value">${this.userData.username}</strong>`}
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Email</span>
-                ${this.isEditing ? `<input type="email" id="edit-email" value="${this.userData.email}">` : `<strong class="detail-value">${this.userData.email}</strong>`}
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Password</span>
-                <strong class="detail-value password-dots">••••••••</strong>
-              </div>
-            </section>
-          </div>
-
-          <div class="actions">
-            ${this.isEditing
-              ? `<button class="btn btn-secondary" id="cancel-btn">Cancel</button>
-                 <button class="btn btn-primary" id="save-btn">Save</button>`
-              : `<button class="btn btn-primary" id="edit-btn">Edit profile</button>`
-            }
-            <button class="btn btn-secondary" id="logout-btn">Logout</button>
-            <button class="btn btn-danger" id="delete-btn">Delete account</button>
-          </div>
-        </div>
-      `;
-    }
-
-    this._attachProfileListeners();
+      </div>
+    `;
   }
 
-  // Actualiza estrictamente el contenedor de las modales. Las modales se construyen o destruyen de verdad del DOM.
-  _updateModalsDOM() {
-    const root = this.shadowRoot.getElementById('modals-root');
-    if (!root) return;
-
-    let html = '';
-
-    if (this.showLogoutModal) {
-      html += `
-        <div class="modal-backdrop" id="logout-backdrop">
-          <div class="modal-card confirm" role="dialog" aria-modal="true">
-            <h2>Logout</h2>
-            <p>Are you sure you want to log out? You will be redirected to the home page.</p>
-            <div class="modal-actions">
-              <button class="btn btn-secondary" id="logout-cancel">Cancel</button>
-              <button class="btn btn-primary" id="logout-confirm">Confirm</button>
-            </div>
+  _deleteModalHTML(title) {
+    return `
+      <div class="modal-overlay open" id="delete-overlay">
+        <div class="modal-panel">
+          <div class="modal-header">
+            <h3>Delete review</h3>
+            <button class="modal-close" id="delete-close">close</button>
+          </div>
+          <p class="confirm-text">
+            Are you sure you want to delete your review for <strong>${title}</strong>?
+            This action cannot be undone.
+          </p>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" id="delete-cancel">Cancel</button>
+            <button class="btn btn-danger" id="delete-confirm" ${this._deleting ? 'disabled' : ''}>
+              ${this._deleting ? 'Deleting...' : 'Delete'}
+            </button>
           </div>
         </div>
-      `;
-    }
-
-    if (this.showDeleteModal) {
-      html += `
-        <div class="modal-backdrop" id="delete-backdrop">
-          <div class="modal-card confirm" role="dialog" aria-modal="true">
-            <h2>Delete account</h2>
-            <p>Are you sure you want to delete your account? This action cannot be undone.</p>
-            <div class="modal-actions">
-              <button class="btn btn-secondary" id="delete-cancel">Cancel</button>
-              <button class="btn btn-danger" id="delete-confirm">Confirm</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    if (this.socialModalType) {
-      const type = this.socialModalType;
-      const copy = type === 'following'
-        ? { title: 'Seguidos', subtitle: 'Usuarios que este perfil sigue actualmente.', empty: 'Aún no sigues a nadie.' }
-        : { title: 'Seguidores', subtitle: 'Usuarios que siguen este perfil.', empty: 'Todavía nadie sigue a este usuario.' };
-
-      const users = type === 'following' ? this.following : this.followers;
-      const usersMarkup = users.length
-        ? users.map((user) => `
-          <article class="social-user-item">
-            <img src="${user.avatarUrl || user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'User')}`}" class="social-user-avatar" alt="Avatar">
-            <div class="social-user-meta">
-              <strong class="social-user-name">${user.username || 'Usuario'}</strong>
-              <span class="social-user-handle">@${user.username || 'usuario'}</span>
-            </div>
-          </article>
-        `).join('')
-        : `<p class="social-empty">${copy.empty}</p>`;
-
-      html += `
-        <div class="modal-backdrop social" id="social-backdrop">
-          <section class="modal-card social" role="dialog" aria-modal="true">
-            <div class="social-modal-header">
-              <div>
-                <h2>${copy.title}</h2>
-                <p>${copy.subtitle}</p>
-              </div>
-              <button class="social-modal-close" id="social-modal-close" aria-label="Cerrar modal">
-                <span class="icon">close</span>
-              </button>
-            </div>
-            <div class="social-users-list">
-              ${usersMarkup}
-            </div>
-          </section>
-        </div>
-      `;
-    }
-
-    root.innerHTML = html;
-    this._attachModalsListeners();
+      </div>
+    `;
   }
 
-  // ==========================================
-  // GESTIÓN DE EVENTOS
-  // ==========================================
+  // ── Events ───────────────────────────────────────────────────────
+  _bindEvents() {
+    const card = this.shadowRoot.getElementById('card');
 
-  _attachProfileListeners() {
-    this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', () => { this.isEditing = true; this._updateProfileDOM(); });
-    this.shadowRoot.getElementById('cancel-btn')?.addEventListener('click', () => { this.isEditing = false; this._updateProfileDOM(); });
-    this.shadowRoot.getElementById('save-btn')?.addEventListener('click', () => this._handleSave());
+    // Click en la card → abrir movie modal
+    card?.addEventListener('click', (e) => {
+      // No propagar si viene de los botones de acción
+      if (e.target.closest('.card-actions')) return;
 
-    this.shadowRoot.getElementById('logout-btn')?.addEventListener('click', () => { this.showLogoutModal = true; this._updateModalsDOM(); });
-    this.shadowRoot.getElementById('delete-btn')?.addEventListener('click', () => { this.showDeleteModal = true; this._updateModalsDOM(); });
+      const tmdbId = this._attr('movie-tmdb-id');
+      const type   = this._attr('movie-type', 'movies');
+      if (!tmdbId) return;
 
-    this.shadowRoot.getElementById('followers-stat-btn')?.addEventListener('click', () => { this.socialModalType = 'followers'; this._updateModalsDOM(); });
-    this.shadowRoot.getElementById('following-stat-btn')?.addEventListener('click', () => { this.socialModalType = 'following'; this._updateModalsDOM(); });
-
-    this.shadowRoot.getElementById('avatar-edit-btn')?.addEventListener('click', () => this.shadowRoot.getElementById('avatar-input')?.click());
-    this.shadowRoot.getElementById('avatar-input')?.addEventListener('change', (e) => this._handleAvatarChange(e));
-
-    this.shadowRoot.getElementById('login-btn')?.addEventListener('click', () => window.location.href = '/login');
-    this.shadowRoot.getElementById('register-btn')?.addEventListener('click', () => window.location.href = '/register');
-  }
-
-  _attachModalsListeners() {
-    // Escuchadores de Logout Modal
-    this.shadowRoot.getElementById('logout-cancel')?.addEventListener('click', () => { this.showLogoutModal = false; this._updateModalsDOM(); });
-    this.shadowRoot.getElementById('logout-confirm')?.addEventListener('click', () => { if (this.hasAuth) logout(); });
-
-    // Escuchadores de Delete Modal
-    this.shadowRoot.getElementById('delete-cancel')?.addEventListener('click', () => { this.showDeleteModal = false; this._updateModalsDOM(); });
-    this.shadowRoot.getElementById('delete-confirm')?.addEventListener('click', async () => {
-      try { await deleteUser(this.userData.username); logout(); } catch (err) { alert("Deletion failed: " + err.message); }
+      document.dispatchEvent(new CustomEvent('movie-clicked', {
+        detail: { movieId: tmdbId, type },
+        bubbles: true,
+        composed: true
+      }));
     });
 
-    // Escuchadores de Social Modal
-    this.shadowRoot.getElementById('social-modal-close')?.addEventListener('click', () => { this.socialModalType = null; this._updateModalsDOM(); });
+    // Edit button
+    this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Resetear a estrellas actuales (1-5) al abrir
+      this._editScore = this._scoreToStars(parseInt(this._attr('rating', '0')));
+      this._editOpen  = true;
+      this._render();
+    });
 
-    // Cerrar modales haciendo click fuera del cuadro
-    const backdrops = ['logout-backdrop', 'delete-backdrop', 'social-backdrop'];
-    backdrops.forEach(id => {
-      this.shadowRoot.getElementById(id)?.addEventListener('click', (e) => {
-        if (e.target === e.currentTarget) {
-          this.showLogoutModal = false;
-          this.showDeleteModal = false;
-          this.socialModalType = null;
-          this._updateModalsDOM();
-        }
+    // Delete button
+    this.shadowRoot.getElementById('delete-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this._deleteOpen = true;
+      this._render();
+    });
+
+    // ── Edit modal events ──
+    this.shadowRoot.getElementById('edit-close')?.addEventListener('click', () => {
+      this._editOpen = false; this._render();
+    });
+    this.shadowRoot.getElementById('edit-cancel')?.addEventListener('click', () => {
+      this._editOpen = false; this._render();
+    });
+    this.shadowRoot.getElementById('edit-overlay')?.addEventListener('click', (e) => {
+      if (e.target === this.shadowRoot.getElementById('edit-overlay')) {
+        this._editOpen = false; this._render();
+      }
+    });
+
+    // Interactive stars
+    this.shadowRoot.querySelectorAll('.star-interactive').forEach(star => {
+      star.addEventListener('click', () => {
+        this._editScore = parseInt(star.dataset.value);
+        this._render();
       });
     });
-  }
 
-  // ==========================================
-  // ACCIONES DE DATOS
-  // ==========================================
+    // Save edit
+    this.shadowRoot.getElementById('edit-save')?.addEventListener('click', () => this._handleSave());
+
+    // ── Delete modal events ──
+    this.shadowRoot.getElementById('delete-close')?.addEventListener('click', () => {
+      this._deleteOpen = false; this._render();
+    });
+    this.shadowRoot.getElementById('delete-cancel')?.addEventListener('click', () => {
+      this._deleteOpen = false; this._render();
+    });
+    this.shadowRoot.getElementById('delete-overlay')?.addEventListener('click', (e) => {
+      if (e.target === this.shadowRoot.getElementById('delete-overlay')) {
+        this._deleteOpen = false; this._render();
+      }
+    });
+    this.shadowRoot.getElementById('delete-confirm')?.addEventListener('click', () => this._handleDelete());
+  }
 
   async _handleSave() {
-    const newName = this.shadowRoot.querySelector('#edit-name').value.trim();
-    const newEmail = this.shadowRoot.querySelector('#edit-email').value.trim();
+    const movieId = this._attr('review-id');
+    if (!movieId) return;
+
+    const textarea = this.shadowRoot.getElementById('edit-textarea');
+    const body     = textarea?.value.trim() || '';
+
+    if (!this._editScore) {
+      window.toast?.({ type: 'error', title: 'Please select a score', duration: 2500 });
+      return;
+    }
+
+    // Convertir estrellas (1-5) a score (1-10) para el backend
+    const scoreToSend = this._starsToScore(this._editScore);
+
+    this._saving = true;
+    this._render();
 
     try {
-      await updateUser({ username: this.originalUsername, data: { username: newName, email: newEmail, avatar: this.userData.avatar } });
-      this.userData.username = newName;
-      this.userData.email = newEmail;
-      this.originalUsername = newName;
-      localStorage.setItem('userData', JSON.stringify(this.userData));
-      this.isEditing = false;
-      this._updateProfileDOM();
+      await updateReview(movieId, { score: scoreToSend, body });
+
+      // Actualizar atributo con el score real (1-10)
+      this.setAttribute('rating', scoreToSend);
+      if (body) this.setAttribute('review-text', body);
+
+      this._editOpen = false;
+      this._saving   = false;
+      this._render();
+
+      window.toast?.({ type: 'success', title: 'Review updated', duration: 2500 });
+
+      // Notify parent to refresh if needed
+      this.dispatchEvent(new CustomEvent('review-updated', {
+        detail: { movieId, score: scoreToSend, body },
+        bubbles: true, composed: true
+      }));
     } catch (err) {
-      alert("Update failed: " + err.message);
+      this._saving = false;
+      this._render();
+      window.toast?.({ type: 'error', title: 'Could not save', message: err.message, duration: 3000 });
     }
   }
 
-  _handleAvatarChange(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  async _handleDelete() {
+    const movieId = this._attr('review-id');
+    if (!movieId) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.userData.avatar = reader.result;
-      localStorage.setItem('userData', JSON.stringify(this.userData));
-      this._updateProfileDOM();
-    };
-    reader.readAsDataURL(file);
+    this._deleting = true;
+    this._render();
+
+    try {
+      await deleteReview(movieId);
+
+      window.toast?.({ type: 'success', title: 'Review deleted', duration: 2500 });
+
+      this.dispatchEvent(new CustomEvent('review-deleted', {
+        detail: { movieId },
+        bubbles: true, composed: true
+      }));
+
+      // Remove card from DOM
+      this.remove();
+    } catch (err) {
+      this._deleting = false;
+      this._render();
+      window.toast?.({ type: 'error', title: 'Could not delete', message: err.message, duration: 3000 });
+    }
   }
 }
 
-customElements.define('user-profile-view', UserProfileView);
+if (!customElements.get('user-review-card')) {
+  customElements.define('user-review-card', UserReviewCard);
+}

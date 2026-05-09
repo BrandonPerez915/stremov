@@ -250,10 +250,15 @@ class ReviewsFavoritesContainer extends HTMLElement {
       <div class="reviews-grid">
         ${this.reviews.map((review) => `
           <user-review-card
-            rating="${this._escapeHtml(this._formatReviewScore(review.score))}"
-            review-text="${this._escapeHtml(review.body || review.title || 'Sin comentario.')}"
-            movie-title="${this._escapeHtml(review.movie?.title || 'Película')}"
-            date="${this._escapeHtml(this._formatReviewDate(review.createdAt))}">
+            rating="${this._escapeHtml(String(review.score || 0))}"
+            review-text="${this._escapeHtml(review.body || '')}"
+            movie-title="${this._escapeHtml(review.movie?.title || 'Unknown movie')}"
+            movie-poster="${this._escapeHtml(review.movie?.posterUrl || '')}"
+            movie-tmdb-id="${this._escapeHtml(String(review.movie?.tmdbId || ''))}"
+            movie-type="movies"
+            date="${this._escapeHtml(this._formatReviewDate(review.createdAt))}"
+            review-id="${this._escapeHtml(String(review.movie?._id || review.movie || ''))}"
+            ${this.isOwnProfile ? 'own-profile' : ''}>
           </user-review-card>
         `).join('')}
       </div>

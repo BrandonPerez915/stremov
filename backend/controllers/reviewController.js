@@ -142,7 +142,7 @@ async function getUserReviews(req, res, next) {
     }
 
     const reviews = await Review.find({ user: userId })
-      .populate('movie', 'title posterUrl imdbScore')
+      .populate('movie', 'title posterUrl imdbScore tmdbId')
       .sort({ createdAt: -1 });
 
     return res.status(StatusCodes.OK).json({

@@ -1,5 +1,11 @@
 import { apiClient } from '../scripts/utils/apiClient.js';
 import './AddToListModal.js';
+import './PersonProfileCard.js';
+import './PersonCarousel.js';
+import './MovieModalHeader.js';
+import './MovieModalDetails.js';
+import './MovieModalReviews.js';
+import './MovieModalSimilar.js';
 
 const movieModalSheet = new CSSStyleSheet();
 
@@ -365,6 +371,27 @@ class MovieModal extends HTMLElement {
               duration: 3000
             });
           }
+        }
+      });
+
+      //delete review de modal
+      reviewsComponent.addEventListener('review-deleted', async () => {
+        try {
+          await apiClient.delete(`/reviews/movie/${this._currentBackendMovieId}/me`);
+          window.toast?.({
+            type: 'success',
+            title: 'Review deleted',
+            message: 'Your review has been removed.',
+            duration: 3000
+          });
+          if (reviewsComponent._fetchReviews) reviewsComponent._fetchReviews();
+        } catch (error) {
+          window.toast?.({
+            type: 'error',
+            title: 'Could not delete review',
+            message: error.message,
+            duration: 3000
+          });
         }
       });
     }

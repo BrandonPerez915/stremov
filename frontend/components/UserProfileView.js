@@ -171,8 +171,7 @@ class UserProfileView extends HTMLElement {
     // 1. Construir la estructura maestra UNA SOLA VEZ.
     this._renderBaseStructure();
 
-    // 2. Llenar el perfil de inmediato con datos locales (Skeleton/Cache).
-    this._updateProfileDOM();
+    // 2. Llenar el perfil de inmediato con datos locales
 
     if (this.hasAuth) {
       await this._loadUserData();

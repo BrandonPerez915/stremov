@@ -1,4 +1,6 @@
 import { apiClient } from '../scripts/utils/apiClient.js';
+import './CustomTextarea.js';
+import './StarsInput.js';
 
 const movieModalReviewsSheet = new CSSStyleSheet();
 
@@ -323,7 +325,22 @@ class MovieModalReviews extends HTMLElement {
                       placeholder="Input your review here...">
                     </custom-textarea>
 
-                    <button id="submit-rate-btn" class="btn-secondary">Submit Review</button>
+                    <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+                      <button id="submit-rate-btn" class="btn-secondary" style="width:100%">Submit Review</button>
+                      ${this.hasRated ? `<button id="delete-rate-btn" class="btn-secondary" style="width:100%;color:#ef4444;border-color:#ef4444">Delete review</button>` : ''}
+                    </div>
+                  </div>
+
+                  <!-- Delete confirm modal -->
+                  <div id="delete-confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);z-index:99999;display:none;align-items:center;justify-content:center;padding:24px;">
+                    <div style="background:var(--bg-color,#1f2128);border:1px solid var(--border-color,#3a3f4c);border-radius:18px;padding:28px;width:min(400px,100%);display:flex;flex-direction:column;gap:18px;box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+                      <h3 style="margin:0;font-size:18px;color:var(--text-primary,#fff)">Delete review</h3>
+                      <p style="margin:0;color:var(--text-secondary,#888);font-size:14px;line-height:1.6">Are you sure you want to delete your review? This action cannot be undone.</p>
+                      <div style="display:flex;gap:10px;justify-content:flex-end;">
+                        <button id="delete-confirm-cancel" class="btn-secondary" style="padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:transparent;border:1px solid var(--border-color,#3a3f4c);color:var(--text-primary,#fff);font-family:inherit;">Cancel</button>
+                        <button id="delete-confirm-ok" style="padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:rgba(239,68,68,0.12);border:1px solid #ef4444;color:#ef4444;font-family:inherit;">Delete</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               `;
@@ -418,6 +435,33 @@ class MovieModalReviews extends HTMLElement {
           text: reviewText,
           isUpdate: isUpdate
         },
+        bubbles: true,
+        composed: true
+      }));
+    });
+
+    //delete review boton
+    const deleteRateBtn = this.shadowRoot.getElementById('delete-rate-btn');
+    const deleteOverlay = this.shadowRoot.getElementById('delete-confirm-overlay');
+    const deleteCancelBtn = this.shadowRoot.getElementById('delete-confirm-cancel');
+    const deleteOkBtn = this.shadowRoot.getElementById('delete-confirm-ok');
+
+    deleteRateBtn?.addEventListener('click', () => {
+      if (deleteOverlay) deleteOverlay.style.display = 'flex';
+    });
+
+    deleteCancelBtn?.addEventListener('click', () => {
+      if (deleteOverlay) deleteOverlay.style.display = 'none';
+    });
+
+    deleteOkBtn?.addEventListener('click', () => {
+      if (deleteOverlay) deleteOverlay.style.display = 'none';
+      formContainer.classList.add('form-hidden');
+      this.hasRated = false;
+      this.currentSelectedRating = 0;
+      toggleBtn.innerHTML = `Rate This <span class='rate-review-icon'>trending_up</span>`;
+
+      this.dispatchEvent(new CustomEvent('review-deleted', {
         bubbles: true,
         composed: true
       }));

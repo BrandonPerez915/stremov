@@ -2,6 +2,7 @@ import mongoose from "mongoose"
 
 import User from "../models/User.js"
 import List from "../models/List.js"
+import Review from "../models/Review.js"
 
 import { StatusCodes } from "../config/constants.js"
 import { AppError } from "./errorController.js"
@@ -155,6 +156,14 @@ async function deleteUser(req, res, next) {
     if (user._id.toString() !== req.userId.toString()) {
       throw new AppError('You do not have permission to edit this account', StatusCodes.UNAUTHORIZED, 'UnauthorizedError');
     }
+
+    //eliminar reviews, listas y referencias sociales
+    await Promise.all([
+      Review.deleteMany({ user: user._id }),
+      List.deleteMany({ owner: user._id }),
+      User.updateMany({ following: user._id }, { $pull: { following: user._id } }),
+      User.updateMany({ followers: user._id }, { $pull: { followers: user._id } })
+    ]);
 
     await user.deleteOne();
 
