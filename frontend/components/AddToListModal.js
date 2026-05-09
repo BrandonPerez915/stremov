@@ -160,6 +160,113 @@ addToListModalSheet.replaceSync(`
     padding: 24px;
     font-size: 0.9rem;
   }
+
+  .create-list-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    margin-top: 8px;
+    border-radius: 12px;
+    border: 1px dashed var(--border-color, #3a3f4c);
+    background: transparent;
+    color: var(--text-secondary, #888);
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .create-list-btn:hover {
+    border-color: var(--primary-color, #3e5eff);
+    color: var(--primary-color, #3e5eff);
+    background: color-mix(in srgb, var(--primary-color, #3e5eff) 8%, transparent);
+  }
+
+  .create-list-btn .plus-icon {
+    font-family: 'Material Symbols Outlined';
+    font-size: 20px;
+    font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+  }
+
+  /* Mini form de creación inline */
+  .create-list-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--primary-color, #3e5eff);
+    background: color-mix(in srgb, var(--primary-color, #3e5eff) 6%, transparent);
+    flex-shrink: 0;
+  }
+
+  .create-list-form input,
+  .create-list-form textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-color, #3a3f4c);
+    border-radius: 8px;
+    color: var(--text-primary, #fff);
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s ease;
+  }
+
+  .create-list-form input:focus,
+  .create-list-form textarea:focus {
+    border-color: var(--primary-color, #3e5eff);
+  }
+
+  .create-list-form textarea {
+    resize: none;
+    height: 64px;
+  }
+
+  .create-list-form input::placeholder,
+  .create-list-form textarea::placeholder {
+    color: var(--text-secondary, #888);
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .btn-cancel-form,
+  .btn-create-form {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+  }
+
+  .btn-cancel-form {
+    background: transparent;
+    border: 1px solid var(--border-color, #3a3f4c);
+    color: var(--text-secondary, #888);
+  }
+
+  .btn-cancel-form:hover { opacity: 0.8; }
+
+  .btn-create-form {
+    background: var(--primary-color, #3e5eff);
+    color: white;
+  }
+
+  .btn-create-form:hover { opacity: 0.9; }
+  .btn-create-form:disabled { opacity: 0.5; cursor: not-allowed; }
 `);
 
 class AddToListModal extends HTMLElement {
@@ -265,7 +372,9 @@ class AddToListModal extends HTMLElement {
       const listsRes = await fetch(`/api/lists/user/${userId}`, { headers });
       const listsData = await listsRes.json();
 
-      this._lists = (listsData.lists || []).filter(l => l.name !== 'Favorites');
+      this._lists = (listsData.lists || []).filter(l =>
+        !['favoritos', 'favorites'].includes((l.name || '').toLowerCase())
+      );
 
       // 3. Detectar en cuáles listas ya está
       this._inListIds = new Set();
@@ -289,31 +398,131 @@ class AddToListModal extends HTMLElement {
     const container = this.shadowRoot.getElementById('lists-container');
     if (!container) return;
 
+    container.innerHTML = '';
+
     if (!this._lists.length) {
-      container.innerHTML = '<div class="empty-state">You have no lists yet. Create one first!</div>';
+      container.innerHTML = '<div class="empty-state">You have no lists yet. Create one below!</div>';
+    } else {
+      this._lists.forEach(list => {
+        const listId     = list._id || list.id;
+        const isInList   = this._inListIds.has(listId);
+        const movieCount = Array.isArray(list.movies) ? list.movies.length : 0;
+
+        const btn = document.createElement('button');
+        btn.className = `list-item${isInList ? ' in-list' : ''}`;
+        btn.innerHTML = `
+          <div class="list-item-info">
+            <span class="list-name">${list.name}</span>
+            <span class="list-count">${movieCount} movie${movieCount !== 1 ? 's' : ''}</span>
+          </div>
+          <span class="list-check">check_circle</span>
+        `;
+
+        btn.addEventListener('click', () => this._toggleMovie(listId, btn, movieCount));
+        container.appendChild(btn);
+      });
+    }
+
+    //botón siempre visible al final
+    const createBtn = document.createElement('button');
+    createBtn.className = 'create-list-btn';
+    createBtn.innerHTML = `<span class="plus-icon">add_circle</span> New list`;
+    createBtn.addEventListener('click', () => this._showCreateForm(container, createBtn));
+    container.appendChild(createBtn);
+  }
+
+  _showCreateForm(container, createBtn) {
+    //evitar duplicar el form
+    if (this.shadowRoot.getElementById('create-list-form')) return;
+
+    createBtn.style.display = 'none';
+
+    const form = document.createElement('div');
+    form.className = 'create-list-form';
+    form.id = 'create-list-form';
+    form.innerHTML = `
+      <input id="new-list-name" type="text" placeholder="List name" maxlength="60" autocomplete="off">
+      <textarea id="new-list-desc" placeholder="Description (optional)"></textarea>
+      <div class="form-actions">
+        <button class="btn-cancel-form" id="cancel-create">Cancel</button>
+        <button class="btn-create-form" id="confirm-create">Create</button>
+      </div>
+    `;
+
+    container.appendChild(form);
+
+    //focus en el input
+    setTimeout(() => form.querySelector('#new-list-name')?.focus(), 50);
+
+    form.querySelector('#cancel-create').addEventListener('click', () => {
+      form.remove();
+      createBtn.style.display = '';
+    });
+
+    form.querySelector('#confirm-create').addEventListener('click', () =>
+      this._handleCreateList(form, createBtn)
+    );
+
+    //enter en el input también crea
+    form.querySelector('#new-list-name').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') this._handleCreateList(form, createBtn);
+    });
+  }
+
+  async _handleCreateList(form, createBtn) {
+    const nameInput = form.querySelector('#new-list-name');
+    const descInput = form.querySelector('#new-list-desc');
+    const confirmBtn = form.querySelector('#confirm-create');
+
+    const name = nameInput?.value.trim();
+    if (!name) {
+      nameInput.style.borderColor = 'var(--red-100, #ef4444)';
+      nameInput.focus();
       return;
     }
 
-    container.innerHTML = '';
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Creating...';
 
-    this._lists.forEach(list => {
-      const listId    = list._id || list.id;
-      const isInList  = this._inListIds.has(listId);
-      const movieCount = Array.isArray(list.movies) ? list.movies.length : 0;
+    try {
+      const token   = localStorage.getItem('jwtToken');
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      };
 
-      const btn = document.createElement('button');
-      btn.className = `list-item${isInList ? ' in-list' : ''}`;
-      btn.innerHTML = `
-        <div class="list-item-info">
-          <span class="list-name">${list.name}</span>
-          <span class="list-count">${movieCount} movie${movieCount !== 1 ? 's' : ''}</span>
-        </div>
-        <span class="list-check">check_circle</span>
-      `;
+      const res  = await fetch('/api/lists', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ name, description: descInput?.value.trim() || '' })
+      });
+      const data = await res.json();
 
-      btn.addEventListener('click', () => this._toggleMovie(listId, btn, movieCount));
-      container.appendChild(btn);
-    });
+      if (!res.ok) throw new Error(data.message || 'Could not create list');
+
+      const newList = data.list;
+
+      // Agregar la nueva lista al estado interno y re-renderizar
+      this._lists.push({
+        _id: newList.id || newList._id,
+        name: newList.name,
+        description: newList.description,
+        movies: newList.movies || []
+      });
+
+      window.toast?.({
+        type: 'success',
+        title: 'List created',
+        message: `"${newList.name}" is ready.`,
+        duration: 2500
+      });
+
+      this._renderLists();
+    } catch (err) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Create';
+      window.toast?.({ type: 'error', title: 'Error', message: err.message, duration: 3000 });
+    }
   }
 
   async _toggleMovie(listId, btn, currentCount) {
@@ -335,7 +544,7 @@ class AddToListModal extends HTMLElement {
         this._inListIds.add(listId);
       }
 
-      // Actualizar contador visualmente
+      //actualizar contador visualmente
       const countEl  = btn.querySelector('.list-count');
       const newCount = isInList ? currentCount - 1 : currentCount + 1;
       if (countEl) countEl.textContent = `${newCount} movie${newCount !== 1 ? 's' : ''}`;
@@ -347,7 +556,7 @@ class AddToListModal extends HTMLElement {
         duration: 2000
       });
 
-      // Emitir evento global para que otras vistas (listDetail) puedan reaccionar
+      //wmitir evento global para que otras vistas (listDetail) puedan reaccionar
       document.dispatchEvent(new CustomEvent('list-membership-changed', {
         detail: {
           listId,
