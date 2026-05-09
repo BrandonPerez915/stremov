@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import bcrypt from "bcrypt"
 
 import User from "../models/User.js"
 import List from "../models/List.js"
@@ -7,6 +8,7 @@ import Review from "../models/Review.js"
 import { StatusCodes } from "../config/constants.js"
 import { AppError } from "./errorController.js"
 import { getRandomColor } from "../utils/random.js"
+import { saveBase64Image, deleteUserAvatar } from "../services/imageService.js"
 
 // --- GESTIÓN DE USUARIOS ---
 
@@ -93,11 +95,16 @@ async function getUser(req, res, next) {
  */
 async function patchUser(req, res, next) {
   const name = req.params.name;
-  const { username, password, email, avatarUrl } = req.body;
+  const { username, password, currentPassword, email, avatarUrl } = req.body;
 
   if (!username && !password && !email && !avatarUrl) {
     const error = new AppError('To update, you must fill in at least one field', StatusCodes.BAD_REQUEST, 'ValidationError');
     return next(error);
+  }
+
+  //si se quiere cambiar la contraseña, currentPassword es obligatorio
+  if (password && !currentPassword) {
+    return next(new AppError('You must enter your current password to change it', StatusCodes.BAD_REQUEST, 'ValidationError'));
   }
 
   try {
@@ -114,8 +121,25 @@ async function patchUser(req, res, next) {
 
     if (username) user.username = username;
     if (email) user.email = email;
-    if (password) user.password = password;
-    if (avatarUrl) user.avatarUrl = avatarUrl;
+    
+    //si viene base64 guardamos en disco y la ruta en mongodb
+    if (avatarUrl) {
+      if (avatarUrl.startsWith('data:image')) {
+        const savedPath = saveBase64Image(avatarUrl, user._id.toString());
+        user.avatarUrl = savedPath;
+      } else {
+        user.avatarUrl = avatarUrl;
+      }
+    }
+
+    if (password) {
+      //verificar contraseña actual antes de permitir el cambio
+      const isValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isValid) {
+        throw new AppError('La contraseña actual es incorrecta', StatusCodes.UNAUTHORIZED, 'InvalidPassword');
+      }
+      user.password = password; 
+    }
 
     await user.save();
 
@@ -164,6 +188,8 @@ async function deleteUser(req, res, next) {
       User.updateMany({ following: user._id }, { $pull: { following: user._id } }),
       User.updateMany({ followers: user._id }, { $pull: { followers: user._id } })
     ]);
+
+    deleteUserAvatar(user._id.toString()); //eliminar foto de disco si existe
 
     await user.deleteOne();
 

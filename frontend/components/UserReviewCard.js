@@ -8,7 +8,7 @@ userReviewCardSheet.replaceSync(`
     font-family: 'Inter', sans-serif;
   }
 
-  /* ── Card ─────────────────────────────── */
+  /*  Card  */
   .review-card {
     display: flex;
     gap: 16px;
@@ -22,7 +22,7 @@ userReviewCardSheet.replaceSync(`
 
   .review-card:hover { border-color: rgba(255,255,255,0.18); }
 
-  /* ── Poster ───────────────────────────── */
+  /*  Poster  */
   .movie-poster {
     flex-shrink: 0;
     width: 64px;
@@ -32,7 +32,7 @@ userReviewCardSheet.replaceSync(`
     box-shadow: 0 4px 14px rgba(0,0,0,0.4);
   }
 
-  /* ── Body ─────────────────────────────── */
+  /*  Body  */
   .card-body {
     flex: 1;
     display: flex;
@@ -58,7 +58,7 @@ userReviewCardSheet.replaceSync(`
     text-overflow: ellipsis;
   }
 
-  /* ── Stars ────────────────────────────── */
+  /*  Stars  */
   .stars-row {
     display: flex;
     align-items: center;
@@ -82,7 +82,7 @@ userReviewCardSheet.replaceSync(`
     color: var(--text-secondary, #888);
   }
 
-  /* ── Review text ──────────────────────── */
+  /*  Review text  */
   .review-text {
     font-size: 13px;
     color: var(--text-secondary, #8b8e98);
@@ -101,7 +101,7 @@ userReviewCardSheet.replaceSync(`
     margin-top: auto;
   }
 
-  /* ── Actions (own profile) ────────────── */
+  /*  Actions (own profile)  */
   .card-actions {
     display: flex;
     gap: 6px;
@@ -128,7 +128,7 @@ userReviewCardSheet.replaceSync(`
   .action-btn:hover { color: var(--text-primary, #fff); border-color: rgba(255,255,255,0.3); }
   .action-btn.danger:hover { color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,0.08); }
 
-  /* ── Edit modal overlay ───────────────── */
+  /*  Edit modal overlay  */
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -288,24 +288,18 @@ class UserReviewCard extends HTMLElement {
   attributeChangedCallback() { if (this.isConnected) this._render(); }
   connectedCallback() { this._render(); }
 
-  // ── Helpers ──────────────────────────────────────────────────────
+  //  Helpers 
   _attr(name, fallback = '') { return this.getAttribute(name) ?? fallback; }
 
-  _starsHTML(score, max = 10) {
+  _starsHTML(score, max = 5) {
     // Convertir score 1-10 a 5 estrellas para display
-    const filled = Math.round((score / max) * 5);
+    const filled = score;
     return Array.from({ length: 5 }, (_, i) =>
       `<span class="star" style="${i >= filled ? 'color:var(--border-color,#3a3f4c);font-variation-settings:"FILL" 0' : ''}">star</span>`
     ).join('');
   }
 
-  // Convierte estrellas (1-5) a score (1-10)
-  _starsToScore(stars) { return stars * 2; }
-
-  // Convierte score (1-10) a estrellas (1-5)
-  _scoreToStars(score) { return Math.round(score / 2); }
-
-  // ── Render ───────────────────────────────────────────────────────
+  //  Render 
   _render() {
     const rating     = parseInt(this._attr('rating', '0'));
     const text       = this._attr('review-text');
@@ -331,7 +325,7 @@ class UserReviewCard extends HTMLElement {
 
           <div class="stars-row">
             <div class="stars">${this._starsHTML(rating)}</div>
-            <span class="score-label">${rating}/10</span>
+            <span class="score-label">${rating}/5</span>
           </div>
 
           ${text ? `<p class="review-text">${text}</p>` : ''}
@@ -351,7 +345,7 @@ class UserReviewCard extends HTMLElement {
 
   _editModalHTML(currentRating, currentText) {
     // Convertir score 1-10 a estrellas 1-5 para el editor
-    this._editScore = this._editScore || this._scoreToStars(currentRating);
+    this._editScore = this._editScore || this.currentRating;
     const stars = Array.from({ length: 5 }, (_, i) => {
       const val = i + 1;
       const filled = val <= this._editScore;
@@ -408,7 +402,7 @@ class UserReviewCard extends HTMLElement {
     `;
   }
 
-  // ── Events ───────────────────────────────────────────────────────
+  //  Events 
   _bindEvents() {
     const card = this.shadowRoot.getElementById('card');
 
@@ -432,7 +426,7 @@ class UserReviewCard extends HTMLElement {
     this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', (e) => {
       e.stopPropagation();
       // Resetear a estrellas actuales (1-5) al abrir
-      this._editScore = this._scoreToStars(parseInt(this._attr('rating', '0')));
+      this._editScore = (parseInt(this._attr('rating', '0')));
       this._editOpen  = true;
       this._render();
     });
@@ -444,7 +438,7 @@ class UserReviewCard extends HTMLElement {
       this._render();
     });
 
-    // ── Edit modal events ──
+    //  Edit modal events 
     this.shadowRoot.getElementById('edit-close')?.addEventListener('click', () => {
       this._editOpen = false; this._render();
     });
@@ -468,7 +462,7 @@ class UserReviewCard extends HTMLElement {
     // Save edit
     this.shadowRoot.getElementById('edit-save')?.addEventListener('click', () => this._handleSave());
 
-    // ── Delete modal events ──
+    //  Delete modal events 
     this.shadowRoot.getElementById('delete-close')?.addEventListener('click', () => {
       this._deleteOpen = false; this._render();
     });
@@ -495,17 +489,14 @@ class UserReviewCard extends HTMLElement {
       return;
     }
 
-    // Convertir estrellas (1-5) a score (1-10) para el backend
-    const scoreToSend = this._starsToScore(this._editScore);
-
     this._saving = true;
     this._render();
 
     try {
-      await updateReview(movieId, { score: scoreToSend, body });
+      await updateReview(movieId, { score: this._editScore, body });
 
       // Actualizar atributo con el score real (1-10)
-      this.setAttribute('rating', scoreToSend);
+      this.setAttribute('rating', this._editScore);
       if (body) this.setAttribute('review-text', body);
 
       this._editOpen = false;
@@ -516,7 +507,7 @@ class UserReviewCard extends HTMLElement {
 
       // Notify parent to refresh if needed
       this.dispatchEvent(new CustomEvent('review-updated', {
-        detail: { movieId, score: scoreToSend, body },
+        detail: { movieId, score: this._editScore, body },
         bubbles: true, composed: true
       }));
     } catch (err) {

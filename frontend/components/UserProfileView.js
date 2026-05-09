@@ -12,8 +12,7 @@ userProfileSheet.replaceSync(`
     margin: 0 auto;
     box-sizing: border-box;
   }
-
-  /* Tarjeta de Perfil */
+ 
   .profile-card {
     width: 100%;
     display: grid;
@@ -25,26 +24,25 @@ userProfileSheet.replaceSync(`
     box-shadow: 0 24px 55px rgba(0,0,0,0.25);
     margin-bottom: 24px;
   }
-
+ 
   .profile-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
   .profile-summary { display: flex; flex-direction: column; gap: 20px; }
   .profile-header { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; margin-bottom: 0; text-align: left; }
-
+ 
   .avatar-container { position: relative; width: 140px; height: 140px; }
   .profile-pic { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-color); box-shadow: 0 20px 40px rgba(0,0,0,0.18); }
-
+ 
   .edit-avatar-btn {
     position: absolute; bottom: 0; right: 0; background: var(--primary-color); border: none; border-radius: 50%;
     width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   }
-
+ 
   .user-info-brief { display: flex; flex-direction: column; gap: 8px; }
   .user-info-brief h1 { margin: 0; font-size: 30px; font-weight: 700; }
   .user-email-sub { color: var(--text-secondary); font-size: 15px; margin: 0; }
-
+ 
   .status-pill { display: inline-flex; align-items: center; justify-content: center; padding: 6px 14px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary); font-size: 13px; margin-top: 0; }
-
-  /* Estadísticas Sociales */
+ 
   .profile-stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
   .profile-stat { min-width: 132px; padding: 12px 16px; border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
   .profile-stat-button { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0; text-align: left; cursor: pointer; color: inherit; font: inherit; transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease; appearance: none; }
@@ -52,8 +50,7 @@ userProfileSheet.replaceSync(`
   .profile-stat-button:focus-visible, .social-modal-close:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
   .profile-stat strong { display: block; font-size: 22px; line-height: 1; }
   .profile-stat span { display: block; margin-top: 6px; color: var(--text-secondary); font-size: 13px; }
-
-  /* Detalles de Perfil */
+ 
   .details-card { background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: 22px; padding: 24px; }
   .details-card h2 { font-size: 18px; margin-bottom: 22px; color: var(--text-primary); }
   .detail-row { display: grid; grid-template-columns: 140px 1fr; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
@@ -61,21 +58,40 @@ userProfileSheet.replaceSync(`
   .detail-label { color: var(--text-secondary); font-size: 14px; }
   .detail-value, .detail-value strong { font-weight: 600; color: var(--text-primary); text-align: right; }
   .password-dots { letter-spacing: 0.22em; }
-
-  input[type='text'], input[type='email'] { 
-    width: 100%; 
-    max-width: 360px; 
-    background: rgba(255,255,255,0.04); 
-    border: 1px solid var(--border-color); 
-    color: var(--text-primary); 
-    padding: 10px 12px; 
-    border-radius: 14px; 
-    font-family: inherit; 
-    font-size: 15px; 
-    min-height: 42px; 
+ 
+  input[type='text'], input[type='email'], input[type='password'] { width: 100%; max-width: 360px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 12px; border-radius: 14px; font-family: inherit; font-size: 15px; min-height: 42px; }
+ 
+  .password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
   }
-
-  /* Botones Generales */
+ 
+  .password-form input { max-width: 95%; }
+ 
+  .change-password-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    text-align: right;
+    margin-left: auto;
+    display: block;
+  }
+ 
+  .change-password-btn:hover { opacity: 0.8; }
+ 
+  .error-msg { color: var(--red-100, #ef4444); font-size: 13px; text-align: center; margin-top: 8px; }
+ 
   .actions { display: flex; gap: 12px; margin-top: 22px; justify-content: center; flex-wrap: wrap; }
   .btn { padding: 12px 24px; border-radius: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; border: none; }
   .btn-primary { background: var(--primary-color); color: white; }
@@ -83,36 +99,36 @@ userProfileSheet.replaceSync(`
   .btn-danger { background: rgba(214,69,69,0.12); border: 1px solid #d64545; color: var(--text-primary); }
   .btn:hover { opacity: 0.95; transform: translateY(-1px); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-  /* Estructura de Modales (Reusables) */
+ 
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: grid; place-items: center; padding: 24px; z-index: 10000; backdrop-filter: blur(4px); }
   .modal-backdrop.social { background: rgba(0,0,0,0.58); backdrop-filter: blur(8px); z-index: 12000; }
-
+ 
   .modal-card { background: var(--bg-color, #1f2128); border: 1px solid var(--border-color); border-radius: 24px; padding: 28px; box-shadow: 0 18px 45px rgba(0,0,0,0.35); }
   .modal-card.confirm { width: min(500px, 100%); }
   .modal-card.social { width: min(560px, 100%); max-height: min(78vh, 760px); display: flex; flex-direction: column; gap: 18px; padding: 24px; overflow: hidden; }
-
+ 
   .confirm-modal h2 { margin: 0 0 12px; font-size: 22px; }
   .confirm-modal p { color: var(--text-secondary); margin: 0 0 24px; line-height: 1.7; }
   .modal-actions { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
-
-  /* Modal Social Específica */
+ 
   .social-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
   .social-modal-header h2 { margin: 0; font-size: 22px; }
   .social-modal-header p { margin: 8px 0 0; color: var(--text-secondary); line-height: 1.5; }
-
+ 
   .social-modal-close { flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: var(--text-primary); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
   .social-users-list { overflow: auto; display: grid; gap: 12px; padding-right: 4px; }
-
+ 
   .social-user-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
   .social-user-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
   .social-user-meta { display: flex; flex-direction: column; min-width: 0; }
   .social-user-name { font-size: 15px; line-height: 1.3; }
   .social-user-handle, .social-empty { color: var(--text-secondary); font-size: 14px; }
   .social-empty { margin: 4px 0 0; padding: 18px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.12); }
-
+ 
   .icon { font-family: 'Material Symbols Outlined'; font-size: 20px; }
-
+ 
+  .error-msg { color: var(--red-100, #ef4444); font-size: 13px; text-align: center; margin-top: 8px; }
+ 
   @media (max-width: 720px) {
     :host { padding: 16px; }
     .profile-card { padding: 20px; }
@@ -170,6 +186,7 @@ class UserProfileView extends HTMLElement {
   async connectedCallback() {
     // 1. Construir la estructura maestra UNA SOLA VEZ.
     this._renderBaseStructure();
+    this._updateProfileDOM();
 
     // 2. Llenar el perfil de inmediato con datos locales
 
@@ -189,7 +206,7 @@ class UserProfileView extends HTMLElement {
       if (user) {
         this.userData.username = user.username || this.userData.username;
         this.userData.email = user.email || this.userData.email;
-        this.userData.avatarUrl = user.avatarUrl || this.userData.avatarUrl;         this.originalUsername = user.username || this.originalUsername;
+        this.userData.avatarUrl = user.avatarUrl || this.userData.avatarUrl;
         this.originalUsername = user.username || this.originalUsername;
         this.userObjId = user._id || user.id;
 
@@ -213,11 +230,11 @@ class UserProfileView extends HTMLElement {
           getFollowers(user.username), getFollowing(user.username)
         ]);
 
-        this.followers = socialResults[0].status === 'fulfilled' 
-          ? (socialResults[0].value?.followers || []) 
+        this.followers = socialResults[0].status === 'fulfilled'
+          ? (socialResults[0].value?.followers || [])
           : (Array.isArray(user.followers) ? user.followers : []);
-        this.following = socialResults[1].status === 'fulfilled' 
-          ? (socialResults[1].value?.following || []) 
+        this.following = socialResults[1].status === 'fulfilled'
+          ? (socialResults[1].value?.following || [])
           : (Array.isArray(user.following) ? user.following : []);
       }
     } catch (err) {
@@ -310,7 +327,18 @@ class UserProfileView extends HTMLElement {
               </div>
               <div class="detail-row">
                 <span class="detail-label">Password</span>
-                <strong class="detail-value password-dots">••••••••</strong>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;width:100%">
+                  <strong class="detail-value password-dots">••••••••</strong>
+                  ${this.isEditing ? `<button class="change-password-btn" id="toggle-password-form">Change password</button>` : ''}
+                  <div id="password-form-container" style="display:none;width:100%">
+                    <div class="password-form">
+                      <input type="password" id="current-password" placeholder="Current password">
+                      <input type="password" id="new-password" placeholder="New password (min. 6 characters)" minlength="6">
+                      <input type="password" id="confirm-password" placeholder="Confirm new password">
+                      <p class="error-msg" id="password-error" style="display:none"></p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </section>
           </div>
@@ -422,12 +450,29 @@ _attachProfileListeners() {
     this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', () => {
       this.isEditing = true;
       this._saveError = '';
+      this._passwordFormOpen = false;
       this._updateProfileDOM();
     });
     this.shadowRoot.getElementById('cancel-btn')?.addEventListener('click', () => {
       this.isEditing = false;
       this._saveError = '';
+      this._passwordFormOpen = false;
       this._updateProfileDOM();
+    });
+ 
+    this.shadowRoot.getElementById('toggle-password-form')?.addEventListener('click', () => {
+      const container = this.shadowRoot.getElementById('password-form-container');
+      const btn = this.shadowRoot.getElementById('toggle-password-form');
+      if (!container) return;
+      const isOpen = container.style.display !== 'none';
+      container.style.display = isOpen ? 'none' : 'block';
+      btn.textContent = isOpen ? 'Change password' : 'Cancel';
+      //limpiar campos al cerrar
+      if (isOpen) {
+        this.shadowRoot.querySelectorAll('#password-form-container input').forEach(i => i.value = '');
+        const err = this.shadowRoot.getElementById('password-error');
+        if (err) err.style.display = 'none';
+      }
     });
     this.shadowRoot.getElementById('save-btn')?.addEventListener('click', () => this._handleSave());
  
@@ -485,20 +530,58 @@ _attachProfileListeners() {
       this._updateProfileDOM();
       return;
     }
+
+    //validar campos de contraseña si el form está abierto
+    const passwordContainer = this.shadowRoot.getElementById('password-form-container');
+    const isPasswordFormOpen = passwordContainer?.style.display !== 'none';
+    const currentPassword = this.shadowRoot.querySelector('#current-password')?.value || '';
+    const newPassword = this.shadowRoot.querySelector('#new-password')?.value || '';
+    const confirmPassword = this.shadowRoot.querySelector('#confirm-password')?.value || '';
+ 
+    if (isPasswordFormOpen && (currentPassword || newPassword || confirmPassword)) {
+      const errEl = this.shadowRoot.getElementById('password-error');
+ 
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        if (errEl) { errEl.textContent = 'All password fields are required.'; errEl.style.display = 'block'; }
+        return;
+      }
+      if (newPassword.length < 6) {
+        if (errEl) { errEl.textContent = 'New password must be at least 6 characters.'; errEl.style.display = 'block'; }
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        if (errEl) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; }
+        return;
+      }
+      if (errEl) errEl.style.display = 'none';
+    }
  
     this.isSaving = true;
     this._saveError = '';
     this._updateProfileDOM();
 
     try {
-      await updateUser({ username: this.originalUsername, data: { username: newName, email: newEmail, avatarUrl: this.userData.avatarUrl } });
+      const updateData = {
+        username: newName,
+        email: newEmail,
+        avatarUrl: this.userData.avatarUrl
+      };
+ 
+      //solo incluir contraseña si el form estaba abierto y tiene valores
+      if (isPasswordFormOpen && newPassword) {
+        updateData.currentPassword = currentPassword;
+        updateData.password = newPassword;
+      }
+ 
+      await updateUser({ username: this.originalUsername, data: updateData });
+ 
       this.userData.username = newName;
       this.userData.email = newEmail;
       this.originalUsername = newName;
 
       //sincronizar localStorage
       const storedData = JSON.parse(localStorage.getItem('userData') || '{}');
-      
+
       localStorage.setItem('userData', JSON.stringify({
         ...storedData,
         username: newName,
@@ -511,24 +594,34 @@ _attachProfileListeners() {
       if (header && typeof header.refresh === 'function') header.refresh();
  
       this.isEditing = false;
+      this._passwordFormOpen = false;
       window.toast?.({
         type: 'success',
-        title: 'Profile updated',
+        title: newPassword ? 'Profile and password updated' : 'Profile updated',
         message: 'Your changes have been saved.',
         duration: 3000
       });
     } catch (err) {
-      alert("Update failed: " + err.message);
-    } finally { //para que siempre se ejecute, haya error o no
+      //si el error es de contraseña incorrecta, mostrarlo en el form
+      if (err.message?.toLowerCase().includes('contraseña') || err.message?.toLowerCase().includes('password')) {
+        const errEl = this.shadowRoot.getElementById('password-error');
+        if (errEl) { errEl.textContent = 'Current password is incorrect.'; errEl.style.display = 'block'; }
+        this.isSaving = false;
+        this._updateProfileDOM();
+        return;
+      }
+      this._saveError = err.message || 'Update failed. Please try again.';
+    } finally {
       this.isSaving = false;
       this._updateProfileDOM();
     }
   }
 
-  _handleAvatarChange(event) {
+  async _handleAvatarChange(event) {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    //convertir a base64 para preview local (el update real requeriría un servicio de imágenes)
     const reader = new FileReader();
     reader.onload = async () => {
       const dataUrl = reader.result;

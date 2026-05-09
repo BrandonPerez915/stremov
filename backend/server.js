@@ -20,6 +20,7 @@ app.use('/components', express.static(path.join(__dirname, '../frontend/componen
 app.use('/scripts', express.static(path.join(__dirname, '../frontend/scripts')))
 // Ruta temporal para servir los mocks, se puede eliminar cuando se integre el frontend con el backend
 app.use('/mocks', express.static(path.join(__dirname, '../frontend/mocks')))
+app.use('/avatars', express.static(path.join(__dirname, 'public/avatars')))
 
 app.use('/api', apiRouter)
 app.use('/', viewsRouter)
