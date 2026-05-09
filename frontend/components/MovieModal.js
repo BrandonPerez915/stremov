@@ -454,10 +454,20 @@ class MovieModal extends HTMLElement {
       const rawRating = data.imdbScore || data.vote_average;
       const rating = rawRating ? (Math.round(rawRating * 10) / 10).toString() : 'N/A';
       const duration = data.runtimeFormatted || this._formatRuntime(data.runtime || data.episode_run_time?.[0]);
-      const tmdbId = apiUrl.split('/').pop();
-      const type = apiUrl.includes('/tmdb/series/') ? 'series' : 'movies';
+      const rawTmdbId = data.tmdbId;
+      // Las series se guardan con tmdbId negativo en MongoDB
+      const isSeries = typeof rawTmdbId === 'number'
+        ? rawTmdbId < 0
+        : apiUrl.includes('/tmdb/series/');
+
+      // Para series el tmdbId positivo es el que usa TMDB externamente
+      const positiveTmdbId = isSeries
+        ? Math.abs(rawTmdbId || parseInt(apiUrl.split('/').pop()))
+        : (rawTmdbId || parseInt(apiUrl.split('/').pop()));
+
+      const type = isSeries ? 'series' : 'movies';
       this._currentMovieData = {
-        tmdbId,
+        tmdbId: String(positiveTmdbId),
         mongoId: data._id,
         title,
         type
@@ -473,8 +483,7 @@ class MovieModal extends HTMLElement {
 
       const posterSrc = data.posterUrl || (data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : '');
 
-      // Guardamos la ID interna de MongoDB (data._id) para que la reseña se ligue correctamente a nuestra DB
-      this._currentBackendMovieId = data._id;
+      this._currentBackendMovieId = data._id ? String(data._id) : null;
       this._currentMovieTitle = title;
 
       detailsComponent.setAttribute('movie-title', title);
@@ -487,17 +496,18 @@ class MovieModal extends HTMLElement {
       detailsComponent.setAttribute('country', country);
       detailsComponent.setAttribute('language', language);
 
-      // TMDB no da badges de edad ni premios directos en la llamada base, ponemos un default
       const rated = data.rated || (data.adult ? '18+' : 'PG-13');
       detailsComponent.setAttribute('age-badge', rated);
       detailsComponent.setAttribute('awards', data.awards || 'See IMDb for awards');
       detailsComponent.setAttribute('released', releaseDate || 'N/A');
 
-      // 2. Autogenerar URLs para los otros componentes
-      // (Dado que usamos tu API para el apiClient, construimos la ruta base)
-      const isSeries = data.name ? true : false;
-      const creditsUrl = isSeries ? `/tmdb/series/${data.id}/credits` : `/tmdb/movies/${data.tmdbId}/credits`;
-      const similarUrl = isSeries ? `/tmdb/series/${data.id}/similar` : `/tmdb/movies/${data.tmdbId}/similar`;
+      // URLs de credits y similar usando el tmdbId positivo y el tipo correcto
+      const creditsUrl = isSeries
+        ? `/tmdb/series/${positiveTmdbId}/credits`
+        : `/tmdb/movies/${positiveTmdbId}/credits`;
+      const similarUrl = isSeries
+        ? `/tmdb/series/${positiveTmdbId}/similar`
+        : `/tmdb/movies/${positiveTmdbId}/similar`;
 
       // Asignar las URLs (aunque tengas que crearlas luego en backend para evitar error 404 de los tabs internos)
       detailsComponent.setAttribute('credits-api-url', creditsUrl);

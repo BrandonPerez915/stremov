@@ -101,12 +101,15 @@ document.addEventListener('DOMContentLoaded', () => {
       card.setAttribute('genres', movie.genres.join(', '));
     }
 
-    card._movieId = movie.tmdbId || movie._id;
+    // Detectar series por tmdbId negativo
+    const isSeries = typeof movie.tmdbId === 'number' && movie.tmdbId < 0;
+    const positiveTmdbId = Math.abs(movie.tmdbId || 0) || movie._id;
+
+    card.setAttribute('media-id', positiveTmdbId);
+    card.setAttribute('type', isSeries ? 'series' : 'movies');
 
     card.addEventListener('movie-clicked', (e) => {
       const { movieId, type } = e.detail;
-      console.log(`Película clickeada: ID=${movieId}`);
-
       const modal = document.createElement('movie-modal');
       const endpoint = type === 'series' ? 'series' : 'movies';
       modal.setAttribute('api-url', `/tmdb/${endpoint}/${movieId}`);

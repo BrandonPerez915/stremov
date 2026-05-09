@@ -282,9 +282,9 @@ class ReviewsFavoritesContainer extends HTMLElement {
             poster="${this._escapeHtml(movie.posterUrl || movie.poster || '')}"
             title="${this._escapeHtml(movie.title || 'Película')}"
             rating="${this._escapeHtml(String(movie.imdbScore || movie.rating || ''))}"
-            media-id="${this._escapeHtml(String(movie.tmdbId || movie.id || ''))}"
+            media-id="${this._escapeHtml(String(Math.abs(movie.tmdbId || movie.id || '')))}"
             genres="${this._escapeHtml((movie.genres || []).join(','))}"
-            type="movies">
+            type="${movie.tmdbId < 0 ? 'series' : 'movies'}">
           </movie-card>
         `).join('')}
       </div>
