@@ -43,6 +43,7 @@ userProfileSheet.replaceSync(`
  
   .status-pill { display: inline-flex; align-items: center; justify-content: center; padding: 6px 14px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary); font-size: 13px; margin-top: 0; }
  
+  /* Estadísticas Sociales */
   .profile-stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
   .profile-stat { min-width: 132px; padding: 12px 16px; border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
   .profile-stat-button { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0; text-align: left; cursor: pointer; color: inherit; font: inherit; transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease; appearance: none; }
@@ -51,6 +52,7 @@ userProfileSheet.replaceSync(`
   .profile-stat strong { display: block; font-size: 22px; line-height: 1; }
   .profile-stat span { display: block; margin-top: 6px; color: var(--text-secondary); font-size: 13px; }
  
+  /* Detalles de Perfil */
   .details-card { background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: 22px; padding: 24px; }
   .details-card h2 { font-size: 18px; margin-bottom: 22px; color: var(--text-primary); }
   .detail-row { display: grid; grid-template-columns: 140px 1fr; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.08); }
@@ -59,47 +61,17 @@ userProfileSheet.replaceSync(`
   .detail-value, .detail-value strong { font-weight: 600; color: var(--text-primary); text-align: right; }
   .password-dots { letter-spacing: 0.22em; }
  
-  input[type='text'], input[type='email'], input[type='password'] { width: 100%; max-width: 360px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 12px; border-radius: 14px; font-family: inherit; font-size: 15px; min-height: 42px; }
+  input[type='text'], input[type='email'] { width: 100%; max-width: 360px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 12px; border-radius: 14px; font-family: inherit; font-size: 15px; min-height: 42px; }
  
-  .password-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 12px;
-    padding: 16px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border-color);
-    border-radius: 14px;
-  }
- 
-  .password-form input { max-width: 95%; }
- 
-  .change-password-btn {
-    background: none;
-    border: none;
-    color: var(--primary-color);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    padding: 0;
-    text-align: right;
-    margin-left: auto;
-    display: block;
-  }
- 
-  .change-password-btn:hover { opacity: 0.8; }
- 
-  .error-msg { color: var(--red-100, #ef4444); font-size: 13px; text-align: center; margin-top: 8px; }
- 
+  /* Botones Generales */
   .actions { display: flex; gap: 12px; margin-top: 22px; justify-content: center; flex-wrap: wrap; }
   .btn { padding: 12px 24px; border-radius: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; border: none; }
   .btn-primary { background: var(--primary-color); color: white; }
   .btn-secondary { background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: var(--text-primary); }
   .btn-danger { background: rgba(214,69,69,0.12); border: 1px solid #d64545; color: var(--text-primary); }
   .btn:hover { opacity: 0.95; transform: translateY(-1px); }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
  
+  /* Estructura de Modales (Reusables) */
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: grid; place-items: center; padding: 24px; z-index: 10000; backdrop-filter: blur(4px); }
   .modal-backdrop.social { background: rgba(0,0,0,0.58); backdrop-filter: blur(8px); z-index: 12000; }
  
@@ -111,6 +83,7 @@ userProfileSheet.replaceSync(`
   .confirm-modal p { color: var(--text-secondary); margin: 0 0 24px; line-height: 1.7; }
   .modal-actions { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
  
+  /* Modal Social Específica */
   .social-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
   .social-modal-header h2 { margin: 0; font-size: 22px; }
   .social-modal-header p { margin: 8px 0 0; color: var(--text-secondary); line-height: 1.5; }
@@ -126,8 +99,6 @@ userProfileSheet.replaceSync(`
   .social-empty { margin: 4px 0 0; padding: 18px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.12); }
  
   .icon { font-family: 'Material Symbols Outlined'; font-size: 20px; }
- 
-  .error-msg { color: var(--red-100, #ef4444); font-size: 13px; text-align: center; margin-top: 8px; }
  
   @media (max-width: 720px) {
     :host { padding: 16px; }
@@ -147,12 +118,11 @@ class UserProfileView extends HTMLElement {
 
     // Estados UI
     this.isEditing = false;
-    this.isSaving = false;
     this.showLogoutModal = false;
     this.showDeleteModal = false;
     this.socialModalType = null;
     this.hasAuth = !!localStorage.getItem('jwtToken');
-    this._saveError = '';
+    this._pendingAvatar = null; // Avatar temporal solo para preview
 
     // Estados Data
     const storedUser = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -183,12 +153,20 @@ class UserProfileView extends HTMLElement {
     } catch { return ''; }
   }
 
+  _resolveAvatarUrl(url) {
+    if (!url) return '';
+    // Si es base64 o URL completa, usarla tal cual
+    if (url.startsWith('data:') || url.startsWith('http')) return url;
+    // Si es ruta relativa, agregar el origin y cache-buster para evitar caché del navegador
+    return `${window.location.origin}${url}?t=${Date.now()}`;
+  }
+
   async connectedCallback() {
     // 1. Construir la estructura maestra UNA SOLA VEZ.
     this._renderBaseStructure();
-    this._updateProfileDOM();
 
-    // 2. Llenar el perfil de inmediato con datos locales
+    // 2. Llenar el perfil de inmediato con datos locales (Skeleton/Cache).
+    this._updateProfileDOM();
 
     if (this.hasAuth) {
       await this._loadUserData();
@@ -206,36 +184,23 @@ class UserProfileView extends HTMLElement {
       if (user) {
         this.userData.username = user.username || this.userData.username;
         this.userData.email = user.email || this.userData.email;
-        this.userData.avatarUrl = user.avatarUrl || this.userData.avatarUrl;
+        this.userData.avatar = user.avatarUrl || this.userData.avatar;
         this.originalUsername = user.username || this.originalUsername;
         this.userObjId = user._id || user.id;
 
-        //actualizamos el localStorage para que se sincronice con datos del servidor
-        //lo que faltaba y la razón del por qué fallaba cuando hacíamos edit profile y después no se encontraban listas
-        localStorage.setItem('avatarUrl', this.userData.avatarUrl);
-        const storedData = JSON.parse(localStorage.getItem('userData') || '{}');
-        localStorage.setItem('userData', JSON.stringify({
-          ...storedData,
-          username: this.userData.username,
-          email: this.userData.email,
-          avatarUrl: this.userData.avatarUrl,
-        }));
+        localStorage.setItem('userData', JSON.stringify(this.userData));
 
         try {
           const favRes = await getFavoriteList(this.userObjId);
-          this.favorites = favRes?.list?.movies || favRes?.movies || [];
+          this.favorites = favRes?.movies || [];
         } catch (err) { this.favorites = []; }
 
         const socialResults = await Promise.allSettled([
           getFollowers(user.username), getFollowing(user.username)
         ]);
 
-        this.followers = socialResults[0].status === 'fulfilled'
-          ? (socialResults[0].value?.followers || [])
-          : (Array.isArray(user.followers) ? user.followers : []);
-        this.following = socialResults[1].status === 'fulfilled'
-          ? (socialResults[1].value?.following || [])
-          : (Array.isArray(user.following) ? user.following : []);
+        this.followers = socialResults[0].status === 'fulfilled' ? (socialResults[0].value?.followers || []) : (Array.isArray(user.followers) ? user.followers : []);
+        this.following = socialResults[1].status === 'fulfilled' ? (socialResults[1].value?.following || []) : (Array.isArray(user.following) ? user.following : []);
       }
     } catch (err) {
       console.warn('Could not load profile data', err);
@@ -265,14 +230,14 @@ class UserProfileView extends HTMLElement {
         <div class="profile-card">
           <div class="profile-header">
             <div class="avatar-container">
-              <img src="${this.userData.avatarUrl}" class="profile-pic" alt="Guest">
+              <img src="${this._resolveAvatarUrl(this.userData.avatarUrl)}" class="profile-pic" alt="Guest">
             </div>
             <div class="user-info-brief">
               <h1>Welcome</h1>
               <p class="user-email-sub">Sign in or register to access your profile.</p>
             </div>
           </div>
-          <div class="details-card">
+          <div class="details-card no-auth-card">
             <h2>No active session</h2>
             <p>To edit your profile, log out, or delete your account, you must first log in.</p>
           </div>
@@ -289,7 +254,7 @@ class UserProfileView extends HTMLElement {
             <aside class="profile-summary">
               <div class="profile-header">
                 <div class="avatar-container">
-                  <img src="${this.userData.avatarUrl}" class="profile-pic" alt="Avatar of ${this.userData.username}">
+                  <img src="${this._resolveAvatarUrl(this._pendingAvatar || this.userData.avatarUrl)}" class="profile-pic" alt="Avatar of ${this.userData.username}">
                   ${this.isEditing ? `<button class="edit-avatar-btn" id="avatar-edit-btn"><span class="icon">edit</span></button>` : ''}
                   <input id="avatar-input" type="file" accept="image/*" style="display:none;">
                 </div>
@@ -315,30 +280,15 @@ class UserProfileView extends HTMLElement {
               <h2>Personal details</h2>
               <div class="detail-row">
                 <span class="detail-label">Username</span>
-                ${this.isEditing
-                  ? `<input type="text" id="edit-name" value="${this.userData.username}">`
-                  : `<strong class="detail-value">${this.userData.username}</strong>`}
+                ${this.isEditing ? `<input type="text" id="edit-name" value="${this.userData.username}">` : `<strong class="detail-value">${this.userData.username}</strong>`}
               </div>
               <div class="detail-row">
                 <span class="detail-label">Email</span>
-                ${this.isEditing
-                  ? `<input type="email" id="edit-email" value="${this.userData.email}">`
-                  : `<strong class="detail-value">${this.userData.email}</strong>`}
+                ${this.isEditing ? `<input type="email" id="edit-email" value="${this.userData.email}">` : `<strong class="detail-value">${this.userData.email}</strong>`}
               </div>
               <div class="detail-row">
                 <span class="detail-label">Password</span>
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;width:100%">
-                  <strong class="detail-value password-dots">••••••••</strong>
-                  ${this.isEditing ? `<button class="change-password-btn" id="toggle-password-form">Change password</button>` : ''}
-                  <div id="password-form-container" style="display:none;width:100%">
-                    <div class="password-form">
-                      <input type="password" id="current-password" placeholder="Current password">
-                      <input type="password" id="new-password" placeholder="New password (min. 6 characters)" minlength="6">
-                      <input type="password" id="confirm-password" placeholder="Confirm new password">
-                      <p class="error-msg" id="password-error" style="display:none"></p>
-                    </div>
-                  </div>
-                </div>
+                <strong class="detail-value password-dots">••••••••</strong>
               </div>
             </section>
           </div>
@@ -346,15 +296,12 @@ class UserProfileView extends HTMLElement {
           <div class="actions">
             ${this.isEditing
               ? `<button class="btn btn-secondary" id="cancel-btn">Cancel</button>
-                 <button class="btn btn-primary" id="save-btn" ${this.isSaving ? 'disabled' : ''}>
-                   ${this.isSaving ? 'Saving...' : 'Save'}
-                 </button>`
+                 <button class="btn btn-primary" id="save-btn">Save</button>`
               : `<button class="btn btn-primary" id="edit-btn">Edit profile</button>`
             }
             <button class="btn btn-secondary" id="logout-btn">Logout</button>
             <button class="btn btn-danger" id="delete-btn">Delete account</button>
           </div>
-          ${this._saveError ? `<p class="error-msg">${this._saveError}</p>` : ''}
         </div>
       `;
     }
@@ -374,7 +321,7 @@ class UserProfileView extends HTMLElement {
         <div class="modal-backdrop" id="logout-backdrop">
           <div class="modal-card confirm" role="dialog" aria-modal="true">
             <h2>Logout</h2>
-            <p>Are you sure you want to log out?</p>
+            <p>Are you sure you want to log out? You will be redirected to the home page.</p>
             <div class="modal-actions">
               <button class="btn btn-secondary" id="logout-cancel">Cancel</button>
               <button class="btn btn-primary" id="logout-confirm">Confirm</button>
@@ -389,7 +336,7 @@ class UserProfileView extends HTMLElement {
         <div class="modal-backdrop" id="delete-backdrop">
           <div class="modal-card confirm" role="dialog" aria-modal="true">
             <h2>Delete account</h2>
-            <p>Are you sure? This action cannot be undone.</p>
+            <p>Are you sure you want to delete your account? This action cannot be undone.</p>
             <div class="modal-actions">
               <button class="btn btn-secondary" id="delete-cancel">Cancel</button>
               <button class="btn btn-danger" id="delete-confirm">Confirm</button>
@@ -409,7 +356,7 @@ class UserProfileView extends HTMLElement {
       const usersMarkup = users.length
         ? users.map((user) => `
           <article class="social-user-item">
-            <img src="${user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'User')}`}" class="social-user-avatar" alt="Avatar">
+            <img src="${user.avatarUrl || user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username || 'User')}`}" class="social-user-avatar" alt="Avatar">
             <div class="social-user-meta">
               <strong class="social-user-name">${user.username || 'Usuario'}</strong>
               <span class="social-user-handle">@${user.username || 'usuario'}</span>
@@ -446,34 +393,9 @@ class UserProfileView extends HTMLElement {
   // GESTIÓN DE EVENTOS
   // ==========================================
 
-_attachProfileListeners() {
-    this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', () => {
-      this.isEditing = true;
-      this._saveError = '';
-      this._passwordFormOpen = false;
-      this._updateProfileDOM();
-    });
-    this.shadowRoot.getElementById('cancel-btn')?.addEventListener('click', () => {
-      this.isEditing = false;
-      this._saveError = '';
-      this._passwordFormOpen = false;
-      this._updateProfileDOM();
-    });
- 
-    this.shadowRoot.getElementById('toggle-password-form')?.addEventListener('click', () => {
-      const container = this.shadowRoot.getElementById('password-form-container');
-      const btn = this.shadowRoot.getElementById('toggle-password-form');
-      if (!container) return;
-      const isOpen = container.style.display !== 'none';
-      container.style.display = isOpen ? 'none' : 'block';
-      btn.textContent = isOpen ? 'Change password' : 'Cancel';
-      //limpiar campos al cerrar
-      if (isOpen) {
-        this.shadowRoot.querySelectorAll('#password-form-container input').forEach(i => i.value = '');
-        const err = this.shadowRoot.getElementById('password-error');
-        if (err) err.style.display = 'none';
-      }
-    });
+  _attachProfileListeners() {
+    this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', () => { this.isEditing = true; this._updateProfileDOM(); });
+    this.shadowRoot.getElementById('cancel-btn')?.addEventListener('click', () => { this.isEditing = false; this._pendingAvatar = null; this._updateProfileDOM(); });
     this.shadowRoot.getElementById('save-btn')?.addEventListener('click', () => this._handleSave());
  
     this.shadowRoot.getElementById('logout-btn')?.addEventListener('click', () => { this.showLogoutModal = true; this._updateModalsDOM(); });
@@ -497,7 +419,7 @@ _attachProfileListeners() {
     // Escuchadores de Delete Modal
     this.shadowRoot.getElementById('delete-cancel')?.addEventListener('click', () => { this.showDeleteModal = false; this._updateModalsDOM(); });
     this.shadowRoot.getElementById('delete-confirm')?.addEventListener('click', async () => {
-      try { await deleteUser(this.userData.username); logout(); } catch (err) { alert('Deletion failed: ' + err.message); }
+      try { await deleteUser(this.userData.username); logout(); } catch (err) { alert("Deletion failed: " + err.message); }
     });
 
     // Escuchadores de Social Modal
@@ -522,98 +444,71 @@ _attachProfileListeners() {
   // ==========================================
 
   async _handleSave() {
-    const newName = this.shadowRoot.querySelector('#edit-name').value.trim();
-    const newEmail = this.shadowRoot.querySelector('#edit-email').value.trim();
+    const newName = this.shadowRoot.querySelector('#edit-name')?.value.trim();
+    const newEmail = this.shadowRoot.querySelector('#edit-email')?.value.trim();
 
     if (!newName || !newEmail) {
-      this._saveError = 'Username and email are required.';
-      this._updateProfileDOM();
+      alert('Username and email are required.');
       return;
     }
-
-    //validar campos de contraseña si el form está abierto
-    const passwordContainer = this.shadowRoot.getElementById('password-form-container');
-    const isPasswordFormOpen = passwordContainer?.style.display !== 'none';
-    const currentPassword = this.shadowRoot.querySelector('#current-password')?.value || '';
-    const newPassword = this.shadowRoot.querySelector('#new-password')?.value || '';
-    const confirmPassword = this.shadowRoot.querySelector('#confirm-password')?.value || '';
- 
-    if (isPasswordFormOpen && (currentPassword || newPassword || confirmPassword)) {
-      const errEl = this.shadowRoot.getElementById('password-error');
- 
-      if (!currentPassword || !newPassword || !confirmPassword) {
-        if (errEl) { errEl.textContent = 'All password fields are required.'; errEl.style.display = 'block'; }
-        return;
-      }
-      if (newPassword.length < 6) {
-        if (errEl) { errEl.textContent = 'New password must be at least 6 characters.'; errEl.style.display = 'block'; }
-        return;
-      }
-      if (newPassword !== confirmPassword) {
-        if (errEl) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; }
-        return;
-      }
-      if (errEl) errEl.style.display = 'none';
-    }
- 
-    this.isSaving = true;
-    this._saveError = '';
-    this._updateProfileDOM();
 
     try {
       const updateData = {
         username: newName,
         email: newEmail,
-        avatarUrl: this.userData.avatarUrl
+        avatarUrl: this._pendingAvatar || this.userData.avatarUrl
       };
- 
-      //solo incluir contraseña si el form estaba abierto y tiene valores
-      if (isPasswordFormOpen && newPassword) {
-        updateData.currentPassword = currentPassword;
-        updateData.password = newPassword;
-      }
- 
-      await updateUser({ username: this.originalUsername, data: updateData });
- 
+
+      const response = await updateUser({
+        username: this.originalUsername,
+        data: updateData
+      });
+
       this.userData.username = newName;
       this.userData.email = newEmail;
       this.originalUsername = newName;
 
-      //sincronizar localStorage
-      const storedData = JSON.parse(localStorage.getItem('userData') || '{}');
+      // Si el backend devolvió ruta de avatar en disco, usarla
+      const serverAvatarUrl = response?.user?.avatarUrl;
+      if (serverAvatarUrl) {
+        this.userData.avatarUrl = serverAvatarUrl;
+      }
 
+      // Limpiar pending avatar
+      this._pendingAvatar = null;
+
+      // Actualizar localStorage con la ruta final
+      localStorage.setItem('avatarUrl', this.userData.avatarUrl);
+      const storedData = JSON.parse(localStorage.getItem('userData') || '{}');
       localStorage.setItem('userData', JSON.stringify({
         ...storedData,
         username: newName,
         email: newEmail,
-        avatarUrl: this.userData.avatarUrl,
+        avatarUrl: this.userData.avatarUrl
       }));
- 
-      //actualizar el header
-      const header = document.querySelector('custom-header');
-      if (header && typeof header.refresh === 'function') header.refresh();
- 
+
       this.isEditing = false;
-      this._passwordFormOpen = false;
+      
+      // Forzar que el DOM se actualice DESPUÉS de que todo esté sincronizado
+      setTimeout(() => {
+        this._updateProfileDOM();
+        
+        // Actualizar header después de que localStorage esté sincronizado
+        const header = document.querySelector('custom-header');
+        if (header) {
+          header.removeAttribute('img-src');
+          if (typeof header.refresh === 'function') header.refresh();
+        }
+      }, 0);
+
       window.toast?.({
         type: 'success',
-        title: newPassword ? 'Profile and password updated' : 'Profile updated',
+        title: 'Profile updated',
         message: 'Your changes have been saved.',
         duration: 3000
       });
     } catch (err) {
-      //si el error es de contraseña incorrecta, mostrarlo en el form
-      if (err.message?.toLowerCase().includes('contraseña') || err.message?.toLowerCase().includes('password')) {
-        const errEl = this.shadowRoot.getElementById('password-error');
-        if (errEl) { errEl.textContent = 'Current password is incorrect.'; errEl.style.display = 'block'; }
-        this.isSaving = false;
-        this._updateProfileDOM();
-        return;
-      }
-      this._saveError = err.message || 'Update failed. Please try again.';
-    } finally {
-      this.isSaving = false;
-      this._updateProfileDOM();
+      alert("Update failed: " + err.message);
     }
   }
 
@@ -621,17 +516,10 @@ _attachProfileListeners() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    //convertir a base64 para preview local (el update real requeriría un servicio de imágenes)
+    //solo guardar en temporal para preview, NO persistir aún
     const reader = new FileReader();
-    reader.onload = async () => {
-      const dataUrl = reader.result;
-      this.userData.avatarUrl = dataUrl;
-      
-      //actualizar UI
-      localStorage.setItem('avatarUrl', dataUrl);
-      const storedData = JSON.parse(localStorage.getItem('userData') || '{}');
-      localStorage.setItem('userData', JSON.stringify({ ...storedData, avatarUrl: dataUrl }));
- 
+    reader.onload = () => {
+      this._pendingAvatar = reader.result;
       this._updateProfileDOM();
     };
     reader.readAsDataURL(file);

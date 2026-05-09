@@ -402,7 +402,13 @@ class CustomHeader extends HTMLElement {
 
     if (this._isLoggedIn()) {
       const storedAvatar = localStorage.getItem('avatarUrl');
-      if (storedAvatar) return storedAvatar;
+      if (storedAvatar) {
+        //cache-buster para forzar recarga de imágenes del servidor para mostrar el correcto
+        if (storedAvatar.startsWith('/avatars/')) {
+          return `${storedAvatar}?t=${Date.now()}`;
+        }
+        return storedAvatar;
+      }
  
       const user = this._getStoredUser();
       if (user?.username) {
