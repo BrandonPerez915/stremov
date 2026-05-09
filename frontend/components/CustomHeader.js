@@ -22,6 +22,12 @@ customHeaderSheet.replaceSync(`
 #header-right-side {
   flex: 0.8;
   max-width: 800px;
+  justify-content: flex-end !important;
+}
+
+/* Cuando hide-search está activo, el lado derecho no se va al centro */
+:host([hide-search]) #header-right-side {
+  flex: 0 0 auto;
 }
 
 #header-right-side,
@@ -29,7 +35,7 @@ customHeaderSheet.replaceSync(`
   width: fit-content;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 20px;
   position: relative;
 }
@@ -126,7 +132,6 @@ customHeaderSheet.replaceSync(`
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
-
 }
 
 .dropdown-user-info .user-text {
@@ -198,7 +203,6 @@ customHeaderSheet.replaceSync(`
   background-color: color-mix(in srgb, var(--red-100) 10%, transparent);
 }
 
-/* Modal de confirmación de logout */
 .logout-modal-overlay {
   position: fixed;
   inset: 0;
@@ -284,8 +288,15 @@ custom-input {
   transition: width 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
 }
 
+/* para ocultar search cuando hide-search está activo */
+:host([hide-search]) custom-input,
+:host([hide-search]) #search-icon,
+:host([hide-search]) #close-icon {
+  display: none !important;
+}
+ 
 label { display: none; }
-
+ 
 .hidden-icon {
   width: 0 !important;
   opacity: 0;
@@ -331,6 +342,9 @@ label { display: none; }
   }
 
   #search-icon, #menu-icon { display: block; }
+ 
+  /* en pantallas pequeñas si hide-search activo, tampoco se ve el ícono de búsqueda */
+  :host([hide-search]) #search-icon { display: none !important; }
 }
 `);
 
@@ -343,6 +357,21 @@ class CustomHeader extends HTMLElement {
     this._dropdownOpen = false;
     this._boundCloseDropdown = this._closeDropdown.bind(this);
   }
+ 
+  static get observedAttributes() {
+    return ['img-src', 'username', 'hide-search'];
+  }
+ 
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue) {
+      //volvemos a hacer render si cambian atributos relevantes
+      if (this.shadowRoot.innerHTML) {
+        this._render();
+        this._setupListeners();
+      }
+    }
+  }
+
 
   connectedCallback() {
     this._render();
@@ -371,12 +400,14 @@ class CustomHeader extends HTMLElement {
     const attrSrc = this.getAttribute('img-src');
     if (attrSrc) return attrSrc;
 
-    const storedAvatar = localStorage.getItem('avatarUrl');
-    if (storedAvatar) return storedAvatar;
-
-    const user = this._getStoredUser();
-    if (user?.username) {
-      return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=3a3f4c&color=fff&size=100`;
+    if (this._isLoggedIn()) {
+      const storedAvatar = localStorage.getItem('avatarUrl');
+      if (storedAvatar) return storedAvatar;
+ 
+      const user = this._getStoredUser();
+      if (user?.username) {
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=3a3f4c&color=fff&size=100`;
+      }
     }
 
     return 'https://ui-avatars.com/api/?name=Guest&background=3a3f4c&color=888&size=100';
