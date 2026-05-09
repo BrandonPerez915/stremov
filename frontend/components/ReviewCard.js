@@ -251,7 +251,7 @@ class ReviewCard extends HTMLElement {
     const username = this.getAttribute('username') || 'Anonymous User';
     const avatarSrc = this.getAttribute('avatar-src') || 'https://via.placeholder.com/50';
     const ratingValue = parseInt(this.getAttribute('rating')) || 5;
-    const reviewText = this.getAttribute('review-text') || 'No review provided.';
+    const reviewText = this.getAttribute('review-text') || ' ';
     const movieTitle = this.getAttribute('movie-title') || 'Unknown Movie';
     const date = this.getAttribute('date') || 'Unknown Date';
 

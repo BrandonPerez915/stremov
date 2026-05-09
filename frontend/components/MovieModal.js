@@ -339,7 +339,7 @@ class MovieModal extends HTMLElement {
             movieId: this._currentBackendMovieId,
             score: rating,
             title: `Review for ${this._currentMovieTitle || 'Media'}`,
-            body: text || 'No description provided.'
+            body: text || ' '
           };
 
           if (isUpdate) {

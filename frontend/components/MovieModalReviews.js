@@ -239,7 +239,6 @@ class MovieModalReviews extends HTMLElement {
       // Cargar reseñas globales
       const data = await apiClient.get(`/reviews/movie/${movieId}`);
       if (data && data.status === 'success') {
-        console.log(data)
         const remoteReviews = data.reviews.map(r => ({
           username: r.user.username,
           avatarSrc: r.user.avatarUrl || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
@@ -336,7 +335,7 @@ class MovieModalReviews extends HTMLElement {
                     <div style="background:var(--bg-color,#1f2128);border:1px solid var(--border-color,#3a3f4c);border-radius:18px;padding:28px;width:min(400px,100%);display:flex;flex-direction:column;gap:18px;box-shadow:0 20px 50px rgba(0,0,0,0.5);">
                       <h3 style="margin:0;font-size:18px;color:var(--text-primary,#fff)">Delete review</h3>
                       <p style="margin:0;color:var(--text-secondary,#888);font-size:14px;line-height:1.6">Are you sure you want to delete your review? This action cannot be undone.</p>
-                      <div style="display:flex;gap:10px;justify-content:flex-end;">
+                      <div style="display:flex;gap:10px;justify-content:flex-end; align-items:flex-end;">
                         <button id="delete-confirm-cancel" class="btn-secondary" style="padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:transparent;border:1px solid var(--border-color,#3a3f4c);color:var(--text-primary,#fff);font-family:inherit;">Cancel</button>
                         <button id="delete-confirm-ok" style="padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;background:rgba(239,68,68,0.12);border:1px solid #ef4444;color:#ef4444;font-family:inherit;">Delete</button>
                       </div>

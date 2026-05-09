@@ -179,15 +179,10 @@ class ReviewsFavoritesContainer extends HTMLElement {
 
   async _loadData() {
     try {
-      console.log('Loading reviews and favorites for:', { userId: this.userId, listId: this.listId });
-      
       const [reviewsResult, favoritesResult] = await Promise.allSettled([
         this.userId ? getUserReviews(this.userId) : Promise.resolve({ reviews: [] }),
         this.listId ? getFavoriteList(this.listId) : Promise.resolve({ list: { movies: [] } })
       ]);
-
-      console.log('Reviews result:', reviewsResult);
-      console.log('Favorites result:', favoritesResult);
 
       this.reviews = reviewsResult.status === 'fulfilled' 
         ? (reviewsResult.value?.reviews || []) 
@@ -198,7 +193,6 @@ class ReviewsFavoritesContainer extends HTMLElement {
         ? (favoritesResult.value?.list?.movies || []) 
         : [];
 
-      console.log('Processed data:', { reviews: this.reviews, favorites: this.favorites });
       this._render();
     } catch (err) {
       console.error('Error loading reviews/favorites:', err);
@@ -333,12 +327,10 @@ class ReviewsFavoritesContainer extends HTMLElement {
 
     //event listeners de actualización/eliminación de reviews
     this.shadowRoot.addEventListener('review-updated', () => {
-      console.log('[ReviewsFavoritesContainer] Review updated, reloading...');
       this._loadData();
     });
 
     this.shadowRoot.addEventListener('review-deleted', () => {
-      console.log('[ReviewsFavoritesContainer] Review deleted, reloading...');
       this._loadData();
     });
 

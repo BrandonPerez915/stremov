@@ -182,7 +182,7 @@ async function patchReview(req, res, next) {
 
     if (score) review.score = score;
     if (title) review.title = title;
-    if (body) review.body = body;
+    if (body !== undefined) review.body = body;
 
     await review.save();
 

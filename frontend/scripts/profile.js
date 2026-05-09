@@ -233,14 +233,10 @@ async function loadProfileData() {
     // Actualizar el componente ReviewsFavoritesContainer con los datos del usuario
     const userId = user?._id || user?.id || null;
     if (userId) {
-      console.log('Loading reviews/favorites for userId:', userId);
-      
       // Usar setTimeout para asegurar que el DOM está actualizado
       setTimeout(() => {
         const container = document.getElementById('reviews-favorites-container');
-        console.log('Container found:', !!container);
         if (container) {
-          console.log('Setting data on container with userId:', userId);
           container.data = { userId: userId, listId: userId };
         }
       }, 100);

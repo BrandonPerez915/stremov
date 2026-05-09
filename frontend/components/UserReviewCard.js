@@ -276,6 +276,8 @@ class UserReviewCard extends HTMLElement {
     this._editOpen    = false;
     this._deleteOpen  = false;
     this._editScore   = 0;
+    this._editText    = ''; //texto temporal del textarea
+    this._textDirty   = false; // Flag: ha modificado el textarea
     this._saving      = false;
     this._deleting    = false;
   }
@@ -345,7 +347,11 @@ class UserReviewCard extends HTMLElement {
 
   _editModalHTML(currentRating, currentText) {
     // Convertir score 1-10 a estrellas 1-5 para el editor
-    this._editScore = this._editScore || this.currentRating;
+    this._editScore = this._editScore || this._scoreToStars(currentRating);
+    // Si ya interactuó con el textarea (_textDirty), usar _editText (puede estar vacío)
+    // Si no ha interactuado, usar currentText original
+    const textValue = this._textDirty ? this._editText : (currentText || '');
+    
     const stars = Array.from({ length: 5 }, (_, i) => {
       const val = i + 1;
       const filled = val <= this._editScore;
@@ -366,7 +372,7 @@ class UserReviewCard extends HTMLElement {
             class="review-textarea"
             id="edit-textarea"
             placeholder="Write your thoughts... (optional)"
-          >${currentText || ''}</textarea>
+          >${textValue}</textarea>
 
           <div class="modal-actions">
             <button class="btn btn-secondary" id="edit-cancel">Cancel</button>
@@ -402,7 +408,7 @@ class UserReviewCard extends HTMLElement {
     `;
   }
 
-  //  Events 
+  // ── Events ───────────────────────────────────────────────────────
   _bindEvents() {
     const card = this.shadowRoot.getElementById('card');
 
@@ -426,7 +432,9 @@ class UserReviewCard extends HTMLElement {
     this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', (e) => {
       e.stopPropagation();
       // Resetear a estrellas actuales (1-5) al abrir
-      this._editScore = (parseInt(this._attr('rating', '0')));
+      this._editScore = parseInt(this._attr('rating', '0'));
+      this._editText = ''; // Limpiar texto temporal
+      this._textDirty = false; // Resetear flag
       this._editOpen  = true;
       this._render();
     });
@@ -440,20 +448,27 @@ class UserReviewCard extends HTMLElement {
 
     //  Edit modal events 
     this.shadowRoot.getElementById('edit-close')?.addEventListener('click', () => {
-      this._editOpen = false; this._render();
+      this._editOpen = false; this._editText = ''; this._textDirty = false; this._render();
     });
     this.shadowRoot.getElementById('edit-cancel')?.addEventListener('click', () => {
-      this._editOpen = false; this._render();
+      this._editOpen = false; this._editText = ''; this._textDirty = false; this._render();
     });
     this.shadowRoot.getElementById('edit-overlay')?.addEventListener('click', (e) => {
       if (e.target === this.shadowRoot.getElementById('edit-overlay')) {
-        this._editOpen = false; this._render();
+        this._editOpen = false; this._editText = ''; this._textDirty = false; this._render();
       }
     });
 
     // Interactive stars
     this.shadowRoot.querySelectorAll('.star-interactive').forEach(star => {
       star.addEventListener('click', () => {
+        // Guardar el texto actual del textarea antes de re-renderizar
+        const textarea = this.shadowRoot.getElementById('edit-textarea');
+        if (textarea) {
+          this._editText = textarea.value;
+          this._textDirty = true; // Marcar que el usuario ya interactuó
+        }
+        
         this._editScore = parseInt(star.dataset.value);
         this._render();
       });
@@ -490,7 +505,7 @@ class UserReviewCard extends HTMLElement {
     }
 
     this._saving = true;
-    this._render();
+    // NO renderizar aquí - evita el flash del texto viejo
 
     try {
       await updateReview(movieId, { score: this._editScore, body });
@@ -499,7 +514,10 @@ class UserReviewCard extends HTMLElement {
       this.setAttribute('rating', this._editScore);
       if (body) this.setAttribute('review-text', body);
 
+      // LUEGO cerrar modal y re-renderizar
       this._editOpen = false;
+      this._editText = ''; // Limpiar texto temporal
+      this._textDirty = false; // Resetear flag
       this._saving   = false;
       this._render();
 
