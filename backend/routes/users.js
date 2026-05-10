@@ -34,7 +34,7 @@ usersRouter.route('/')
  * @access Privado (Propietario de la cuenta)
  */
 usersRouter.route('/:name')
-  .get(userController.getUser)
+  .get(userController.getUsers)
   .patch(authMiddleware, userController.patchUser)
   .delete(authMiddleware, userController.deleteUser)
 

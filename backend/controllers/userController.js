@@ -86,6 +86,32 @@ async function getUser(req, res, next) {
 }
 
 /**
+ * @summary Obtiene una lista de usuarios que coinciden parcialmente con un nombre.
+ * @description Busca usuarios cuyo nombre de usuario contenga la cadena proporcionada (ignorando mayúsculas y minúsculas) y realiza el "populate" de sus listas y relaciones, excluyendo campos sensibles.
+ * @param {express.Request} req - Objeto de petición. Espera `name` en req.params.
+ * @param {express.Response} res - Objeto de respuesta.
+ * @param {express.NextFunction} next - Función Next para delegar errores.
+ * @returns {Promise<void>} Responde con un arreglo de objetos de usuario.
+ */
+async function getUsers(req, res, next) {
+  const name = req.params.name;
+
+  try {
+    const searchRegex = new RegExp(name, 'i');
+
+    const users = await User.find({ username: searchRegex })
+      .select('-password -email -createdAt -updatedAt -__v')
+      .populate('lists')
+      .populate('following', 'username avatarUrl')
+      .populate('followers', 'username avatarUrl');
+
+    return res.status(StatusCodes.OK).json({ users });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
  * @summary Actualiza la información del perfil del usuario.
  * @description Permite modificar campos opcionales del perfil. Valida que el solicitante sea el propietario de la cuenta antes de guardar.
  * @param {express.Request} req - Objeto de petición. Espera `name` en params y campos opcionales en req.body. Requiere `req.userId` (auth).
@@ -121,7 +147,7 @@ async function patchUser(req, res, next) {
 
     if (username) user.username = username;
     if (email) user.email = email;
-    
+
     //si viene base64 guardamos en disco y la ruta en mongodb
     if (avatarUrl) {
       if (avatarUrl.startsWith('data:image')) {
@@ -138,7 +164,7 @@ async function patchUser(req, res, next) {
       if (!isValid) {
         throw new AppError('La contraseña actual es incorrecta', StatusCodes.UNAUTHORIZED, 'InvalidPassword');
       }
-      user.password = password; 
+      user.password = password;
     }
 
     await user.save();
@@ -351,6 +377,7 @@ async function getFollowing(req, res, next) {
 export {
   postUser,
   getUser,
+  getUsers,
   patchUser,
   deleteUser,
   followUser,

@@ -41,7 +41,7 @@ customHeaderSheet.replaceSync(`
 }
 
 .icon {
-  color: var(--text-primary);
+  color: var(--text-primary, #ffffff);
   font-family: 'Material Symbols Outlined';
   font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
 }
@@ -57,7 +57,7 @@ customHeaderSheet.replaceSync(`
 }
 
 .header-icon:hover .notification-badge { background-color: var(--red-75); }
-.header-icon:hover { color: var(--text-secondary); }
+.header-icon:hover { color: var(--text-secondary, #b3b3b3); }
 
 .notification-badge {
   position: absolute;
@@ -66,7 +66,7 @@ customHeaderSheet.replaceSync(`
   height: 10px;
   top: 3px;
   right: 3px;
-  background-color: var(--red-100);
+  background-color: var(--red-100, #e50914);
   color: white;
   border-radius: 100%;
   font-size: 8px;
@@ -90,8 +90,8 @@ customHeaderSheet.replaceSync(`
 }
 
 .profile-pic:hover {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 25%, transparent);
+  border-color: var(--primary-color, #e50914);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color, #e50914) 25%, transparent);
 }
 
 .profile-dropdown {
@@ -99,8 +99,8 @@ customHeaderSheet.replaceSync(`
   top: calc(100% + 12px);
   right: 0;
   min-width: 210px;
-  background-color: var(--bg-color);
-  border: 1px solid var(--border-color);
+  background-color: var(--bg-color, #141414);
+  border: 1px solid var(--border-color, #333);
   border-radius: 14px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
   z-index: 9000;
@@ -123,7 +123,7 @@ customHeaderSheet.replaceSync(`
   align-items: center;
   gap: 12px;
   padding: 16px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color, #333);
 }
 
 .dropdown-user-info img {
@@ -143,7 +143,7 @@ customHeaderSheet.replaceSync(`
 .dropdown-user-info .user-name {
   font-size: 14px;
   font-weight: 400;
-  color: var(--text-primary);
+  color: var(--text-primary, #fff);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -151,7 +151,7 @@ customHeaderSheet.replaceSync(`
 
 .dropdown-user-info .user-email {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #b3b3b3);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -167,7 +167,7 @@ customHeaderSheet.replaceSync(`
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--text-primary, #fff);
   cursor: pointer;
   transition: background-color 0.15s ease;
   border: none;
@@ -179,28 +179,28 @@ customHeaderSheet.replaceSync(`
 }
 
 .dropdown-item:hover {
-  background-color: color-mix(in srgb, var(--text-primary) 6%, transparent);
+  background-color: color-mix(in srgb, var(--text-primary, #fff) 6%, transparent);
 }
 
 .dropdown-item .item-icon {
   font-family: 'Material Symbols Outlined';
   font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
   font-size: 20px;
-  color: var(--text-secondary);
+  color: var(--text-secondary, #b3b3b3);
   flex-shrink: 0;
 }
 
 .dropdown-divider {
   height: 1px;
-  background-color: var(--border-color);
+  background-color: var(--border-color, #333);
   margin: 4px 8px;
 }
 
-.dropdown-item.danger { color: var(--red-100); }
+.dropdown-item.danger { color: var(--red-100, #e50914); }
 .dropdown-item.danger:hover { font-weight: 800; }
-.dropdown-item.danger .item-icon { color: var(--red-100); }
+.dropdown-item.danger .item-icon { color: var(--red-100, #e50914); }
 .dropdown-item.danger:hover {
-  background-color: color-mix(in srgb, var(--red-100) 10%, transparent);
+  background-color: color-mix(in srgb, var(--red-100, #e50914) 10%, transparent);
 }
 
 .logout-modal-overlay {
@@ -223,8 +223,8 @@ customHeaderSheet.replaceSync(`
 }
 
 .logout-modal {
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
+  background: var(--bg-color, #141414);
+  border: 1px solid var(--border-color, #333);
   border-radius: 16px;
   padding: 28px;
   width: min(400px, 90vw);
@@ -239,13 +239,13 @@ customHeaderSheet.replaceSync(`
 }
 
 .logout-modal h3 {
-  color: var(--text-primary);
+  color: var(--text-primary, #fff);
   font-size: 1.2rem;
   margin: 0 0 10px 0;
 }
 
 .logout-modal p {
-  color: var(--text-secondary);
+  color: var(--text-secondary, #b3b3b3);
   font-size: 0.95rem;
   margin: 0 0 24px 0;
   line-height: 1.5;
@@ -272,12 +272,12 @@ customHeaderSheet.replaceSync(`
 
 .btn-cancel {
   background: transparent;
-  border: 1px solid var(--border-color) !important;
-  color: var(--text-primary);
+  border: 1px solid var(--border-color, #333) !important;
+  color: var(--text-primary, #fff);
 }
 
 .btn-confirm-logout {
-  background: var(--red-100);
+  background: var(--red-100, #e50914);
   color: white;
 }
 
@@ -291,12 +291,13 @@ custom-input {
 /* para ocultar search cuando hide-search está activo */
 :host([hide-search]) custom-input,
 :host([hide-search]) #search-icon,
-:host([hide-search]) #close-icon {
+:host([hide-search]) #close-icon,
+:host([hide-search]) #filter-icon {
   display: none !important;
 }
- 
+
 label { display: none; }
- 
+
 .hidden-icon {
   width: 0 !important;
   opacity: 0;
@@ -334,7 +335,7 @@ label { display: none; }
   #close-icon {
     display: block;
     position: absolute;
-    right: 75px;
+    right: 80px;
     top: 50%;
     transform: translateY(-50%);
     margin-top: 0;
@@ -342,7 +343,7 @@ label { display: none; }
   }
 
   #search-icon, #menu-icon { display: block; }
- 
+
   /* en pantallas pequeñas si hide-search activo, tampoco se ve el ícono de búsqueda */
   :host([hide-search]) #search-icon { display: none !important; }
 }
@@ -357,21 +358,19 @@ class CustomHeader extends HTMLElement {
     this._dropdownOpen = false;
     this._boundCloseDropdown = this._closeDropdown.bind(this);
   }
- 
+
   static get observedAttributes() {
     return ['img-src', 'username', 'hide-search'];
   }
- 
+
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue !== newValue) {
-      //volvemos a hacer render si cambian atributos relevantes
       if (this.shadowRoot.innerHTML) {
         this._render();
         this._setupListeners();
       }
     }
   }
-
 
   connectedCallback() {
     this._render();
@@ -396,20 +395,18 @@ class CustomHeader extends HTMLElement {
   }
 
   _getAvatarUrl() {
-    //primero atributo img-src, luego avatarUrl en localStorage, después ui-avatars con username y al final guest
     const attrSrc = this.getAttribute('img-src');
     if (attrSrc) return attrSrc;
 
     if (this._isLoggedIn()) {
       const storedAvatar = localStorage.getItem('avatarUrl');
       if (storedAvatar) {
-        //cache-buster para forzar recarga de imágenes del servidor para mostrar el correcto
         if (storedAvatar.startsWith('/avatars/')) {
           return `${storedAvatar}?t=${Date.now()}`;
         }
         return storedAvatar;
       }
- 
+
       const user = this._getStoredUser();
       if (user?.username) {
         return `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=3a3f4c&color=fff&size=100`;
@@ -450,6 +447,8 @@ class CustomHeader extends HTMLElement {
             icon="search">
           </custom-input>
 
+          <span id="filter-icon" class="icon header-icon" title="Filters">tune</span>
+
           <span id="close-icon" class="icon header-icon hidden-icon">close</span>
           <span id="search-icon" class="icon header-icon">search</span>
 
@@ -462,7 +461,6 @@ class CustomHeader extends HTMLElement {
         </div>
       </header>
 
-      <!-- Modal de confirmación de logout -->
       <div class="logout-modal-overlay" id="logout-modal-overlay">
         <div class="logout-modal">
           <h3>Sign out</h3>
@@ -548,7 +546,7 @@ class CustomHeader extends HTMLElement {
   _setupListeners() {
     const menuIcon        = this.shadowRoot.querySelector('#menu-icon');
     const searchIcon      = this.shadowRoot.querySelector('#search-icon');
-    const notificationsIcon = this.shadowRoot.querySelector('#notifications-icon');
+    const filterIcon      = this.shadowRoot.querySelector('#filter-icon');
     const closeIcon       = this.shadowRoot.querySelector('#close-icon');
     const searchInput     = this.shadowRoot.querySelector('#search-input');
     const profilePic      = this.shadowRoot.getElementById('profile-pic');
@@ -562,11 +560,22 @@ class CustomHeader extends HTMLElement {
       backdrop?.classList.remove('hidden');
     });
 
-    // Search toggle
+    // Lógica para abrir el Modal de Filtros
+    filterIcon?.addEventListener('click', () => {
+      let filtersModal = document.querySelector('filters-modal');
+      // Si no existe el componente en el DOM, lo creamos
+      if (!filtersModal) {
+        filtersModal = document.createElement('filters-modal');
+        document.body.appendChild(filtersModal);
+      }
+      filtersModal.open();
+    });
+
+    // Search toggle (ACTUALIZADO para ocultar también el icono de filtros)
     const toggleIcons = () => {
       menuIcon?.classList.toggle('hidden-icon');
-      notificationsIcon?.classList.toggle('hidden-icon');
       searchIcon?.classList.toggle('hidden-icon');
+      filterIcon?.classList.toggle('hidden-icon'); // <-- Esto oculta el filtro en móviles
       closeIcon?.classList.toggle('hidden-icon');
     };
 
@@ -625,9 +634,6 @@ class CustomHeader extends HTMLElement {
     } else {
       this.shadowRoot.getElementById('dd-login')?.addEventListener('click', () => {
         window.location.href = '/login';
-      });
-      this.shadowRoot.getElementById('dd-register')?.addEventListener('click', () => {
-        window.location.href = '/register';
       });
     }
 

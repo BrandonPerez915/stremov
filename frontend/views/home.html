@@ -5,26 +5,25 @@
   <link rel="stylesheet" href="../assets/css/home.css">
 
   <script>
-		(function() {
-			var theme = localStorage.getItem('appTheme') || 'dark';
-			var color = localStorage.getItem('appPrimaryColor') || 'blue';
-			document.documentElement.setAttribute('data-theme', theme);
-			document.documentElement.setAttribute('primary-color', color);
-		})();
-	</script>
+    (function() {
+      var theme = localStorage.getItem('appTheme') || 'dark';
+      var color = localStorage.getItem('appPrimaryColor') || 'blue';
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('primary-color', color);
+    })();
+  </script>
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home - stremov</title>
-  <!-- Fuente Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Material Symbols -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,250,0,0" />
-  <!-- Componentes -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,200,0..1,0" />
+
   <script src="../components/CustomInput.js" defer></script>
   <script src="../components/SidebarUser.js" defer></script>
   <script src="../components/SidebarItem.js" defer></script>
   <script src="../components/CustomHeader.js" defer></script>
+  <script src="../components/FiltersModal.js" defer></script>
   <script src="../components/CustomSidebar.js" defer></script>
   <script src="../components/CustomTextarea.js" defer></script>
   <script type="module" src="../components/MovieCard.js"></script>
@@ -45,45 +44,46 @@
 
 <body>
   <div class="backdrop hidden"></div>
+
   <custom-header
-  placeholder="Search something..."
-  on-search="console.log('Buscando:', searchTerm)"
-  has-notifications></custom-header>
+    placeholder="Search something..."
+    on-search="console.log('Buscando:', searchTerm)"
+    has-notifications>
+  </custom-header>
+
   <custom-sidebar
-  following-users-info='[
-    {"name": "Brandon Perez", "imgSrc": "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D", "verified": true},
-    {"name": "Alex Juarez", "imgSrc": "https://images.unsplash.com/photo-1654110455429-cf322b40a906?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D", "verified": false},
+    following-users-info='[
+      {"name": "Brandon Perez", "imgSrc": "https://images.unsplash.com/photo-1603415526960-f7e0328c63b1?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D", "verified": true},
+      {"name": "Alex Juarez", "imgSrc": "https://images.unsplash.com/photo-1654110455429-cf322b40a906?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZSUyMHBpY3R1cmV8ZW58MHx8MHx8fDA%3D", "verified": false},
       {"name": "Carla Torres", "imgSrc": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=100&auto=format&fit=crop", "verified": true}
     ]'
-    active-page="home"></custom-sidebar>
+    active-page="home">
+  </custom-sidebar>
 
-    <!-- Hero Banner (Project Hail Mary) -->
-    <hero-banner
-      title="Project Hail Mary"
-      rating="8.6"
-      badge-text="TRENDING"
-      images="https://wallpapercave.com/wp/wp16284846.webp, https://wallpapercave.com/wp/wp16284849.webp, https://wallpapercave.com/wp/wp16284854.webp, https://wallpapercave.com/wp/wp16284872.webp">
-    </hero-banner>
+  <hero-banner
+    title="Project Hail Mary"
+    rating="8.6"
+    badge-text="TRENDING"
+    images="https://wallpapercave.com/wp/wp16284846.webp, https://wallpapercave.com/wp/wp16284849.webp, https://wallpapercave.com/wp/wp16284854.webp, https://wallpapercave.com/wp/wp16284872.webp">
+  </hero-banner>
 
-    <!-- Carrouseles de películas y series -->
-    <media-carousel
-      title="Most Popular Series"
-      api-url="/tmdb/series/popular"
-      type="series">
-    </media-carousel>
+  <media-carousel
+    title="Most Popular Series"
+    api-url="/tmdb/series/popular"
+    type="series">
+  </media-carousel>
 
-    <media-carousel
-      title="Most Popular Movies"
-      api-url="/tmdb/movies/popular"
-      type="movies">
-    </media-carousel>
+  <media-carousel
+    title="Most Popular Movies"
+    api-url="/tmdb/movies/popular"
+    type="movies">
+  </media-carousel>
 
-    <person-carousel
-      title="Most Popular Actors"
-      api-url="/tmdb/persons/popular">
-    </person-carousel>
+  <person-carousel
+    title="Most Popular Actors"
+    api-url="/tmdb/persons/popular">
+  </person-carousel>
 
-  </body>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const theme = localStorage.getItem('appTheme') || 'dark';
@@ -92,14 +92,26 @@
       document.documentElement.setAttribute('primary-color', primaryColor);
     });
 
+    // 1. Búsqueda por texto (desde el input del header)
+    // Para el texto libre, sí es recomendable usar la URL para poder compartir enlaces de búsqueda
     document.addEventListener('header-search', (e) => {
       const query = e.detail.query;
-      console.log('Buscando:', query);
+      console.log('Buscando texto:', query);
       if (query && query.trim() !== '') {
         window.location.href = `search.html?query=${encodeURIComponent(query.trim())}`;
       }
     });
 
+    // 2. Filtros aplicados desde el modal (checkboxes)
+    document.addEventListener('filters-applied', (e) => {
+      const filters = e.detail; // { type: [...], genre: [...], people: [...] }
+      console.log('Guardando filtros en localStorage:', filters);
+
+      // Guardamos la configuración de filtros como string JSON
+      localStorage.setItem('searchFilters', JSON.stringify(filters));
+    });
+
+    // 3. Interacción con películas/series para abrir modal
     document.addEventListener('movie-clicked', (e) => {
       const { movieId, type } = e.detail;
       console.log(`Película clickeada: ID=${movieId}`);
@@ -111,4 +123,5 @@
       document.body.appendChild(modal);
     });
   </script>
+</body>
 </html>

@@ -58,7 +58,19 @@ async function register({ username, email, password }) {
 //USUARIOS
 
 async function getUser(username) {
-  return authFetch(`/api/users/${username}`);
+  const response = await authFetch(`/api/users/${username}`);
+
+  // Normaliza respuestas del backend: { user } o { users: [] }
+  const user = response?.user
+    || (Array.isArray(response?.users)
+      ? response.users.find(u => u?.username === username) || response.users[0]
+      : null);
+
+  if (!user) {
+    throw new Error('User profile not found');
+  }
+
+  return { ...response, user };
 }
 
 async function updateUser({ username, data }) {
@@ -106,22 +118,22 @@ async function createList({ name, description }) {
 async function getList(id) {
   return authFetch(`/api/lists/${id}`);
 }
- 
+
 async function getUserLists(userId) {
   return publicFetch(`/api/lists/user/${userId}`);
 }
- 
+
 async function getFavoriteList(userId) {
   return publicFetch(`/api/lists/user/${userId}/favorites`);
 }
- 
+
 async function updateList({ id, data }) {
   return authFetch(`/api/lists/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(data)
   });
 }
- 
+
 async function deleteList(id) {
   return authFetch(`/api/lists/${id}`, {
     method: 'DELETE'
@@ -133,7 +145,7 @@ async function addMovieToList({ listId, movieId }) {
     method: 'POST'
   });
 }
- 
+
 async function removeMovieFromList({ listId, movieId }) {
   return authFetch(`/api/lists/${listId}/movies/${movieId}`, {
     method: 'DELETE'
@@ -201,23 +213,23 @@ async function getSimilarMovies(tmdbId, page = 1) {
 async function searchSeries(name, page = 1) {
   return publicFetch(`/api/tmdb/series/search?q=${encodeURIComponent(name)}&page=${page}`);
 }
- 
+
 async function getPopularSeries(page = 1) {
   return publicFetch(`/api/tmdb/series/popular?page=${page}`);
 }
- 
+
 async function getTopRatedSeries(page = 1) {
   return publicFetch(`/api/tmdb/series/top-rated?page=${page}`);
 }
- 
+
 async function getTmdbSerie(tmdbId) {
   return publicFetch(`/api/tmdb/series/${tmdbId}`);
 }
- 
+
 async function getSerieCredits(tmdbId) {
   return publicFetch(`/api/tmdb/series/${tmdbId}/credits`);
 }
- 
+
 async function getSimilarSeries(tmdbId, page = 1) {
   return publicFetch(`/api/tmdb/series/${tmdbId}/similar?page=${page}`);
 }
@@ -279,25 +291,25 @@ async function getPersonCredits(tmdbId) {
 async function searchPersonsDB(name) {
   return publicFetch(`/api/persons?name=${encodeURIComponent(name)}`);
 }
- 
+
 async function getPerson(id) {
   return publicFetch(`/api/persons/${id}`);
 }
- 
+
 async function createPerson({ name, photoUrl }) {
   return authFetch('/api/persons', {
     method: 'POST',
     body: JSON.stringify({ name, photoUrl })
   });
 }
- 
+
 async function updatePerson({ id, name }) {
   return authFetch(`/api/persons/${id}`, {
     method: 'PATCH',
     body: JSON.stringify({ name })
   });
 }
- 
+
 async function deletePerson(id) {
   return authFetch(`/api/persons/${id}`, {
     method: 'DELETE'

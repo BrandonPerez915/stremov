@@ -33,32 +33,53 @@ async function loginUser(username, password) {
   const payload = { username, password };
 
   try {
+    // 1. Obtener el token
     const data = await apiClient.post('/login', payload);
-
-    //guardar token
     localStorage.setItem('jwtToken', data.token);
 
-    //guardamos datos del usuario para usarlos en el frontend sin llamadas extra
-    if (data.token) {
-      try {
-        const jwtPayload = JSON.parse(atob(data.token.split('.')[1]));
+    // 2. Obtener el perfil usando el parámetro 'username' que ya tienes
+    const userProfile = await apiClient.get(`/users/${username}`);
 
-        const userProfile = await apiClient.get(`/users/${jwtPayload.username}`);
-
-        localStorage.setItem('userData', JSON.stringify({
-          _id: userProfile.user._id,
-          username: userProfile.user.username,
-          email: userProfile.user.email,
-          favoritesListId: userProfile.user.lists.find(list => list.name === 'Favorites')?._id || null,
-          role: jwtPayload.role
-        }));
-
-        if (userProfile.user.avatarUrl) {
-          localStorage.setItem('avatarUrl', userProfile.user.avatarUrl);
-        }
-      } catch {}
+    // 3. (Opcional) Sacar el rol del token si es estrictamente necesario
+    let role = 'user';
+    try {
+      const jwtPayload = JSON.parse(atob(data.token.split('.')[1]));
+      role = jwtPayload.role || 'user';
+    } catch (e) {
+      console.warn('No se pudo extraer el rol del JWT', e);
     }
 
+    // 4. Normalizar respuesta del perfil (puede venir como { user } o { users: [] })
+    const profileUser = userProfile?.user
+      || (Array.isArray(userProfile?.users)
+        ? userProfile.users.find(user => user?.username === username) || userProfile.users[0]
+        : null);
+
+    if (!profileUser?._id && !profileUser?.id) {
+      throw new AppError(
+        'Could not load user profile after login',
+        500,
+        'LoginProfileError'
+      );
+    }
+
+    const favoritesListId = Array.isArray(profileUser.lists)
+      ? profileUser.lists.find(list => list?.name === 'Favorites')?._id || null
+      : null;
+
+    localStorage.setItem('userData', JSON.stringify({
+      _id: profileUser._id || profileUser.id,
+      username: profileUser.username || username,
+      email: profileUser.email || '',
+      favoritesListId,
+      role: role
+    }));
+
+    if (profileUser.avatarUrl) {
+      localStorage.setItem('avatarUrl', profileUser.avatarUrl);
+    }
+
+    // 5. Éxito
     window.toast({
       type: 'success',
       title: `Welcome ${username}!`,
@@ -69,7 +90,9 @@ async function loginUser(username, password) {
     setTimeout(() => {
       window.location.href = '/home';
     }, 1000);
+
   } catch (error) {
+    // AHORA SÍ: Si falla la extracción de datos, se corta el proceso aquí.
     throw new AppError(
       error.message || 'Failed to login user',
       error.status,

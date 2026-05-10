@@ -42,7 +42,7 @@ reviewCardSheet.replaceSync(`
   color: var(--text-primary);
   font-family: 'Material Symbols Outlined';
   font-variation-settings:
-    'FILL' 0,
+    'FILL' 1,
     'wght' 200,
     'GRAD' 0,
     'opsz' 24
@@ -56,6 +56,16 @@ reviewCardSheet.replaceSync(`
 .star-icon {
   font-size: 24px;
   color: var(--yellow-100, #f5c518);
+}
+
+/* --- NUEVA CLASE PARA ESTRELLAS VACÍAS --- */
+.star-empty {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 200,
+    'GRAD' 0,
+    'opsz' 24;
+  color: var(--text-secondary, #9aa0a6); /* Color secundario para diferenciarlas */
 }
 
 .close-icon {
@@ -217,7 +227,6 @@ class ReviewCard extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.adoptedStyleSheets = [reviewCardSheet];
 
-    // Binding para que no se pierda el contexto en el event listener de 'resize'
     this.checkTruncation = this.checkTruncation.bind(this);
   }
 
@@ -225,7 +234,6 @@ class ReviewCard extends HTMLElement {
     this._render();
     this._setupListeners();
 
-    // Necesitamos un pequeño timeout para asegurar que el texto se haya renderizado antes de calcular su altura
     setTimeout(this.checkTruncation, 50);
     window.addEventListener('resize', this.checkTruncation);
   }
@@ -234,7 +242,6 @@ class ReviewCard extends HTMLElement {
     window.removeEventListener('resize', this.checkTruncation);
   }
 
-  // Si necesitamos que cambie dinámicamente si le cambian un atributo desde JS
   static get observedAttributes() {
     return ['username', 'avatar-src', 'rating', 'review-text', 'movie-title', 'date'];
   }
@@ -247,7 +254,6 @@ class ReviewCard extends HTMLElement {
   }
 
   _render() {
-    // Obtenemos los atributos, con valores por defecto por si no se proveen
     const username = this.getAttribute('username') || 'Anonymous User';
     const avatarSrc = this.getAttribute('avatar-src') || 'https://via.placeholder.com/50';
     const ratingValue = parseInt(this.getAttribute('rating')) || 5;
@@ -255,10 +261,16 @@ class ReviewCard extends HTMLElement {
     const movieTitle = this.getAttribute('movie-title') || 'Unknown Movie';
     const date = this.getAttribute('date') || 'Unknown Date';
 
-    // Generamos las estrellas dinámicamente según el rating (1 a 5)
+    // --- MODIFICACIÓN AQUÍ: Generamos SIEMPRE 5 estrellas ---
     let starsHTML = '';
-    for (let i = 1; i <= ratingValue; i++) {
-      starsHTML += `<span class="icon star-icon">star</span>`;
+    for (let i = 1; i <= 5; i++) {
+      if (i <= ratingValue) {
+        // Estrella rellena (rating válido)
+        starsHTML += `<span class="icon star-icon">star</span>`;
+      } else {
+        // Estrella vacía (resto de las 5)
+        starsHTML += `<span class="icon star-icon star-empty">star</span>`;
+      }
     }
 
     this.shadowRoot.innerHTML = `
@@ -302,7 +314,6 @@ class ReviewCard extends HTMLElement {
       </div>
     `;
 
-    // Reasignamos las referencias a los elementos tras el render
     this.reviewTextEl = this.shadowRoot.getElementById("reviewContent");
     this.readMoreBtn = this.shadowRoot.getElementById("readMoreBtn");
     this.modal = this.shadowRoot.getElementById("modal");
@@ -328,7 +339,6 @@ class ReviewCard extends HTMLElement {
   checkTruncation() {
     if (!this.reviewTextEl || !this.readMoreBtn) return;
 
-    // Si la altura del texto oculto es mayor a la altura de la caja visible, mostramos el botón
     if (this.reviewTextEl.scrollHeight > this.reviewTextEl.clientHeight) {
       this.readMoreBtn.style.display = "flex";
     } else {

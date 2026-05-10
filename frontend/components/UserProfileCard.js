@@ -330,7 +330,16 @@ class UserProfileCard extends HTMLElement {
     this._render();
 
     try {
-      const { user } = await getUser(username);
+      const response = await getUser(username);
+      const user = response?.user
+        || (Array.isArray(response?.users)
+          ? response.users.find(u => u?.username === username) || response.users[0]
+          : null);
+
+      if (!user) {
+        throw new Error('User not found in profile response');
+      }
+
       this._profileUser = user;
 
       //Determinar si es el perfil propio
@@ -389,7 +398,7 @@ class UserProfileCard extends HTMLElement {
       `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.username || 'User')}&background=3a3f4c&color=fff&size=100`;
   }
 
-  //Render 
+  //Render
   _render() {
     if (this._isLoading) {
       this.shadowRoot.innerHTML = `
@@ -474,7 +483,7 @@ class UserProfileCard extends HTMLElement {
     this._bindModalEvents();
   }
 
-  //Eventos 
+  //Eventos
   _bindEvents() {
     this.shadowRoot.getElementById('edit-profile-btn')?.addEventListener('click', () => {
       window.location.href = '/profileConfig';
@@ -538,7 +547,7 @@ class UserProfileCard extends HTMLElement {
     this._render();
   }
 
-  //Modal de seguidores/siguiendo 
+  //Modal de seguidores/siguiendo
   _modalHTML() {
     if (!this._socialModal || !this._profileUser) return '';
 
