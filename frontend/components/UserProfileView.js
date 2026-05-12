@@ -12,7 +12,7 @@ userProfileSheet.replaceSync(`
     margin: 0 auto;
     box-sizing: border-box;
   }
- 
+
   .profile-card {
     width: 100%;
     display: grid;
@@ -24,25 +24,25 @@ userProfileSheet.replaceSync(`
     box-shadow: 0 24px 55px rgba(0,0,0,0.25);
     margin-bottom: 24px;
   }
- 
+
   .profile-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
   .profile-summary { display: flex; flex-direction: column; gap: 20px; }
   .profile-header { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; margin-bottom: 0; text-align: left; }
- 
+
   .avatar-container { position: relative; width: 140px; height: 140px; }
   .profile-pic { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-color); box-shadow: 0 20px 40px rgba(0,0,0,0.18); }
- 
+
   .edit-avatar-btn {
     position: absolute; bottom: 0; right: 0; background: var(--primary-color); border: none; border-radius: 50%;
     width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   }
- 
+
   .user-info-brief { display: flex; flex-direction: column; gap: 8px; }
   .user-info-brief h1 { margin: 0; font-size: 30px; font-weight: 700; }
   .user-email-sub { color: var(--text-secondary); font-size: 15px; margin: 0; }
- 
+
   .status-pill { display: inline-flex; align-items: center; justify-content: center; padding: 6px 14px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary); font-size: 13px; margin-top: 0; }
- 
+
   /* Estadísticas Sociales */
   .profile-stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
   .profile-stat { min-width: 132px; padding: 12px 16px; border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
@@ -51,7 +51,7 @@ userProfileSheet.replaceSync(`
   .profile-stat-button:focus-visible, .social-modal-close:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
   .profile-stat strong { display: block; font-size: 22px; line-height: 1; }
   .profile-stat span { display: block; margin-top: 6px; color: var(--text-secondary); font-size: 13px; }
- 
+
   /* Detalles de Perfil */
   .details-card { background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: 22px; padding: 24px; }
   .details-card h2 { font-size: 18px; margin-bottom: 22px; color: var(--text-primary); }
@@ -60,9 +60,9 @@ userProfileSheet.replaceSync(`
   .detail-label { color: var(--text-secondary); font-size: 14px; }
   .detail-value, .detail-value strong { font-weight: 600; color: var(--text-primary); text-align: right; }
   .password-dots { letter-spacing: 0.22em; }
- 
+
   input[type='text'], input[type='email'] { width: 100%; max-width: 360px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 12px; border-radius: 14px; font-family: inherit; font-size: 15px; min-height: 42px; }
- 
+
   /* Botones Generales */
   .actions { display: flex; gap: 12px; margin-top: 22px; justify-content: center; flex-wrap: wrap; }
   .btn { padding: 12px 24px; border-radius: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; border: none; }
@@ -70,36 +70,36 @@ userProfileSheet.replaceSync(`
   .btn-secondary { background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: var(--text-primary); }
   .btn-danger { background: rgba(214,69,69,0.12); border: 1px solid #d64545; color: var(--text-primary); }
   .btn:hover { opacity: 0.95; transform: translateY(-1px); }
- 
+
   /* Estructura de Modales (Reusables) */
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: grid; place-items: center; padding: 24px; z-index: 10000; backdrop-filter: blur(4px); }
   .modal-backdrop.social { background: rgba(0,0,0,0.58); backdrop-filter: blur(8px); z-index: 12000; }
- 
+
   .modal-card { background: var(--bg-color, #1f2128); border: 1px solid var(--border-color); border-radius: 24px; padding: 28px; box-shadow: 0 18px 45px rgba(0,0,0,0.35); }
   .modal-card.confirm { width: min(500px, 100%); }
   .modal-card.social { width: min(560px, 100%); max-height: min(78vh, 760px); display: flex; flex-direction: column; gap: 18px; padding: 24px; overflow: hidden; }
- 
+
   .confirm-modal h2 { margin: 0 0 12px; font-size: 22px; }
   .confirm-modal p { color: var(--text-secondary); margin: 0 0 24px; line-height: 1.7; }
   .modal-actions { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
- 
+
   /* Modal Social Específica */
   .social-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
   .social-modal-header h2 { margin: 0; font-size: 22px; }
   .social-modal-header p { margin: 8px 0 0; color: var(--text-secondary); line-height: 1.5; }
- 
+
   .social-modal-close { flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: var(--text-primary); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
   .social-users-list { overflow: auto; display: grid; gap: 12px; padding-right: 4px; }
- 
+
   .social-user-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
   .social-user-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
   .social-user-meta { display: flex; flex-direction: column; min-width: 0; }
   .social-user-name { font-size: 15px; line-height: 1.3; }
   .social-user-handle, .social-empty { color: var(--text-secondary); font-size: 14px; }
   .social-empty { margin: 4px 0 0; padding: 18px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px dashed rgba(255,255,255,0.12); }
- 
+
   .icon { font-family: 'Material Symbols Outlined'; font-size: 20px; }
- 
+
   @media (max-width: 720px) {
     :host { padding: 16px; }
     .profile-card { padding: 20px; }
@@ -188,7 +188,13 @@ class UserProfileView extends HTMLElement {
         this.originalUsername = user.username || this.originalUsername;
         this.userObjId = user._id || user.id;
 
-        localStorage.setItem('userData', JSON.stringify(this.userData));
+        const storedForMerge = JSON.parse(localStorage.getItem('userData') || '{}');
+        localStorage.setItem('userData', JSON.stringify({
+          ...storedForMerge,
+          ...this.userData,
+          _id: this.userObjId || storedForMerge._id,
+          avatarUrl: this.userData.avatar || this.userData.avatarUrl
+        }));
 
         try {
           const favRes = await getFavoriteList(this.userObjId);
@@ -397,16 +403,16 @@ class UserProfileView extends HTMLElement {
     this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', () => { this.isEditing = true; this._updateProfileDOM(); });
     this.shadowRoot.getElementById('cancel-btn')?.addEventListener('click', () => { this.isEditing = false; this._pendingAvatar = null; this._updateProfileDOM(); });
     this.shadowRoot.getElementById('save-btn')?.addEventListener('click', () => this._handleSave());
- 
+
     this.shadowRoot.getElementById('logout-btn')?.addEventListener('click', () => { this.showLogoutModal = true; this._updateModalsDOM(); });
     this.shadowRoot.getElementById('delete-btn')?.addEventListener('click', () => { this.showDeleteModal = true; this._updateModalsDOM(); });
- 
+
     this.shadowRoot.getElementById('followers-stat-btn')?.addEventListener('click', () => { this.socialModalType = 'followers'; this._updateModalsDOM(); });
     this.shadowRoot.getElementById('following-stat-btn')?.addEventListener('click', () => { this.socialModalType = 'following'; this._updateModalsDOM(); });
- 
+
     this.shadowRoot.getElementById('avatar-edit-btn')?.addEventListener('click', () => this.shadowRoot.getElementById('avatar-input')?.click());
     this.shadowRoot.getElementById('avatar-input')?.addEventListener('change', (e) => this._handleAvatarChange(e));
- 
+
     this.shadowRoot.getElementById('login-btn')?.addEventListener('click', () => window.location.href = '/login');
     this.shadowRoot.getElementById('register-btn')?.addEventListener('click', () => window.location.href = '/register');
   }
@@ -488,11 +494,11 @@ class UserProfileView extends HTMLElement {
       }));
 
       this.isEditing = false;
-      
+
       // Forzar que el DOM se actualice DESPUÉS de que todo esté sincronizado
       setTimeout(() => {
         this._updateProfileDOM();
-        
+
         // Actualizar header después de que localStorage esté sincronizado
         const header = document.querySelector('custom-header');
         if (header) {
