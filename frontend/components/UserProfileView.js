@@ -60,9 +60,40 @@ userProfileSheet.replaceSync(`
   .detail-label { color: var(--text-secondary); font-size: 14px; }
   .detail-value, .detail-value strong { font-weight: 600; color: var(--text-primary); text-align: right; }
   .password-dots { letter-spacing: 0.22em; }
-
-  input[type='text'], input[type='email'] { width: 100%; max-width: 360px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 12px; border-radius: 14px; font-family: inherit; font-size: 15px; min-height: 42px; }
-
+ 
+  input[type='text'], input[type='email'], input[type='password'] { width: 100%; max-width: 360px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 12px; border-radius: 14px; font-family: inherit; font-size: 15px; min-height: 42px; }
+ 
+  .password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+  }
+ 
+  .password-form input { max-width: 95%; }
+ 
+  .change-password-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    text-align: right;
+    margin-left: auto;
+    display: block;
+  }
+ 
+  .change-password-btn:hover { opacity: 0.8; }
+ 
+  .error-msg { color: var(--red-100, #ef4444); font-size: 13px; text-align: center; margin-top: 8px; }
+ 
   /* Botones Generales */
   .actions { display: flex; gap: 12px; margin-top: 22px; justify-content: center; flex-wrap: wrap; }
   .btn { padding: 12px 24px; border-radius: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; border: none; }
@@ -118,11 +149,13 @@ class UserProfileView extends HTMLElement {
 
     // Estados UI
     this.isEditing = false;
+    this.isSaving = false;
     this.showLogoutModal = false;
     this.showDeleteModal = false;
     this.socialModalType = null;
     this.hasAuth = !!localStorage.getItem('jwtToken');
     this._pendingAvatar = null; // Avatar temporal solo para preview
+    this._saveError = '';
 
     // Estados Data
     const storedUser = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -294,7 +327,18 @@ class UserProfileView extends HTMLElement {
               </div>
               <div class="detail-row">
                 <span class="detail-label">Password</span>
-                <strong class="detail-value password-dots">••••••••</strong>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;width:100%">
+                  <strong class="detail-value password-dots">••••••••</strong>
+                  ${this.isEditing ? `<button class="change-password-btn" id="toggle-password-form">Change password</button>` : ''}
+                  <div id="password-form-container" style="display:none;width:100%">
+                    <div class="password-form">
+                      <input type="password" id="current-password" placeholder="Current password">
+                      <input type="password" id="new-password" placeholder="New password (min. 6 characters)" minlength="6">
+                      <input type="password" id="confirm-password" placeholder="Confirm new password">
+                      <p class="error-msg" id="password-error" style="display:none"></p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </section>
           </div>
@@ -302,12 +346,15 @@ class UserProfileView extends HTMLElement {
           <div class="actions">
             ${this.isEditing
               ? `<button class="btn btn-secondary" id="cancel-btn">Cancel</button>
-                 <button class="btn btn-primary" id="save-btn">Save</button>`
+                 <button class="btn btn-primary" id="save-btn" ${this.isSaving ? 'disabled' : ''}>
+                   ${this.isSaving ? 'Saving...' : 'Save'}
+                 </button>`
               : `<button class="btn btn-primary" id="edit-btn">Edit profile</button>`
             }
             <button class="btn btn-secondary" id="logout-btn">Logout</button>
             <button class="btn btn-danger" id="delete-btn">Delete account</button>
           </div>
+          ${this._saveError ? `<p class="error-msg">${this._saveError}</p>` : ''}
         </div>
       `;
     }
@@ -400,8 +447,33 @@ class UserProfileView extends HTMLElement {
   // ==========================================
 
   _attachProfileListeners() {
-    this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', () => { this.isEditing = true; this._updateProfileDOM(); });
-    this.shadowRoot.getElementById('cancel-btn')?.addEventListener('click', () => { this.isEditing = false; this._pendingAvatar = null; this._updateProfileDOM(); });
+    this.shadowRoot.getElementById('edit-btn')?.addEventListener('click', () => {
+      this.isEditing = true;
+      this._saveError = '';
+      this._passwordFormOpen = false;
+      this._updateProfileDOM();
+    });
+    this.shadowRoot.getElementById('cancel-btn')?.addEventListener('click', () => {
+      this.isEditing = false;
+      this._saveError = '';
+      this._passwordFormOpen = false;
+      this._pendingAvatar = null;
+      this._updateProfileDOM();
+    });
+ 
+    this.shadowRoot.getElementById('toggle-password-form')?.addEventListener('click', () => {
+      const container = this.shadowRoot.getElementById('password-form-container');
+      const btn = this.shadowRoot.getElementById('toggle-password-form');
+      if (!container) return;
+      const isOpen = container.style.display !== 'none';
+      container.style.display = isOpen ? 'none' : 'block';
+      btn.textContent = isOpen ? 'Change password' : 'Cancel';
+      if (isOpen) {
+        this.shadowRoot.querySelectorAll('#password-form-container input').forEach(i => i.value = '');
+        const err = this.shadowRoot.getElementById('password-error');
+        if (err) err.style.display = 'none';
+      }
+    });
     this.shadowRoot.getElementById('save-btn')?.addEventListener('click', () => this._handleSave());
 
     this.shadowRoot.getElementById('logout-btn')?.addEventListener('click', () => { this.showLogoutModal = true; this._updateModalsDOM(); });
@@ -454,9 +526,39 @@ class UserProfileView extends HTMLElement {
     const newEmail = this.shadowRoot.querySelector('#edit-email')?.value.trim();
 
     if (!newName || !newEmail) {
-      alert('Username and email are required.');
+      this._saveError = 'Username and email are required.';
+      this._updateProfileDOM();
       return;
     }
+
+    //validar campos de contraseña si el form está abierto
+    const passwordContainer = this.shadowRoot.getElementById('password-form-container');
+    const isPasswordFormOpen = passwordContainer?.style.display !== 'none';
+    const currentPassword = this.shadowRoot.querySelector('#current-password')?.value || '';
+    const newPassword = this.shadowRoot.querySelector('#new-password')?.value || '';
+    const confirmPassword = this.shadowRoot.querySelector('#confirm-password')?.value || '';
+
+    if (isPasswordFormOpen && (currentPassword || newPassword || confirmPassword)) {
+      const errEl = this.shadowRoot.getElementById('password-error');
+
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        if (errEl) { errEl.textContent = 'All password fields are required.'; errEl.style.display = 'block'; }
+        return;
+      }
+      if (newPassword.length < 6) {
+        if (errEl) { errEl.textContent = 'New password must be at least 6 characters.'; errEl.style.display = 'block'; }
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        if (errEl) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; }
+        return;
+      }
+      if (errEl) errEl.style.display = 'none';
+    }
+
+    this.isSaving = true;
+    this._saveError = '';
+    this._updateProfileDOM();
 
     try {
       const updateData = {
@@ -464,6 +566,12 @@ class UserProfileView extends HTMLElement {
         email: newEmail,
         avatarUrl: this._pendingAvatar || this.userData.avatarUrl
       };
+
+      // Solo incluir contraseña si el form estaba abierto y tiene valores
+      if (isPasswordFormOpen && newPassword) {
+        updateData.currentPassword = currentPassword;
+        updateData.password = newPassword;
+      }
 
       const response = await updateUser({
         username: this.originalUsername,
@@ -480,7 +588,6 @@ class UserProfileView extends HTMLElement {
         this.userData.avatarUrl = serverAvatarUrl;
       }
 
-      // Limpiar pending avatar
       this._pendingAvatar = null;
 
       // Actualizar localStorage con la ruta final
@@ -490,16 +597,14 @@ class UserProfileView extends HTMLElement {
         ...storedData,
         username: newName,
         email: newEmail,
-        avatarUrl: this.userData.avatarUrl
+        avatarUrl: this.userData.avatarUrl,
       }));
 
       this.isEditing = false;
+      this._passwordFormOpen = false;
 
-      // Forzar que el DOM se actualice DESPUÉS de que todo esté sincronizado
       setTimeout(() => {
         this._updateProfileDOM();
-
-        // Actualizar header después de que localStorage esté sincronizado
         const header = document.querySelector('custom-header');
         if (header) {
           header.removeAttribute('img-src');
@@ -509,12 +614,23 @@ class UserProfileView extends HTMLElement {
 
       window.toast?.({
         type: 'success',
-        title: 'Profile updated',
+        title: newPassword ? 'Profile and password updated' : 'Profile updated',
         message: 'Your changes have been saved.',
         duration: 3000
       });
     } catch (err) {
-      alert("Update failed: " + err.message);
+      // Si el error es de contraseña incorrecta, mostrarlo en el form
+      if (err.message?.toLowerCase().includes('contraseña') || err.message?.toLowerCase().includes('password')) {
+        const errEl = this.shadowRoot.getElementById('password-error');
+        if (errEl) { errEl.textContent = 'Current password is incorrect.'; errEl.style.display = 'block'; }
+        this.isSaving = false;
+        this._updateProfileDOM();
+        return;
+      }
+      this._saveError = err.message || 'Update failed. Please try again.';
+    } finally {
+      this.isSaving = false;
+      this._updateProfileDOM();
     }
   }
 
