@@ -100,7 +100,7 @@ async function getUsers(req, res, next) {
     const searchRegex = new RegExp(name, 'i');
 
     const users = await User.find({ username: searchRegex })
-      .select('-password -email -createdAt -updatedAt -__v')
+      .select('-password -createdAt -updatedAt -__v')
       .populate('lists')
       .populate('following', 'username avatarUrl')
       .populate('followers', 'username avatarUrl');

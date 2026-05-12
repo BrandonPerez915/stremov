@@ -250,6 +250,12 @@
       modal.setAttribute('open', '');
       document.body.appendChild(modal);
     });
+
+    document.addEventListener('user-click', (e) => {
+      const username = e.detail.username;
+      window.location.href = `/user/${encodeURIComponent(username)}`;
+
+    });
   </script>
 </body>
 </html>

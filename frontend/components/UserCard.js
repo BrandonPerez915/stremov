@@ -141,6 +141,18 @@ class UserCard extends HTMLElement {
 
   _setupListeners() {
     const btn = this.shadowRoot.querySelector('.follow-btn');
+    const card = this.shadowRoot.querySelector('.card');
+
+    card.addEventListener('click', () => {
+      const username = this._user ? this._user.username : this.getAttribute('name');
+      if (username) {
+        this.dispatchEvent(new CustomEvent('user-click', {
+          detail: { username: username },
+          bubbles: true,
+          composed: true
+        }));
+      }
+    });
 
     if (btn) {
       btn.addEventListener('click', async (e) => {
