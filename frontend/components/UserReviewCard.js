@@ -294,7 +294,6 @@ class UserReviewCard extends HTMLElement {
   _attr(name, fallback = '') { return this.getAttribute(name) ?? fallback; }
 
   _starsHTML(score, max = 5) {
-    // Convertir score 1-10 a 5 estrellas para display
     const filled = score;
     return Array.from({ length: 5 }, (_, i) =>
       `<span class="star" style="${i >= filled ? 'color:var(--border-color,#3a3f4c);font-variation-settings:"FILL" 0' : ''}">star</span>`

@@ -27,8 +27,8 @@ starsInputSheet.replaceSync(`
 }
 
 .star-icon.filled {
-  color: #f5c518; /* Amarillo */
-  font-variation-settings: 'FILL' 1;
+  color: #f5c518;
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 `);
 
