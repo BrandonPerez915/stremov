@@ -138,8 +138,8 @@ class ReviewsFavoritesContainer extends HTMLElement {
     this.favorites = [];
     this.userId = null;
     this.listId = null;
-    this.isOwnProfile = true;
-    
+    this.isOwnProfile = false;
+
     // Bind handlers para poder removerlos después
     this._handleReviewUpdated = this._handleReviewUpdated.bind(this);
     this._handleReviewDeleted = this._handleReviewDeleted.bind(this);
@@ -159,7 +159,7 @@ class ReviewsFavoritesContainer extends HTMLElement {
     this._loadData();
   }
 
-  set data({ userId, listId, isOwnProfile = true }) {
+  set data({ userId, listId, isOwnProfile = false }) {
     this.userId = userId;
     this.listId = listId;
     this.isOwnProfile = isOwnProfile;
@@ -201,7 +201,7 @@ class ReviewsFavoritesContainer extends HTMLElement {
   async _loadData() {
     try {
       console.log('Loading reviews and favorites for:', { userId: this.userId, listId: this.listId });
-      
+
       const [reviewsResult, favoritesResult] = await Promise.allSettled([
         this.userId ? getUserReviews(this.userId) : Promise.resolve({ reviews: [] }),
         this.listId ? getFavoriteList(this.listId) : Promise.resolve({ list: { movies: [] } })
@@ -210,13 +210,13 @@ class ReviewsFavoritesContainer extends HTMLElement {
       console.log('Reviews result:', reviewsResult);
       console.log('Favorites result:', favoritesResult);
 
-      this.reviews = reviewsResult.status === 'fulfilled' 
-        ? (reviewsResult.value?.reviews || []) 
+      this.reviews = reviewsResult.status === 'fulfilled'
+        ? (reviewsResult.value?.reviews || [])
         : [];
-      
+
       // La estructura del backend es: { status: 'success', list: { movies: [...] } }
-      this.favorites = favoritesResult.status === 'fulfilled' 
-        ? (favoritesResult.value?.list?.movies || []) 
+      this.favorites = favoritesResult.status === 'fulfilled'
+        ? (favoritesResult.value?.list?.movies || [])
         : [];
 
       this._render();
@@ -251,8 +251,8 @@ class ReviewsFavoritesContainer extends HTMLElement {
   }
 
   _getAvatarUrl(user) {
-    return user?.avatarUrl 
-      || user?.avatar 
+    return user?.avatarUrl
+      || user?.avatar
       || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.username || 'User')}`;
   }
 
@@ -354,10 +354,10 @@ class ReviewsFavoritesContainer extends HTMLElement {
     // Propagar eventos de movie-card
     this.shadowRoot.querySelectorAll('movie-card').forEach((card) => {
       card.addEventListener('movie-clicked', (e) => {
-        document.dispatchEvent(new CustomEvent('movie-clicked', { 
-          detail: e.detail, 
-          bubbles: true, 
-          composed: true 
+        document.dispatchEvent(new CustomEvent('movie-clicked', {
+          detail: e.detail,
+          bubbles: true,
+          composed: true
         }));
       });
     });
